@@ -3,7 +3,7 @@ import { db } from "./db";
 
 // Описание простых справочников для админки: по нему строятся список, форма и сохранение
 export type CrudField = {
-  key: string; label: string; type: "text" | "textarea" | "int" | "bool" | "select" | "date" | "rich";
+  key: string; label: string; type: "text" | "textarea" | "int" | "bool" | "select" | "date" | "rich" | "image";
   required?: boolean; hint?: string; def?: unknown;
   options?: [string, string][] | (() => Promise<[string, string][]>);
 };
@@ -36,7 +36,7 @@ export const CRUD: Record<string, CrudEntity> = {
     { key: "isActive", label: "Показывать на сайте", type: "bool", def: true },
     { key: "isPopular", label: "Популярный (на главной)", type: "bool" },
     { key: "lat", label: "Широта", type: "text" }, { key: "lng", label: "Долгота", type: "text" },
-    { key: "coverUrl", label: "Ссылка на обложку", type: "text" },
+    { key: "coverUrl", label: "Фото курорта", type: "image", hint: "Для плитки на главной и шапки страницы курорта. Горизонтальное, от 1200 px" },
     ...seo,
     { key: "seoText", label: "SEO-текст внизу страницы курорта", type: "rich" },
   ]},
@@ -89,7 +89,7 @@ export const CRUD: Record<string, CrudEntity> = {
     { key: "slug", label: "Адрес (латиницей)", type: "text", required: true },
     { key: "excerpt", label: "Кратко (для списка)", type: "textarea" },
     { key: "body", label: "Текст", type: "rich", hint: "Пустая строка — новый абзац. ## Заголовок, - пункт списка, [текст](ссылка)" },
-    { key: "coverUrl", label: "Ссылка на обложку", type: "text" },
+    { key: "coverUrl", label: "Фото курорта", type: "image", hint: "Для плитки на главной и шапки страницы курорта. Горизонтальное, от 1200 px" },
     { key: "resortId", label: "Курорт", type: "select", options: resorts },
     { key: "isPublished", label: "Опубликована", type: "bool" },
     { key: "publishedAt", label: "Дата публикации", type: "date" },

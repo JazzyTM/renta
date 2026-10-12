@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ImageField } from "@/components/admin/ImageField";
 import { notFound } from "next/navigation";
 import { requireAdmin, requireStaff } from "@/lib/auth";
 import { CRUD, delegate, fieldOptions } from "@/lib/crud";
@@ -31,6 +32,7 @@ export default async function CrudEdit({ params, searchParams }: { params: Promi
           const hint = f.hint && <span className="hint">{f.hint}</span>;
           if (f.type === "bool") return <label key={f.key} className="check"><input type="checkbox" name={f.key} defaultChecked={!!v} /> {f.label}</label>;
           if (f.type === "textarea" || f.type === "rich") return <div key={f.key} className="field">{label}<textarea className="input" id={`f-${f.key}`} name={f.key} rows={f.type === "rich" ? 14 : 3} defaultValue={v ?? ""} />{hint}</div>;
+          if (f.type === "image") return <ImageField key={f.key} name={f.key} label={f.label} value={v ?? ""} hint={f.hint} />;
           if (f.type === "select") return <div key={f.key} className="field">{label}<select className="input" id={`f-${f.key}`} name={f.key} defaultValue={v ?? ""}>{f.opts.map(([k, t]) => <option key={k} value={k}>{t}</option>)}</select>{hint}</div>;
           return <div key={f.key} className="field">{label}<input className="input" id={`f-${f.key}`} name={f.key} type={f.type === "int" ? "number" : f.type === "date" ? "date" : "text"} defaultValue={f.type === "date" ? (v ? isoDate(new Date(v)) : "") : v ?? ""} required={f.required} />{hint}</div>;
         })}

@@ -6,9 +6,13 @@ const MN = ["Январь","Февраль","Март","Апрель","Май","
 const WD = ["вс","пн","вт","ср","чт","пт","сб"];
 const D = (s: string) => Date.parse(s + "T00:00:00Z");
 const iso = (t: number) => new Date(t).toISOString().slice(0, 10);
+const MS = ["янв","фев","мар","апр","мая","июн","июл","авг","сен","окт","ноя","дек"];
+const short = (s: string) => { const d = new Date(D(s)); return `${d.getUTCDate()} ${MS[d.getUTCMonth()]}`; };
+const nightsWord = (n: number) => { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? "ночь" : a >= 2 && a <= 4 && (b < 12 || b > 14) ? "ночи" : "ночей"; };
+const Chev = () => <svg className="chev" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 const label = (s: string) => { const d = new Date(D(s)); return `${d.getUTCDate()} ${MG[d.getUTCMonth()]}, ${WD[d.getUTCDay()]}`; };
 
-export function DateRange({ ci, co, onChange, alignRight }: { ci: string; co: string; onChange: (ci: string, co: string) => void; alignRight?: boolean }) {
+export function DateRange({ ci, co, onChange, alignRight, single }: { ci: string; co: string; onChange: (ci: string, co: string) => void; alignRight?: boolean; single?: boolean }) {
   const [open, setOpen] = useState<null | "ci" | "co">(null);
   const today = iso(Date.now() - (Date.now() % 86400000));
   const start = new Date(D(ci || today));
@@ -55,8 +59,12 @@ export function DateRange({ ci, co, onChange, alignRight }: { ci: string; co: st
   );
   const [y2, m2] = month[1] === 11 ? [month[0] + 1, 0] : [month[0], month[1] + 1];
   return (
-    <div className="f-dates" ref={ref}>
-      {btn("ci", "Заезд")}{btn("co", "Выезд")}
+    <div className={`f-dates ${single ? "one" : ""}`} ref={ref}>
+      {single ? (
+        <button type="button" className={`input dbtn seg ${open ? "on" : ""} ${ci ? "" : "unset"}`} onClick={() => setOpen(open ? null : ci && !co ? "co" : "ci")} aria-label="Даты заезда и выезда">
+          <span>{ci ? <>{short(ci)} – {co ? <>{short(co)}, {nights} {nightsWord(nights)}</> : "выезд?"}</> : "Даты заезда и выезда"}</span><Chev />
+        </button>
+      ) : <>{btn("ci", "Заезд")}{btn("co", "Выезд")}</>}
       {open && (
         <div className={`dp ${alignRight ? "right" : ""}`} role="dialog" aria-label="Выбор дат">
           <div className="dphead"><button type="button" onClick={() => shift(-1)} disabled={atStart} aria-label="Назад">‹</button>
@@ -70,21 +78,21 @@ export function DateRange({ ci, co, onChange, alignRight }: { ci: string; co: st
   );
 }
 
-export function Guests({ adults, children, onChange }: { adults: number; children: number; onChange: (a: number, c: number) => void }) {
+export function Guests({ adults, children, onChange, bare }: { adults: number; children: number; onChange: (a: number, c: number) => void; bare?: boolean }) {
   const ref = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
     const h = (e: MouseEvent) => { if (ref.current?.open && !ref.current.contains(e.target as Node)) ref.current.open = false; };
     document.addEventListener("mousedown", h); return () => document.removeEventListener("mousedown", h);
   }, []);
-  const lbl = `${adults} взр.${children ? `, ${children} дет.` : ""}`;
+  const lbl = bare ? `${adults} ${adults === 1 ? "взрослый" : "взрослых"}${children ? `, ${children} ${children === 1 ? "ребёнок" : children < 5 ? "ребёнка" : "детей"}` : ""}` : `${adults} взр.${children ? `, ${children} дет.` : ""}`;
   const Step = ({ t, v, set, min }: { t: string; v: number; set: (n: number) => void; min: number }) => (
     <div className="step"><b>{t}</b><div className="ctl">
       <button type="button" onClick={() => set(Math.max(min, v - 1))} aria-label={`Меньше: ${t}`}>−</button><span>{v}</span>
       <button type="button" onClick={() => set(Math.min(20, v + 1))} aria-label={`Больше: ${t}`}>+</button></div></div>
   );
   return (
-    <div className="field"><span className="flabel">Гости</span>
-      <details className="guests" ref={ref}><summary className="input">{lbl}</summary>
+    <div className={`field ${bare ? "bare" : ""}`}>{!bare && <span className="flabel">Гости</span>}
+      <details className="guests" ref={ref}><summary className={`input ${bare ? "seg" : ""}`}><span>{lbl}</span>{bare && <Chev />}</summary>
         <div className="pop"><Step t="Взрослые" v={adults} min={1} set={a => onChange(a, children)} /><Step t="Дети" v={children} min={0} set={c => onChange(adults, c)} /></div>
       </details></div>
   );

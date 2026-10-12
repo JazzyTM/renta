@@ -29,7 +29,7 @@ function watermarkSvg(w: number, h: number, text: string, opacity: number) {
 }
 
 // Сжимает фото: поворот по EXIF, удаление метаданных (в том числе GPS), уменьшение, WebP, копия для карточек, водяной знак
-export async function saveImage(file: File) {
+export async function saveImage(file: File, opts: { watermark?: boolean; minW?: number; minH?: number } = {}) {
   if (file.size > MAX) throw new Error("Фото больше 15 МБ");
   const buf = Buffer.from(await file.arrayBuffer());
   if (!sniff(buf)) throw new Error("Файл не похож на фото. Нужен JPG, PNG, WebP или HEIC");
@@ -37,9 +37,10 @@ export async function saveImage(file: File) {
   const maxW = Number(s.photoMaxSize) || 2000, q = Number(s.photoQuality) || 82;
   let img = sharp(buf, { failOn: "error" }).rotate().resize({ width: maxW, height: maxW, fit: "inside", withoutEnlargement: true });
   const { data: base, info } = await img.toBuffer({ resolveWithObject: true });
-  if (info.width < 400 || info.height < 300) throw new Error("Фото слишком маленькое, нужно хотя бы 400×300");
+  const mw = opts.minW ?? 400, mh = opts.minH ?? 300;
+  if (info.width < mw || info.height < mh) throw new Error(`Фото слишком маленькое, нужно хотя бы ${mw}×${mh}`);
   let full = sharp(base);
-  if (s.watermark && String(s.watermarkText || s.siteName).trim())
+  if (opts.watermark !== false && s.watermark && String(s.watermarkText || s.siteName).trim())
     full = full.composite([{ input: watermarkSvg(info.width, info.height, String(s.watermarkText || s.siteName), Number(s.watermarkOpacity) / 100 || 0.5), top: 0, left: 0 }]);
   const ym = new Date().toISOString().slice(0, 7);
   const dir = join(UPLOAD_DIR, ym);
@@ -56,5 +57,20 @@ export async function removeImage(url: string) {
   for (const u of new Set([url, thumb(url)])) {
     const p = resolve(UPLOAD_DIR, u.slice("/uploads/".length));
     if (p.startsWith(UPLOAD_DIR)) await unlink(p).catch(() => {});
+  }
+}
+
+// Картинки из форм админки (обложки, фон главной): поле name — текущий адрес, name__file — новый файл
+export async function takeImages(fd: FormData, keys: string[]) {
+  for (const k of keys) {
+    const f = fd.get(`${k}__file`);
+    if (f instanceof File && f.size > 0) {
+      const old = String(fd.get(k) ?? "");
+      fd.set(k, await saveImage(f, { watermark: false }));
+      if (old) await removeImage(old);
+    } else if (fd.get(`${k}__del`) === "on") {
+      const old = String(fd.get(k) ?? ""); if (old) await removeImage(old);
+      fd.set(k, "");
+    }
   }
 }

@@ -27,6 +27,7 @@ export const cardInclude = {
   photos: { orderBy: { sort: "asc" as const }, take: 6 },
   resort: true,
   prices: true,
+  amenities: { where: { amenity: { isFilter: true } }, select: { amenity: { select: { name: true, code: true } } }, take: 8 },
 } satisfies Prisma.ListingInclude;
 
 export type CardListing = Prisma.ListingGetPayload<{ include: typeof cardInclude }>;

@@ -11,6 +11,7 @@ import { enablePromotion, markOrderPaid } from "@/lib/payments";
 import { recomputeRating } from "@/lib/reviews";
 import { fmtRange } from "@/lib/format";
 import type { FormState } from "@/lib/form";
+import { takeImages } from "@/lib/upload";
 
 const base = () => process.env.APP_URL || "";
 const s = (fd: FormData, k: string, max = 2000) => String(fd.get(k) ?? "").trim().slice(0, max);
@@ -20,7 +21,7 @@ export async function crudSave(entity: string, id: string | null, _: unknown, fd
   const e = CRUD[entity];
   const u = e.adminOnly ? await requireAdmin() : await requireStaff();
   let data;
-  try { data = parseFields(e.fields, fd); } catch (err) { return { error: (err as Error).message }; }
+  try { await takeImages(fd, e.fields.filter(f => f.type === "image").map(f => f.key)); data = parseFields(e.fields, fd); } catch (err) { return { error: (err as Error).message }; }
   let row;
   try {
     row = id ? await delegate(e.model).update({ where: { id }, data }) : await delegate(e.model).create({ data });
@@ -308,6 +309,7 @@ export async function settingsSave(section: string, _: unknown, fd: FormData): P
   const u = await requireAdmin();
   const sec = SETTINGS.find(x => x.id === section);
   if (!sec) return { error: "Нет такого раздела" };
+  try { await takeImages(fd, sec.fields.filter(f => f.type === "image").map(f => f.key)); } catch (err) { return { error: (err as Error).message }; }
   const values: Record<string, unknown> = {};
   for (const f of sec.fields) {
     const raw = fd.get(f.key);

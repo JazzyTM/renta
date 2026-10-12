@@ -43,8 +43,8 @@ export function SearchForm({ resorts, init, compact }: { resorts: ResortOpt[]; i
 
   return (
     <form className={`search ${compact ? "compact" : ""}`} onSubmit={submit} autoComplete="off" role="search">
-      <div className="field"><label htmlFor="s-resort">Курорт</label>
-        <input className="input" id="s-resort" value={q} placeholder="Анапа, Сочи, Ялта…" role="combobox" aria-expanded={show} aria-controls="s-sugg"
+      <div className="field seg-resort"><label htmlFor="s-resort" className="sr">Курорт</label>
+        <input className="input seg" id="s-resort" value={q} placeholder="Название курорта" role="combobox" aria-expanded={show} aria-controls="s-sugg"
           onChange={e => { setQ(e.target.value); setSlug(""); setShow(true); setAct(0); }} onFocus={e => { setShow(true); e.target.select(); }} onBlur={() => setTimeout(() => setShow(false), 150)}
           onKeyDown={e => {
             if (!show || !matches.length) return;
@@ -53,6 +53,7 @@ export function SearchForm({ resorts, init, compact }: { resorts: ResortOpt[]; i
             if (e.key === "Enter" && !slug) { e.preventDefault(); pick(matches[act]); }
             if (e.key === "Escape") setShow(false);
           }} />
+        {q && <button type="button" className="clr" aria-label="Очистить" onMouseDown={e => { e.preventDefault(); setQ(""); setSlug(""); setShow(true); }}>×</button>}
         {show && (
           <div className="sugg" id="s-sugg" role="listbox">
             {!q.trim() && <div className="sugg-h">Популярные</div>}
@@ -64,9 +65,9 @@ export function SearchForm({ resorts, init, compact }: { resorts: ResortOpt[]; i
           </div>
         )}
       </div>
-      <DateRange ci={ci} co={co} onChange={(a, b) => { setCi(a); setCo(b); }} />
-      <Guests adults={adults} children={children} onChange={(a, c) => { setAdults(a); setChildren(c); }} />
-      <button className="btn" type="submit" disabled={pending}>{pending ? <><span className="spin" /> Ищем</> : "Найти"}</button>
+      <DateRange single ci={ci} co={co} onChange={(a, b) => { setCi(a); setCo(b); }} />
+      <Guests bare adults={adults} children={children} onChange={(a, c) => { setAdults(a); setChildren(c); }} />
+      <button className="btn" type="submit" disabled={pending}>{pending ? <><span className="spin" /> Ищем</> : "Узнать цены"}</button>
     </form>
   );
 }

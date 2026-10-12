@@ -2,36 +2,55 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { LogoMark } from "./Logo";
 import { useFavs } from "./Fav";
 import { AuthModal } from "./AuthModal";
 
 type U = { name: string; email: string | null; staff: boolean } | null;
+type Reg = { name: string; resorts: { name: string; slug: string }[] };
 
-export function Header({ user, siteName, social }: { user: U; siteName: string; social: { vk: boolean; ya: boolean } }) {
+const Ico = ({ d, size = 24 }: { d: string; size?: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true"><path d={d} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+);
+const HEART = "M12 20.5s-7.8-4.7-9.5-9.6C1.4 7.6 3.5 4.5 6.8 4.5c2.1 0 3.6 1.2 5.2 3 1.6-1.8 3.1-3 5.2-3 3.3 0 5.4 3.1 4.3 6.4-1.7 4.9-9.5 9.6-9.5 9.6z";
+const LOGIN = "M10 17l5-5-5-5M15 12H3M14 3h4a3 3 0 013 3v12a3 3 0 01-3 3h-4";
+
+export function Header({ user, siteName, social, regions }: { user: U; siteName: string; social: { vk: boolean; ya: boolean }; regions: Reg[] }) {
   const favs = useFavs();
   const path = usePathname();
   const [menu, setMenu] = useState(false);
+  const [pick, setPick] = useState(false);
   const [auth, setAuth] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => { setMenu(false); }, [path]);
+  const pref = useRef<HTMLDivElement>(null);
+  useEffect(() => { setMenu(false); setPick(false); }, [path]);
   useEffect(() => {
-    const on = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) setMenu(false); };
+    const on = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setMenu(false);
+      if (!pref.current?.contains(e.target as Node)) setPick(false);
+    };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") { setPick(false); setMenu(false); } };
     const open = () => setAuth(true);
-    document.addEventListener("click", on); window.addEventListener("open-login", open);
-    return () => { document.removeEventListener("click", on); window.removeEventListener("open-login", open); };
+    document.addEventListener("click", on); document.addEventListener("keydown", esc); window.addEventListener("open-login", open);
+    return () => { document.removeEventListener("click", on); document.removeEventListener("keydown", esc); window.removeEventListener("open-login", open); };
   }, []);
+  const slug = path.match(/^\/kurort\/([^/]+)/)?.[1];
+  const current = slug ? regions.flatMap(r => r.resorts).find(r => r.slug === slug)?.name : undefined;
   const initial = (user?.name || user?.email || "?").trim()[0]?.toUpperCase();
+  const overlay = path === "/";
+
   return (
-    <header className="top"><div className="wrap">
-      <Link href="/" className="logo"><LogoMark />{siteName.toLowerCase()}</Link>
+    <header className={`top ${overlay ? "overlay" : ""}`}><div className="wrap">
+      <Link href="/" className="logo">{siteName}</Link>
+      <div className="rpick" ref={pref}>
+        <button type="button" className="rpick-btn" aria-expanded={pick} onClick={() => setPick(p => !p)}>
+          <span>{current ?? "Выберите курорт"}</span><Ico size={16} d="M6 9l6 6 6-6" />
+        </button>
+        {pick && <div className="rpick-pop">
+          {regions.map(r => <section key={r.name}><h4>{r.name}</h4><ul>{r.resorts.map(x => <li key={x.slug}><Link href={`/kurort/${x.slug}`} className={x.slug === slug ? "on" : ""}>{x.name}</Link></li>)}</ul></section>)}
+        </div>}
+      </div>
       <nav>
-        <Link className="navlink hide-sm" href="/search">Поиск</Link>
-        <Link className="navlink favlink" href="/favorites" aria-label="Избранное">
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.4 3 5 6.4 5c2 0 3.4 1.1 4.1 2.3h3C14.2 6.1 15.6 5 17.6 5 21 5 23 8.4 21.6 11.8 19.5 16.4 12 21 12 21z" /></svg>
-          <span className="hide-sm">Избранное</span>{favs.length > 0 && <span className="cnt">{favs.length}</span>}
-        </Link>
-        <Link className="navlink cta hide-sm" href="/cabinet">Сдать жильё</Link>
+        <Link className="ibtn" href="/favorites" aria-label="Избранное" title="Избранное"><Ico d={HEART} />{favs.length > 0 && <span className="cnt">{favs.length}</span>}</Link>
         {user ? (
           <div className="umenu" ref={ref}>
             <button type="button" className="avatar" aria-haspopup="menu" aria-expanded={menu} onClick={() => setMenu(m => !m)}>{initial}</button>
@@ -44,7 +63,8 @@ export function Header({ user, siteName, social }: { user: U; siteName: string; 
               <form action="/logout" method="post"><button role="menuitem">Выйти</button></form>
             </div>}
           </div>
-        ) : <button type="button" className="btn sm" onClick={() => setAuth(true)}>Войти</button>}
+        ) : <button type="button" className="ibtn" aria-label="Войти" title="Войти" onClick={() => setAuth(true)}><Ico d={LOGIN} /></button>}
+        <Link className="obtn" href="/cabinet/new"><Ico size={18} d="M12 3a9 9 0 100 18 9 9 0 000-18zM12 8v8M8 12h8" /><span className="hide-sm">Сдать жильё</span></Link>
       </nav>
       {auth && <AuthModal onClose={() => setAuth(false)} social={social} />}
     </div></header>

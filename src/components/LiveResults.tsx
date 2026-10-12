@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CardData } from "@/lib/card";
 import { LISTING_TYPES } from "@/lib/labels";
 import { plural, rub } from "@/lib/format";
-import { ListingCard, CardSkeleton } from "./ListingCard";
+import { ListingRow, RowSkeleton } from "./ListingCard";
 import { PriceRange } from "./PriceRange";
 
 type Hist = { min: number; max: number; bins: number[] };
@@ -13,9 +13,9 @@ type F = { sea: string; pmin: string; price: string; type: string[]; amen: strin
 const SORTS: [string, string][] = [["rec", "Рекомендуем"], ["price", "Дешевле"], ["sea", "Ближе к морю"], ["rating", "Рейтинг"], ["new", "Новые"]];
 const arr = (v: unknown) => (Array.isArray(v) ? v : v ? [v] : []) as string[];
 
-export function LiveResults({ title, scope, initial, sp, amenities, action, ci, co, guests, children }: {
+export function LiveResults({ title, scope, initial, sp, amenities, action, ci, co, guests, children, search }: {
   title: string; scope: { resort?: string; filter?: string }; initial: Res; sp: Record<string, any>; amenities: { code: string; name: string }[];
-  action: string; ci?: string; co?: string; guests: number; children?: React.ReactNode;
+  action: string; ci?: string; co?: string; guests: number; children?: React.ReactNode; search?: React.ReactNode;
 }) {
   const [f, setF] = useState<F>({ sea: sp.sea ?? "", pmin: sp.pmin ?? "", price: sp.price ?? "", type: arr(sp.type), amen: arr(sp.amen), beach: sp.beach ?? "", verified: sp.verified === "1", sort: sp.sort ?? "rec" });
   const [res, setRes] = useState<Res>(initial);
@@ -91,30 +91,43 @@ export function LiveResults({ title, scope, initial, sp, amenities, action, ci, 
     </div>
   );
 
+  const QUICK: [string, string][] = [["breakfast", "Завтрак включён"], ["kids", "Для отдыха с детьми"], ["pets", "Можно с животными"]];
+  const quick = QUICK.filter(([c]) => amenities.some(a => a.code === c));
+
   return (
-    <div className="results">
-      <aside className="fside">{filters}</aside>
+    <>
+      <div className="rtop"><div className="wrap">
+        <h1 className="h2">{title}</h1>
+        {search}
+        <div className="qchips">
+          <button type="button" className={`chip ico ${active ? "on" : ""}`} onClick={() => setSheet(true)}>
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8M14 4v6M8 14v6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+            Фильтры{active ? ` · ${active}` : ""}</button>
+          <label className="chip ico sortchip">
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <select value={f.sort} onChange={e => set({ sort: e.target.value })} aria-label="Сортировка">{SORTS.map(([k, t]) => <option key={k} value={k}>{t}</option>)}</select>
+          </label>
+          {quick.map(([c, t]) => <button type="button" key={c} className={`chip ${f.amen.includes(c) ? "on" : ""}`} onClick={() => toggle("amen", c)}>{t}</button>)}
+          <button type="button" className={`chip ${f.verified ? "on" : ""}`} onClick={() => set({ verified: !f.verified })}>Только проверенные</button>
+        </div>
+      </div></div>
       {sheet && <div className="modal-bg" onClick={() => setSheet(false)}><div className="modal sheet" onClick={e => e.stopPropagation()}>
         <button className="x" aria-label="Закрыть" onClick={() => setSheet(false)}>×</button><h2 className="h2">Фильтры</h2>{filters}
         <button className="btn wide" onClick={() => setSheet(false)}>Показать {count}</button></div></div>}
-      <section>
-        <div className="row between" style={{ marginBottom: 14, alignItems: "flex-end" }}>
-          <div><h1 className="h2">{title}</h1><p className="small muted" aria-live="polite">{loading ? "Ищем…" : count}</p></div>
-          <div className="row small">
-            <button type="button" className="chip fbtn" onClick={() => setSheet(true)}>Фильтры{active ? ` · ${active}` : ""}</button>
-            <select className="input sortsel" value={f.sort} onChange={e => set({ sort: e.target.value })} aria-label="Сортировка">{SORTS.map(([k, t]) => <option key={k} value={k}>{t}</option>)}</select>
+      <div className="rbody"><div className="wrap results2">
+        <section>
+          <p className="small muted rcount" aria-live="polite">{loading ? "Ищем…" : `Найдено: ${count}`}</p>
+          <div className={`rows ${loading ? "dim" : ""}`}>
+            {loading && !res.items.length ? Array.from({ length: 4 }, (_, i) => <RowSkeleton key={i} />) :
+              res.items.map(l => <ListingRow key={l.id} l={l} ci={ci} co={co} guests={guests} />)}
+            {more && Array.from({ length: 2 }, (_, i) => <RowSkeleton key={"m" + i} />)}
           </div>
-        </div>
-        {children}
-        <div className={`rlist ${loading ? "dim" : ""}`}>
-          {loading && !res.items.length ? Array.from({ length: 6 }, (_, i) => <CardSkeleton key={i} />) :
-            res.items.map(l => <ListingCard key={l.id} l={l} ci={ci} co={co} guests={guests} />)}
-          {more && Array.from({ length: 3 }, (_, i) => <CardSkeleton key={"m" + i} />)}
-        </div>
-        {!loading && !res.items.length && <div className="empty"><b>Ничего не нашлось</b><p className="muted">{active ? "Попробуйте убрать часть фильтров." : "Здесь пока нет объявлений. Загляните позже или посмотрите соседние курорты."}</p>{active > 0 && <button className="btn ghost" onClick={reset}>Сбросить фильтры</button>}</div>}
-        <div ref={sentinel} style={{ height: 1 }} />
-        {res.page >= res.pages && res.items.length > 6 && <p className="small muted" style={{ textAlign: "center", marginTop: 20 }}>Это все варианты{f.price ? ` до ${rub(Number(f.price))}` : ""}</p>}
-      </section>
-    </div>
+          {!loading && !res.items.length && <div className="empty panel"><b>Ничего не нашлось</b><p className="muted">{active ? "Попробуйте убрать часть фильтров." : "Здесь пока нет объявлений. Загляните позже или посмотрите соседние курорты."}</p>{active > 0 && <button className="btn ghost" onClick={reset}>Сбросить фильтры</button>}</div>}
+          <div ref={sentinel} style={{ height: 1 }} />
+          {res.page >= res.pages && res.items.length > 6 && <p className="small muted" style={{ textAlign: "center", marginTop: 20 }}>Это все варианты{f.price ? ` до ${rub(Number(f.price))}` : ""}</p>}
+        </section>
+        <aside className="rside">{children}</aside>
+      </div></div>
+    </>
   );
 }

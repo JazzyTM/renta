@@ -1,6 +1,6 @@
 import { db } from "./db";
 
-type Field = { key: string; label: string; type: "text" | "textarea" | "number" | "bool" | "password" | "select"; def: unknown; hint?: string; options?: [string, string][] };
+type Field = { key: string; label: string; type: "text" | "textarea" | "number" | "bool" | "password" | "select" | "image"; def: unknown; hint?: string; options?: [string, string][] };
 type Section = { id: string; title: string; fields: Field[] };
 
 // Все настройки сайта. Админка строит формы по этому описанию.
@@ -12,8 +12,27 @@ export const SETTINGS: Section[] = [
     { key: "contactEmail", label: "Почта для связи", type: "text", def: "" },
     { key: "contactPhone", label: "Телефон поддержки", type: "text", def: "" },
     { key: "footerText", label: "Текст в подвале", type: "textarea", def: "" },
+    { key: "footerTagline", label: "Подпись под логотипом в подвале", type: "text", def: "Жильё у моря напрямую от хозяев" },
+    { key: "socialVk", label: "Группа ВКонтакте (ссылка)", type: "text", def: "" },
+    { key: "socialTelegram", label: "Канал в Telegram (ссылка)", type: "text", def: "" },
+    { key: "socialYoutube", label: "YouTube или Дзен (ссылка)", type: "text", def: "" },
     { key: "maintenance", label: "Режим обслуживания (сайт закрыт для посетителей)", type: "bool", def: false },
     { key: "maintenanceText", label: "Текст на время обслуживания", type: "text", def: "Сайт обновляется, зайдите через несколько минут." },
+  ]},
+  { id: "home", title: "Главная", fields: [
+    { key: "heroImage", label: "Фото в шапке главной", type: "image", def: "", hint: "Море или берег, горизонтальное, от 1920 px. Без фото шапка будет однотонной" },
+    { key: "featuresShow", label: "Показывать блок «Почему мы»", type: "bool", def: true },
+    { key: "feature1Title", label: "Почему мы, пункт 1", type: "text", def: "Проверенные объявления" },
+    { key: "feature1Text", label: "Текст пункта 1", type: "textarea", def: "Проверяем объявления и хозяев. Жалобы разбираем в течение дня." },
+    { key: "feature2Title", label: "Пункт 2", type: "text", def: "Без посредников и комиссий" },
+    { key: "feature2Text", label: "Текст пункта 2", type: "textarea", def: "Звоните или пишите хозяину напрямую. Мы не берём комиссию с гостей." },
+    { key: "feature3Title", label: "Пункт 3", type: "text", def: "Большой выбор" },
+    { key: "feature3Text", label: "Текст пункта 3", type: "textarea", def: "Гостевые дома, квартиры и мини-отели на курортах Чёрного и Азовского моря. Сейчас вариантов: {count}." },
+    { key: "bannerShow", label: "Показывать баннер для хозяев", type: "bool", def: true },
+    { key: "bannerImage", label: "Фото баннера для хозяев", type: "image", def: "" },
+    { key: "bannerTitle", label: "Заголовок баннера", type: "text", def: "Сдаёте жильё у моря?" },
+    { key: "bannerText", label: "Текст баннера", type: "text", def: "Разместите объявление, гости будут звонить вам напрямую." },
+    { key: "homeSeoText", label: "Текст внизу главной", type: "textarea", def: "", hint: "Можно разметку: ## заголовок, **жирный**, [ссылка](/адрес)" },
   ]},
   { id: "seo", title: "SEO и счётчики", fields: [
     { key: "seoTitle", label: "Title главной", type: "text", def: "Жильё у моря без посредников — снять посуточно" },
