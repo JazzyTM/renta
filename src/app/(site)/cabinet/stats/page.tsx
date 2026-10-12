@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { Chart } from "@/components/Chart";
 import { requireUser } from "@/lib/auth";
 import { isoDate, fmtDate } from "@/lib/format";
 
@@ -30,9 +31,8 @@ export default async function Stats({ searchParams }: { searchParams: Promise<{ 
         <div className="stat"><b>{sum("q")}</b><span>заявок</span></div>
         <div className="stat"><b>{conv}%</b><span>из просмотра в звонок или заявку</span></div>
       </div>
-      <div className="card-box stack"><b>Просмотры по дням</b>
-        <div className="bar">{series.map(x => <i key={x.d.toISOString()} style={{ height: `${(x.v / max) * 100}%` }} title={`${fmtDate(x.d)}: ${x.v} просм., ${x.p} тел., ${x.q} заявок`} />)}</div>
-        <div className="row between small muted"><span>{fmtDate(series[0].d)}</span><span>{fmtDate(series[series.length - 1].d)}</span></div>
+      <div className="card-box stack"><b>По дням</b>
+        <Chart series={["Просмотры", "Телефон", "Заявки"]} data={series.map(x => ({ label: fmtDate(x.d), values: [x.v, x.p, x.q] }))} />
       </div>
       {listings.length > 1 && <div className="tablewrap"><table className="t"><thead><tr><th>Объект</th><th>Просмотры</th><th>Телефон</th><th>Заявки</th></tr></thead><tbody>
         {listings.map(l => { const r = per.find(p => p.listingId === l.id)?._sum; return <tr key={l.id}><td>{l.title}</td><td className="num">{r?.views ?? 0}</td><td className="num">{r?.phoneViews ?? 0}</td><td className="num">{r?.requests ?? 0}</td></tr>; })}

@@ -5,6 +5,8 @@ import { ActionForm, ConfirmButton } from "./Forms";
 import { PublishButton } from "./PublishButton";
 import { PhotoManager } from "./PhotoManager";
 import { ownerPlan } from "@/lib/plan";
+import { getSettings } from "@/lib/settings";
+import { Steps } from "./Steps";
 import * as A from "@/lib/listing-actions";
 
 export async function ListingEditor({ id }: { id: string }) {
@@ -18,6 +20,18 @@ export async function ListingEditor({ id }: { id: string }) {
   const groups = new Map<string, typeof amenities>();
   for (const a of amenities) { if (!groups.has(a.group)) groups.set(a.group, []); groups.get(a.group)!.push(a); }
   const [st, stTone] = LISTING_STATUS[l.status], [md, mdTone] = MODERATION[l.moderation];
+  const [s, plan] = await Promise.all([getSettings(), ownerPlan(l.ownerId)]);
+  const wizard = l.status === "DRAFT";
+  const sv = wizard ? "Сохранить и дальше" : "Сохранить";
+  const minPh = Number(s.minPhotos) || 0, minDesc = Number(s.minDescription) || 0;
+  const checks: [string, boolean, string][] = [
+    ["Основное", l.description.trim().length >= minDesc && !!l.address, `описание от ${minDesc} знаков и адрес`],
+    ["Фото", l.photos.length >= minPh, `не меньше ${minPh} фото`],
+    ["Цены", l.prices.some(p => p.price > 0), "цена хотя бы на один месяц"],
+    ["Номера", true, "необязательно"],
+    ["Удобства", l.amenities.length > 0, "отметьте, что есть"],
+    ["Правила и контакты", !!l.contactPhone, "телефон для гостей"],
+  ];
 
   return (
     <div className="stack" style={{ gap: 22 }}>
@@ -30,8 +44,9 @@ export async function ListingEditor({ id }: { id: string }) {
         </div>
       </div>
 
+      <Steps wizard={wizard} titles={[...checks.map(c => c[0]), "Публикация"]} done={[...checks.map(c => c[1]), l.status === "PUBLISHED"]}>
       <section className="card-box stack"><h2 className="h2">Основное</h2>
-        <ActionForm action={A.saveMain.bind(null, id)}>
+        <ActionForm action={A.saveMain.bind(null, id)} submit={sv}>
           <div className="grid2">
             <div className="field"><label>Название</label><input className="input" name="title" defaultValue={l.title} required /></div>
             <div className="field"><label>Тип жилья</label><select className="input" name="type" defaultValue={l.type}>{Object.entries(LISTING_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
@@ -56,10 +71,10 @@ export async function ListingEditor({ id }: { id: string }) {
         </ActionForm></section>
 
       <section className="card-box stack"><h2 className="h2">Фото</h2>
-        <PhotoManager listingId={id} photos={l.photos.map(p => ({ id: p.id, url: p.url }))} max={(await ownerPlan(l.ownerId)).maxPhotos} /></section>
+        <PhotoManager listingId={id} photos={l.photos.map(p => ({ id: p.id, url: p.url }))} max={plan.maxPhotos} /></section>
 
       <section className="card-box stack"><h2 className="h2">Цены за ночь по месяцам, ₽</h2>
-        <ActionForm action={A.savePrices.bind(null, id)}>
+        <ActionForm action={A.savePrices.bind(null, id)} submit={sv}>
           <div className="grid3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))" }}>
             {MONTHS.map((m, i) => <div className="field" key={m}><label>{m}</label><input className="input" type="number" min={0} step={100} name={`m${i + 1}`} defaultValue={price(i + 1)} /></div>)}
           </div><span className="hint">Пустой месяц означает, что в этот месяц объект не сдаётся.</span>
@@ -77,13 +92,13 @@ export async function ListingEditor({ id }: { id: string }) {
         </form></section>
 
       <section className="card-box stack"><h2 className="h2">Удобства и услуги</h2>
-        <ActionForm action={A.saveAmenities.bind(null, id)}>
+        <ActionForm action={A.saveAmenities.bind(null, id)} submit={sv}>
           <div className="amenPick">{[...groups].map(([g, list]) => <fieldset key={g}><legend>{g}</legend>
             {list.map(a => <label className="check" key={a.id}><input type="checkbox" name="a" value={a.id} defaultChecked={has.has(a.id)} /> {a.name}</label>)}</fieldset>)}</div>
         </ActionForm></section>
 
       <section className="card-box stack"><h2 className="h2">Правила, предоплата и контакты</h2>
-        <ActionForm action={A.saveRules.bind(null, id)}>
+        <ActionForm action={A.saveRules.bind(null, id)} submit={sv}>
           <div className="grid3">
             <div className="field"><label>Предоплата</label><select className="input" name="prepayType" defaultValue={l.prepayType}>{Object.entries(PREPAY).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
             <div className="field"><label>Процент предоплаты</label><input className="input" name="prepayPercent" type="number" min={0} max={100} defaultValue={l.prepayPercent} /></div>
@@ -105,6 +120,13 @@ export async function ListingEditor({ id }: { id: string }) {
             <div className="field"><label>Telegram</label><input className="input" name="telegram" defaultValue={l.telegram ?? ""} placeholder="@username" /></div>
           </div>
         </ActionForm></section>
+
+      <section className="card-box stack"><h2 className="h2">Публикация</h2>
+        <ul className="checklist">{checks.map(([t, ok, hint]) => <li key={t} className={ok ? "ok" : ""}><span>{ok ? "✓" : "○"}</span><b>{t}</b><span className="small muted">{hint}</span></li>)}</ul>
+        {l.status === "PUBLISHED" ? <p>Объявление опубликовано. <a href={`/obj/${l.number}`} target="_blank">Открыть на сайте</a></p>
+          : <><p className="muted">Когда всё готово, нажмите «Опубликовать». {s.postModeration ? "Объявление появится сразу, модератор проверит его позже." : "Объявление появится после проверки модератором."}</p><PublishButton id={id} /></>}
+      </section>
+      </Steps>
 
       {l.status !== "ARCHIVED" && <form action={A.setStatus.bind(null, id, "ARCHIVED")}><ConfirmButton message="Убрать объявление в архив? Его не будет видно на сайте.">Убрать в архив</ConfirmButton></form>}
     </div>

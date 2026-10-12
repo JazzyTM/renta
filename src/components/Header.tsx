@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useFavs } from "./Fav";
 import { AuthModal } from "./AuthModal";
+import { LiveNotify } from "./LiveNotify";
 
 type U = { name: string; email: string | null; staff: boolean } | null;
 type Reg = { name: string; resorts: { name: string; slug: string }[] };
@@ -51,6 +52,7 @@ export function Header({ user, siteName, social, regions }: { user: U; siteName:
       </div>
       <nav>
         <Link className="ibtn" href="/favorites" aria-label="Избранное" title="Избранное"><Ico d={HEART} />{favs.length > 0 && <span className="cnt">{favs.length}</span>}</Link>
+        {user && <LiveNotify />}
         {user ? (
           <div className="umenu" ref={ref}>
             <button type="button" className="avatar" aria-haspopup="menu" aria-expanded={menu} onClick={() => setMenu(m => !m)}>{initial}</button>

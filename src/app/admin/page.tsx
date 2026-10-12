@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Chart } from "@/components/Chart";
 import { db } from "@/lib/db";
 import { requireStaff } from "@/lib/auth";
 import { expirePromotions } from "@/lib/payments";
@@ -51,7 +52,7 @@ export default async function Dashboard() {
       </div>
       <div className="grid2">
         <div className="card-box stack"><b>Заявки за 30 дней</b>
-          <div className="bar">{series.map(x => <i key={x.d.toISOString()} style={{ height: `${(x.n / max) * 100}%` }} title={`${fmtDate(x.d)}: ${x.n}`} />)}</div></div>
+          <Chart series={["Заявки"]} data={series.map(x => ({ label: fmtDate(x.d), values: [x.n] }))} /></div>
         <div className="card-box stack"><b>Курорты с наибольшим числом объявлений</b>
           <div className="lines">{topResorts.map(r => <div className="l" key={r.slug}><Link href={`/admin/listings?resort=${r.slug}`}>{r.name}</Link><span className="num">{r._count.listings}</span></div>)}</div></div>
       </div>

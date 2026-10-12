@@ -902,3 +902,38 @@ footer.foot { border-top: 1px solid var(--line) }
 main.gray .chip { background: #fff } main.gray .chip:hover { background: var(--gray-2) } main.gray .chip.on { background: #111 }
 main .rtop .chip, main .modal .chip { background: var(--gray) } main .rtop .chip:hover, main .modal .chip:hover { background: var(--gray-2) } main .rtop .chip.on, main .modal .chip.on { background: #111 }
 .fav.big { white-space: nowrap; flex: none }
+
+/* мастер объявления */
+.steps { display: grid; gap: 14px; scroll-margin-top: 90px }
+.sprog { display: flex; align-items: center; gap: 12px }
+.sbar2 { flex: 1; height: 6px; border-radius: 3px; background: var(--gray-2); overflow: hidden }
+.sbar2 i { display: block; height: 100%; background: var(--accent); transition: width .3s }
+.snav { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px }
+.snav::-webkit-scrollbar { display: none }
+.snav button { flex: none; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px 8px 8px; border-radius: 999px; background: #fff; border: 1px solid var(--line); font-size: 14px; color: var(--ink) }
+.snav .sn { width: 24px; height: 24px; border-radius: 50%; background: var(--gray); display: grid; place-items: center; font-size: 12px; font-weight: 700 }
+.snav button.ok .sn { background: #E3F4E6; color: #2F8F3E }
+.snav button.on { border-color: #111 }
+.snav button.on .sn { background: var(--accent); color: #fff }
+.sfoot { display: flex; justify-content: space-between; gap: 10px }
+.checklist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px }
+.checklist li { display: flex; gap: 10px; align-items: baseline }
+.checklist li > span:first-child { width: 18px; color: #999 }
+.checklist li.ok > span:first-child { color: #2F8F3E }
+
+/* графики */
+.chart { display: grid; gap: 10px }
+.chart-h { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap }
+.chart-h .chip { padding: 6px 12px; font-size: 13px }
+.chart-b { position: relative; padding-left: 40px }
+.chart-grid { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none }
+.chart-grid span { border-top: 1px dashed var(--line); position: relative; height: 0 }
+.chart-grid i { position: absolute; left: 0; top: -8px; font-style: normal; font-size: 11px; color: #8A8E95 }
+.chart-bars { position: relative; height: 100%; display: flex; align-items: flex-end; gap: 2px }
+.cb { position: relative; flex: 1; height: 100%; display: flex; align-items: flex-end; cursor: default }
+.cb i { display: block; width: 100%; min-height: 2px; background: var(--accent); border-radius: 3px 3px 0 0; opacity: .85 }
+.cb.on i { opacity: 1; background: var(--accent-hover) }
+.cb .tip { position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); z-index: 5; background: #111; color: #fff; border-radius: 8px; padding: 8px 10px; font-size: 12.5px; display: grid; gap: 2px; white-space: nowrap; pointer-events: none }
+.cb .tip.l { left: auto; right: 0; transform: none }
+.cb .tip .cur { color: #FFB59C }
+.cb .tip b { font-weight: 700 }
