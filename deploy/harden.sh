@@ -3,7 +3,7 @@
 # Запускается при установке и один раз при обновлении. Вручную: sudo /opt/renta/deploy/harden.sh
 set -Eeuo pipefail
 export DEBIAN_FRONTEND=noninteractive
-apt-get install -yq ufw fail2ban unattended-upgrades >/dev/null
+apt-get install -yq ufw fail2ban unattended-upgrades fonts-dejavu-core >/dev/null
 
 # Порт SSH берём из настроек sshd, чтобы не закрыть себе доступ
 SSH_PORTS=$(sshd -T 2>/dev/null | awk '/^port /{print $2}' | sort -u)

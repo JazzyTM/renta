@@ -32,7 +32,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { group: "Справочники" },
     c("regions"), c("resorts"), c("beaches"), c("amenities"), c("stopwords"),
     { group: "Контент" },
-    c("pages"), c("articles"), c("banners"),
+    c("pages"), c("articles"), c("banners"), c("seopages"),
     ...(admin ? [
       { group: "Деньги" },
       { href: "/admin/orders", label: "Заказы", badge: orders },

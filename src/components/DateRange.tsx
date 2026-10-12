@@ -49,7 +49,7 @@ export function DateRange({ ci, co, onChange, alignRight }: { ci: string; co: st
 
   const btn = (k: "ci" | "co", t: string) => (
     <div className="field"><span className="flabel">{t}</span>
-      <button type="button" className={`input dbtn ${open === k ? "on" : ""} ${(k === "ci" ? ci : co) ? "" : "empty"}`} onClick={() => setOpen(k === "co" && !ci ? "ci" : k)}>
+      <button type="button" className={`input dbtn ${open === k ? "on" : ""} ${(k === "ci" ? ci : co) ? "" : "unset"}`} onClick={() => setOpen(k === "co" && !ci ? "ci" : k)}>
         {(k === "ci" ? ci : co) ? label(k === "ci" ? ci : co) : "Выберите дату"}
       </button></div>
   );

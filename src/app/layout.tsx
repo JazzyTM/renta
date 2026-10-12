@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import { getSettings } from "@/lib/settings";
 import "./globals.css";
+import { Toaster } from "@/components/Toaster";
 
 const manrope = Manrope({ subsets: ["latin", "cyrillic"], weight: ["400", "500", "600", "700", "800"], variable: "--font" });
 
@@ -18,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" className={manrope.variable}>
-      <body style={{ fontFamily: "var(--font), var(--f)" }}>{children}</body>
+      <body style={{ fontFamily: "var(--font), var(--f)" }}>{children}<Toaster /></body>
     </html>
   );
 }

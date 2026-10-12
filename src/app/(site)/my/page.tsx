@@ -1,3 +1,4 @@
+import { toCard } from "@/lib/card";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
@@ -21,7 +22,7 @@ export default async function My() {
           {bookings.map(b => <tr key={b.id}><td><Link href={`/b/${b.number}`}>{b.number}</Link></td><td>{b.listing.title}</td><td>{fmtRange(b.checkIn, b.checkOut)}</td><td><span className={`tag ${BOOKING_STATUS[b.status][1]}`}>{BOOKING_STATUS[b.status][0]}</span></td></tr>)}
         </tbody></table></div> : <p className="muted">Заявок пока нет.</p>}</section>
       <section className="stack"><h2 className="h2">Избранное</h2>
-        {favs.length ? <div className="cards">{favs.map(f => <ListingCard key={f.listingId} l={f.listing} />)}</div> : <p className="muted">Пока пусто.</p>}</section>
+        {favs.length ? <div className="cards">{favs.map(f => <ListingCard key={f.listingId} l={toCard(f.listing)} />)}</div> : <p className="muted">Пока пусто.</p>}</section>
     </main>
   );
 }

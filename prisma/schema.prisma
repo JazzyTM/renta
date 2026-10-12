@@ -108,6 +108,7 @@ model Resort {
   id              String    @id @default(cuid())
   regionId        String
   name            String
+  namePrep        String? // «в Анапе»: как писать в заголовках; пусто — подбирается автоматически
   slug            String    @unique
   lat             Float?
   lng             Float?
@@ -596,6 +597,21 @@ model Banner {
   startsAt  DateTime?
   endsAt    DateTime?
   sort      Int      @default(0)
+}
+
+// Тексты SEO-подборок «курорт + фильтр». resortId пустой — шаблон для всех курортов
+model SeoPage {
+  id             String   @id @default(cuid())
+  resortId       String?
+  filter         String
+  h1             String?
+  seoTitle       String?
+  seoDescription String?
+  text           String   @default("")
+  isActive       Boolean  @default(true)
+  updatedAt      DateTime @updatedAt
+
+  @@unique([resortId, filter])
 }
 
 model Redirect {

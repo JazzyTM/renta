@@ -18,7 +18,9 @@ export const SETTINGS: Section[] = [
   { id: "seo", title: "SEO и счётчики", fields: [
     { key: "seoTitle", label: "Title главной", type: "text", def: "Жильё у моря без посредников — снять посуточно" },
     { key: "seoDescription", label: "Description главной", type: "textarea", def: "Гостевые дома, квартиры и отели у моря напрямую от хозяев." },
-    { key: "resortTitleTpl", label: "Шаблон title курорта", type: "text", def: "Снять жильё в {resort} у моря посуточно", hint: "{resort} заменится на название" },
+    { key: "resortTitleTpl", label: "Шаблон title курорта", type: "text", def: "Снять жильё {in} у моря посуточно, без посредников", hint: "{in} заменится на «в Анапе», {resort} на название" },
+    { key: "collectionTitleTpl", label: "Шаблон title подборки", type: "text", def: "{h1}: цены, фото, телефоны хозяев", hint: "{h1} заменится на заголовок подборки" },
+    { key: "seoMinListings", label: "Подборка попадает в поиск, если в ней объявлений не меньше", type: "number", def: 2 },
     { key: "metrikaId", label: "Номер счётчика Яндекс Метрики", type: "text", def: "" },
     { key: "yandexVerification", label: "Код подтверждения Яндекс Вебмастера", type: "text", def: "" },
     { key: "googleVerification", label: "Код подтверждения Google", type: "text", def: "" },
@@ -27,6 +29,11 @@ export const SETTINGS: Section[] = [
   { id: "listings", title: "Объявления и модерация", fields: [
     { key: "postModeration", label: "Публиковать сразу, проверять после (постмодерация)", type: "bool", def: true },
     { key: "maxPhotos", label: "Максимум фото в объявлении", type: "number", def: 30 },
+    { key: "photoMaxSize", label: "Фото уменьшаются до, px по длинной стороне", type: "number", def: 2000 },
+    { key: "photoQuality", label: "Качество сжатия фото (60–95)", type: "number", def: 82 },
+    { key: "watermark", label: "Ставить водяной знак на фото", type: "bool", def: false, hint: "Действует для новых фото" },
+    { key: "watermarkText", label: "Текст водяного знака", type: "text", def: "", hint: "Пусто — название сайта" },
+    { key: "watermarkOpacity", label: "Прозрачность знака, % видимости", type: "number", def: 55 },
     { key: "minPhotos", label: "Минимум фото для публикации", type: "number", def: 3 },
     { key: "minDescription", label: "Минимальная длина описания", type: "number", def: 100 },
     { key: "maxListingsFree", label: "Объявлений на владельца без тарифа", type: "number", def: 3 },

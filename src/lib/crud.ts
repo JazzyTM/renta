@@ -29,6 +29,7 @@ export const CRUD: Record<string, CrudEntity> = {
   ]},
   resorts: { title: "Курорты", one: "курорт", model: "resort", columns: ["name", "slug", "regionId", "isPopular", "isActive"], search: ["name", "slug"], orderBy: [{ region: { sort: "asc" } }, { sort: "asc" }], publicUrl: r => `/kurort/${r.slug}`, fields: [
     { key: "name", label: "Название", type: "text", required: true },
+    { key: "namePrep", label: "Где (для заголовков)", type: "text", hint: "Например: в Анапе, в Лазаревском. Пусто — подставится автоматически" },
     { key: "slug", label: "Адрес (латиницей)", type: "text", required: true, hint: "Страница курорта: /kurort/адрес" },
     { key: "regionId", label: "Регион", type: "select", options: regions, required: true },
     { key: "sort", label: "Порядок", type: "int", def: 0 },
@@ -38,6 +39,15 @@ export const CRUD: Record<string, CrudEntity> = {
     { key: "coverUrl", label: "Ссылка на обложку", type: "text" },
     ...seo,
     { key: "seoText", label: "SEO-текст внизу страницы курорта", type: "rich" },
+  ]},
+  seopages: { title: "SEO-подборки", one: "текст подборки", model: "seoPage", columns: ["filter", "resortId", "h1", "isActive"], orderBy: [{ filter: "asc" }], fields: [
+    { key: "filter", label: "Подборка", type: "select", required: true, options: async () => (await import("./collections")).COLLECTIONS.map(c => [c.slug, `${c.title} (/${c.slug})`] as [string, string]) },
+    { key: "resortId", label: "Курорт", type: "select", options: async () => [["", "Все курорты (шаблон)"], ...(await resorts()).slice(1)] as [string, string][], hint: "Текст для конкретного курорта важнее шаблона" },
+    { key: "h1", label: "Заголовок H1", type: "text", hint: "{in} — «в Анапе», {resort} — название. Пусто — стандартный" },
+    { key: "seoTitle", label: "SEO title", type: "text" },
+    { key: "seoDescription", label: "SEO description", type: "textarea" },
+    { key: "text", label: "Текст под списком", type: "rich", hint: "Можно {in} и {resort}" },
+    { key: "isActive", label: "Включён", type: "bool", def: true },
   ]},
   amenities: { title: "Удобства и услуги", one: "удобство", model: "amenity", columns: ["name", "group", "code", "isFilter"], search: ["name", "group", "code"], orderBy: [{ sort: "asc" }], fields: [
     { key: "name", label: "Название", type: "text", required: true },
@@ -116,7 +126,7 @@ export async function fieldOptions(f: CrudField) {
   return typeof f.options === "function" ? await f.options() : f.options ?? [];
 }
 
-const NULLABLE = new Set(["seoTitle", "seoDescription", "seoText", "coverUrl", "resortId", "link"]);
+const NULLABLE = new Set(["seoTitle", "seoDescription", "seoText", "coverUrl", "resortId", "link", "namePrep", "h1"]);
 
 // FormData → данные для Prisma
 export function parseFields(fields: CrudField[], fd: FormData) {

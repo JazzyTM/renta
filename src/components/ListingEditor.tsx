@@ -3,6 +3,8 @@ import { LISTING_TYPES, BEACH_TYPES, PREPAY, LISTING_STATUS, MODERATION } from "
 import { MONTHS } from "@/lib/format";
 import { ActionForm, ConfirmButton } from "./Forms";
 import { PublishButton } from "./PublishButton";
+import { PhotoManager } from "./PhotoManager";
+import { ownerPlan } from "@/lib/plan";
 import * as A from "@/lib/listing-actions";
 
 export async function ListingEditor({ id }: { id: string }) {
@@ -54,18 +56,7 @@ export async function ListingEditor({ id }: { id: string }) {
         </ActionForm></section>
 
       <section className="card-box stack"><h2 className="h2">Фото</h2>
-        <div className="thumbs">{l.photos.map((p, i) => (
-          <div className="th" key={p.id}><img src={p.url} alt="" />
-            <div style={{ position: "absolute", left: 4, bottom: 4, display: "flex", gap: 4 }}>
-              {i > 0 && <form action={A.movePhoto.bind(null, id, p.id, -1)}><button className="btn ghost sm" aria-label="Левее">←</button></form>}
-              {i < l.photos.length - 1 && <form action={A.movePhoto.bind(null, id, p.id, 1)}><button className="btn ghost sm" aria-label="Правее">→</button></form>}
-            </div>
-            <form action={A.deletePhoto.bind(null, id, p.id)}><button className="btn danger sm" aria-label="Удалить">×</button></form>
-          </div>))}</div>
-        <ActionForm action={A.uploadPhotos.bind(null, id)} submit="Загрузить">
-          <input className="input" type="file" name="photos" accept="image/jpeg,image/png,image/webp" multiple />
-          <span className="hint">Первое фото станет обложкой. JPG, PNG или WebP до 12 МБ.</span>
-        </ActionForm></section>
+        <PhotoManager listingId={id} photos={l.photos.map(p => ({ id: p.id, url: p.url }))} max={(await ownerPlan(l.ownerId)).maxPhotos} /></section>
 
       <section className="card-box stack"><h2 className="h2">Цены за ночь по месяцам, ₽</h2>
         <ActionForm action={A.savePrices.bind(null, id)}>

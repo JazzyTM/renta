@@ -1,3 +1,4 @@
+import { toCard } from "@/lib/card";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
@@ -26,7 +27,7 @@ export default async function Home() {
       {banners.map(b => <div key={b.id} className="wrap" style={{ marginTop: 20 }}><div className="notice"><b>{b.title}</b> {b.text} {b.link && <Link href={b.link}>Подробнее</Link>}</div></div>)}
       {featured.length > 0 && <section className="section"><div className="wrap">
         <div className="row between" style={{ marginBottom: 18 }}><h2 className="h2">Популярное этим летом</h2><Link className="link" href="/search">Смотреть все</Link></div>
-        <div className="cards">{featured.map(l => <ListingCard key={l.id} l={l} />)}</div>
+        <div className="cards">{featured.map(l => <ListingCard key={l.id} l={toCard(l)} />)}</div>
       </div></section>}
       <section className="section"><div className="wrap">
         <h2 className="h2" style={{ marginBottom: 18 }}>Все курорты</h2>

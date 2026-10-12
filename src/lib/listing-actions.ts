@@ -132,6 +132,18 @@ export async function deletePhoto(id: string, photoId: string) {
   if (p) { await db.listingPhoto.delete({ where: { id: p.id } }); await removeImage(p.url); }
   paths(id);
 }
+export async function reorderPhotos(id: string, ids: string[]) {
+  const { l } = await canEdit(id);
+  const own = new Set(l.photos.map(p => p.id));
+  await db.$transaction(ids.filter(x => own.has(x)).map((pid, k) => db.listingPhoto.update({ where: { id: pid }, data: { sort: k } })));
+  paths(id);
+}
+export async function captionPhoto(id: string, photoId: string, caption: string) {
+  await canEdit(id);
+  await db.listingPhoto.updateMany({ where: { id: photoId, listingId: id }, data: { caption: caption.trim().slice(0, 120) || null } });
+  paths(id);
+}
+
 export async function movePhoto(id: string, photoId: string, dir: number) {
   const { l } = await canEdit(id);
   const list = [...l.photos].sort((a, b) => a.sort - b.sort);

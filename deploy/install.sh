@@ -26,7 +26,7 @@ say() { printf '\n\033[1;33m== %s\033[0m\n' "$*"; }
 say "Пакеты системы"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -q
-apt-get install -yq curl git nginx postgresql postgresql-contrib ca-certificates gnupg openssl rsync
+apt-get install -yq curl git nginx postgresql postgresql-contrib ca-certificates gnupg openssl rsync fonts-dejavu-core
 
 if ! command -v node >/dev/null || [ "$(node -v | cut -d. -f1 | tr -d v)" -lt 22 ]; then
   say "Node.js 22"

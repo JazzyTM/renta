@@ -1,37 +1,33 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { plural } from "@/lib/format";
-import { resortOptions, searchListings, parseFilters } from "@/lib/queries";
-import type { Prisma } from "@/generated/prisma/client";
+import { resortOptions, searchListings, parseFilters, scopeWhere, priceHistogram } from "@/lib/queries";
+import { toCard } from "@/lib/card";
 import { SearchForm } from "./SearchForm";
-import { ListingCard } from "./ListingCard";
 import { RichText } from "./RichText";
-import { Filters } from "./Filters";
+import { LiveResults } from "./LiveResults";
 
-export async function ResultsPage({ title, intro, base, action, sp, resortSlug }: { title: string; intro?: string | null; base: Prisma.ListingWhereInput; action: string; sp: Record<string, any>; resortSlug?: string }) {
+export async function ResultsPage({ title, intro, scope, action, sp, collections, active }: {
+  title: string; intro?: string | null; scope: { resort?: string; filter?: string }; action: string; sp: Record<string, any>;
+  collections?: { slug: string; title: string; count: number }[]; active?: string;
+}) {
   const f = parseFilters(sp);
-  const [resorts, amenities, res] = await Promise.all([
-    resortOptions(), db.amenity.findMany({ where: { isFilter: true }, orderBy: { sort: "asc" } }), searchListings(base, f),
+  const base = (await scopeWhere(scope))!;
+  const [resorts, amenities, res, hist] = await Promise.all([
+    resortOptions(), db.amenity.findMany({ where: { isFilter: true }, orderBy: { sort: "asc" }, select: { code: true, name: true } }), searchListings(base, f), priceHistogram(base),
   ]);
-  const link = (patch: Record<string, string>) => { const p = new URLSearchParams(); for (const [k, v] of Object.entries(sp)) for (const x of Array.isArray(v) ? v : [v]) if (x) p.append(k, x); for (const [k, v] of Object.entries(patch)) p.set(k, v); return `${action}?${p}`; };
+  const initial = { items: res.items.map(toCard), total: res.total, page: res.page, pages: res.pages, hist };
   return (
     <main>
-      <div style={{ background: "var(--surface-2)", paddingBlock: 14 }}><div className="wrap"><SearchForm resorts={resorts} init={{ resort: resortSlug, ci: f.ci, co: f.co, adults: f.adults, children: f.children }} /></div></div>
-      <div className="wrap"><div className="results">
-        <Filters action={action} sp={sp} amenities={amenities} />
-        <section>
-          <div className="row between" style={{ marginBottom: 14, alignItems: "flex-end" }}>
-            <div><h1 className="h2">{title}</h1><p className="small muted">{res.total} {plural(res.total, ["вариант", "варианта", "вариантов"])}</p></div>
-            <div className="row small">{[["rec", "Рекомендуем"], ["price", "Дешевле"], ["sea", "Ближе к морю"], ["rating", "Рейтинг"], ["new", "Новые"]].map(([k, t]) =>
-              <Link key={k} className={`chip ${f.sort === k ? "on" : ""}`} href={link({ sort: k, page: "1" })}>{t}</Link>)}</div>
-          </div>
-          {res.items.length ? <div className="rlist">{res.items.map(l => <ListingCard key={l.id} l={l} ci={f.ci} co={f.co} guests={f.guests} />)}</div>
-            : <div className="card-box">По этим условиям ничего не нашлось. Попробуйте убрать часть фильтров.</div>}
-          {res.pages > 1 && <nav className="pager" aria-label="Страницы">{Array.from({ length: res.pages }, (_, i) => i + 1).map(n =>
-            <Link key={n} className={`chip ${n === res.page ? "on" : ""}`} href={link({ page: String(n) })}>{n}</Link>)}</nav>}
-          {intro && <article className="card-box" style={{ marginTop: 28 }}><RichText text={intro} /></article>}
-        </section>
-      </div></div>
+      <div className="sbar"><div className="wrap"><SearchForm resorts={resorts} init={{ resort: scope.resort, ci: f.ci, co: f.co, adults: f.adults, children: f.children }} compact /></div></div>
+      <div className="wrap">
+        <LiveResults title={title} scope={scope} initial={initial} sp={sp} amenities={amenities} action={action} ci={f.ci} co={f.co} guests={f.guests ?? 2}>
+          {collections && collections.some(c => c.count > 0) && <nav className="colls" aria-label="Подборки">
+            {active && <Link className="chip" href={`/kurort/${scope.resort}`}>Все варианты</Link>}
+            {collections.filter(c => c.count > 0).map(c => <Link key={c.slug} className={`chip ${active === c.slug ? "on" : ""}`} href={`/kurort/${scope.resort}/${c.slug}`}>{c.title} <span className="muted">{c.count}</span></Link>)}
+          </nav>}
+        </LiveResults>
+        {intro && <article className="card-box" style={{ marginBottom: 48 }}><RichText text={intro} /></article>}
+      </div>
     </main>
   );
 }
