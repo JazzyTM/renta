@@ -1,4 +1,5 @@
 "use client";
+import { Honeypot } from "./Honeypot";
 import { useActionState, useState } from "react";
 import type { FormState } from "@/lib/form";
 import { complain } from "@/app/(site)/obj/[number]/actions";
@@ -11,7 +12,7 @@ export function ComplaintForm({ listingId }: { listingId: string }) {
   if (state?.ok) return <p className="small muted">Спасибо, жалоба отправлена модераторам.</p>;
   if (!open) return <button className="link small" style={{ justifySelf: "start" }} onClick={() => setOpen(true)}>Пожаловаться на объявление</button>;
   return (
-    <form action={action} className="card-box stack">
+    <form action={action} className="card-box stack"><Honeypot />
       <input type="hidden" name="listingId" value={listingId} />
       <div className="field"><label htmlFor="c-r">Причина</label><select className="input" id="c-r" name="reason">{REASONS.map(r => <option key={r}>{r}</option>)}</select></div>
       <div className="field"><label htmlFor="c-t">Подробности</label><textarea className="input" id="c-t" name="text" /></div>

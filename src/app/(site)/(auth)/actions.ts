@@ -7,13 +7,25 @@ import { checkPassword, consumeToken, createSession, createToken, hashPassword, 
 import { getSettings } from "@/lib/settings";
 import { sendTemplate } from "@/lib/mail";
 import { audit } from "@/lib/audit";
+import { limit, isBot, TOO_MANY } from "@/lib/guard";
+
+const failed = new Map<string, number[]>();
+const isStaffRole = (r: string) => r === "ADMIN" || r === "MODERATOR";
 
 const safeNext = (n: unknown) => (typeof n === "string" && n.startsWith("/") && !n.startsWith("//") ? n : "/");
 
 export async function login(_: unknown, fd: FormData): Promise<FormState> {
   const email = String(fd.get("email") || "").trim().toLowerCase(), password = String(fd.get("password") || "");
+  if (!(await limit("login", 20, 900))) return { error: TOO_MANY };
+  // Не больше 8 неверных паролей к одной почте за 15 минут
+  if ((failed.get(email) ?? []).filter(t => t > Date.now() - 900_000).length >= 8) return { error: "Слишком много неверных попыток для этой почты. Подождите 15 минут или восстановите пароль" };
   const u = await db.user.findUnique({ where: { email } });
-  if (!u?.passwordHash || !(await checkPassword(password, u.passwordHash))) return { error: "Неверная почта или пароль" };
+  if (!u?.passwordHash || !(await checkPassword(password, u.passwordHash))) {
+    failed.set(email, [...(failed.get(email) ?? []).filter(t => t > Date.now() - 900_000), Date.now()]);
+    if (u && isStaffRole(u.role)) await audit(u.id, "login-failed", "User", u.id);
+    return { error: "Неверная почта или пароль" };
+  }
+  failed.delete(email);
   if (u.status === "BLOCKED") return { error: "Аккаунт заблокирован" + (u.blockReason ? `: ${u.blockReason}` : "") };
   const s = await getSettings();
   if (s.requireEmailVerify && !u.emailVerified) return { error: "Подтвердите почту: ссылка в письме после регистрации", resend: email };
@@ -31,6 +43,8 @@ const Reg = z.object({
 export async function register(_: unknown, fd: FormData): Promise<FormState> {
   const s = await getSettings();
   if (!s.registrationOpen) return { error: "Регистрация временно закрыта" };
+  if (isBot(fd)) return { ok: "Мы отправили письмо со ссылкой для подтверждения почты" };
+  if (!(await limit("register", 5, 3600))) return { error: TOO_MANY };
   const p = Reg.safeParse(Object.fromEntries(fd));
   if (!p.success) return { error: p.error.issues[0].message };
   if (await db.user.findUnique({ where: { email: p.data.email } })) return { error: "Эта почта уже зарегистрирована. Войдите или восстановите пароль" };
@@ -50,6 +64,7 @@ async function sendVerify(userId: string, email: string, name: string) {
 }
 
 export async function resendVerify(email: string) {
+  if (!(await limit("resend", 5, 3600, email))) return { ok: true };
   const u = await db.user.findUnique({ where: { email } });
   if (u && !u.emailVerified) await sendVerify(u.id, u.email!, u.name);
   return { ok: true };
@@ -65,6 +80,7 @@ export async function verifyEmail(t: string) {
 
 export async function forgot(_: unknown, fd: FormData): Promise<FormState> {
   const email = String(fd.get("email") || "").trim().toLowerCase();
+  if (!(await limit("forgot", 5, 3600, email))) return { error: TOO_MANY };
   const u = await db.user.findUnique({ where: { email } });
   if (u) { const t = await createToken(u.id, "PASSWORD_RESET", 2); await sendTemplate(email, "password_reset", { link: `${process.env.APP_URL}/reset?t=${t}` }); }
   return { ok: "Если такая почта есть, мы отправили на неё ссылку" };
@@ -72,6 +88,7 @@ export async function forgot(_: unknown, fd: FormData): Promise<FormState> {
 
 export async function reset(_: unknown, fd: FormData): Promise<FormState> {
   const pw = String(fd.get("password") || "");
+  if (!(await limit("reset", 10, 3600))) return { error: TOO_MANY };
   if (pw.length < 8) return { error: "Пароль не короче 8 символов" };
   const userId = await consumeToken(String(fd.get("t") || ""), "PASSWORD_RESET");
   if (!userId) return { error: "Ссылка устарела. Запросите новую" };

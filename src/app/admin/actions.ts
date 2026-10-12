@@ -188,6 +188,7 @@ export async function setPassword(userId: string, _: unknown, fd: FormData): Pro
   const p = s(fd, "password", 200);
   if (p.length < 8) return { error: "Не короче 8 символов" };
   await db.user.update({ where: { id: userId }, data: { passwordHash: await hashPassword(p) } });
+  await db.session.deleteMany({ where: { userId } });
   await audit(u.id, "set-password", "User", userId);
   return { ok: "Пароль задан" };
 }

@@ -9,6 +9,7 @@ import { quote } from "@/lib/pricing";
 import { parseDate, fmtRange } from "@/lib/format";
 import { sign } from "@/lib/sign";
 import { notifyEmail } from "@/lib/notify";
+import { limit, isBot, TOO_MANY } from "@/lib/guard";
 
 const today = () => new Date(new Date().toISOString().slice(0, 10) + "T00:00:00Z");
 
@@ -16,6 +17,7 @@ export async function revealPhone(listingId: string) {
   const s = await getSettings();
   const u = await getUser();
   if (!s.showPhone) return { error: "Телефон скрыт, отправьте заявку" };
+  if (!(await limit("phone", 60, 3600))) return { error: TOO_MANY };
   if (s.phoneNeedsLogin && !u) return { error: "Войдите, чтобы увидеть телефон" };
   const l = await db.listing.update({ where: { id: listingId }, data: { phoneViews: { increment: 1 } }, select: { contactPhone: true, contactName: true, whatsapp: true, telegram: true } });
   const d = today();
@@ -35,6 +37,8 @@ export async function createBooking(_: unknown, fd: FormData): Promise<FormState
   const u = await getUser();
   if (!s.bookingRequests) return { error: "Заявки сейчас не принимаются, позвоните хозяину" };
   if (s.guestNeedsLogin && !u) return { error: "Войдите, чтобы отправить заявку" };
+  if (isBot(fd)) return { error: "Не получилось отправить" };
+  if (!(await limit("booking", 10, 3600))) return { error: TOO_MANY };
   const p = Req.safeParse(Object.fromEntries(fd));
   if (!p.success) return { error: p.error.issues[0].message };
   const v = p.data;
@@ -70,6 +74,8 @@ export async function complain(_: unknown, fd: FormData): Promise<FormState> {
   const u = await getUser();
   const reason = String(fd.get("reason") || "").slice(0, 100), text = String(fd.get("text") || "").slice(0, 2000);
   if (!reason) return { error: "Выберите причину" };
+  if (isBot(fd)) return { ok: "sent" };
+  if (!(await limit("complaint", 5, 3600))) return { error: TOO_MANY };
   await db.complaint.create({ data: { listingId: String(fd.get("listingId")), authorId: u?.id, email: u?.email ?? (String(fd.get("email") || "") || null), reason, text } });
   return { ok: "sent" };
 }

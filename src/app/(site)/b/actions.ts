@@ -8,10 +8,12 @@ import { sign } from "@/lib/sign";
 import { getSettings } from "@/lib/settings";
 import { recomputeRating } from "@/lib/reviews";
 import type { FormState } from "@/lib/form";
+import { limit } from "@/lib/guard";
 
 export async function postMessage(number: number, k: string | null, fd: FormData) {
   const text = String(fd.get("text") || "").trim().slice(0, 3000);
   if (!text) return;
+  if (!(await limit("message", 60, 3600))) return;
   const a = await bookingAccess(number, k);
   if (!a || a.role === "staff") return;
   await db.message.create({ data: { bookingId: a.b.id, text, fromOwner: a.role === "owner", authorId: a.user?.id } });

@@ -106,6 +106,9 @@ nginx -t && systemctl reload nginx
 
 if [ -n "$DOMAIN" ]; then "$APP/deploy/set-domain.sh" "$DOMAIN" "$EMAIL"; fi
 
+say "Защита сервера"
+"$APP/deploy/harden.sh" || echo "Защиту настроить не удалось, запустите позже: sudo $APP/deploy/harden.sh"
+
 say "Проверка"
 for i in $(seq 1 30); do curl -fs http://127.0.0.1:3000/api/health >/dev/null && break; sleep 2; done
 curl -fs http://127.0.0.1:3000/api/health >/dev/null && echo "Сайт работает" || { echo "Сайт не ответил. Журнал: journalctl -u renta -n 100"; exit 1; }

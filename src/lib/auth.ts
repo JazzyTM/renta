@@ -18,7 +18,7 @@ export async function createSession(userId: string) {
   const token = randomBytes(32).toString("base64url");
   const h = await headers();
   await db.session.create({
-    data: { id: sha(token), userId, expiresAt: new Date(Date.now() + DAYS * 86400000), userAgent: h.get("user-agent")?.slice(0, 300), ip: h.get("x-forwarded-for")?.split(",")[0] ?? null },
+    data: { id: sha(token), userId, expiresAt: new Date(Date.now() + DAYS * 86400000), userAgent: h.get("user-agent")?.slice(0, 300), ip: h.get("x-forwarded-for")?.split(",").pop()?.trim() ?? null },
   });
   await db.user.update({ where: { id: userId }, data: { lastLoginAt: new Date() } });
   (await cookies()).set(COOKIE, token, { httpOnly: true, sameSite: "lax", secure: (process.env.APP_URL ?? "").startsWith("https:"), path: "/", maxAge: DAYS * 86400 });
@@ -68,3 +68,9 @@ export async function consumeToken(raw: string, type: TokenType) {
 
 export const requireStaff = (next = "/admin") => requireRole(["ADMIN", "MODERATOR"], next);
 export const requireAdmin = (next = "/admin") => requireRole(["ADMIN"], next);
+
+// Выйти на всех устройствах, кроме текущего (после смены пароля)
+export async function revokeOtherSessions(userId: string) {
+  const t = (await cookies()).get(COOKIE)?.value;
+  await db.session.deleteMany({ where: { userId, ...(t ? { id: { not: sha(t) } } : {}) } });
+}

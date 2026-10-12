@@ -2,7 +2,8 @@
 import type { FormState } from "@/lib/form";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { requireUser, hashPassword, checkPassword } from "@/lib/auth";
+import { requireUser, hashPassword, checkPassword, revokeOtherSessions } from "@/lib/auth";
+import { limit, TOO_MANY } from "@/lib/guard";
 
 export async function saveProfile(_: unknown, fd: FormData): Promise<FormState> {
   const u = await requireUser();
@@ -16,8 +17,10 @@ export async function saveProfile(_: unknown, fd: FormData): Promise<FormState> 
 export async function changePassword(_: unknown, fd: FormData): Promise<FormState> {
   const u = await requireUser();
   const cur = String(fd.get("current") || ""), next = String(fd.get("next") || "");
+  if (!(await limit("chpass", 10, 900, u.id))) return { error: TOO_MANY };
   if (u.passwordHash && !(await checkPassword(cur, u.passwordHash))) return { error: "Текущий пароль неверный" };
   if (next.length < 8) return { error: "Новый пароль не короче 8 символов" };
   await db.user.update({ where: { id: u.id }, data: { passwordHash: await hashPassword(next) } });
-  return { ok: "Пароль изменён" };
+  await revokeOtherSessions(u.id);
+  return { ok: "Пароль изменён. На других устройствах нужно войти заново" };
 }

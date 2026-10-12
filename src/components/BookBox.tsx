@@ -1,4 +1,5 @@
 "use client";
+import { Honeypot } from "./Honeypot";
 import { useActionState, useState } from "react";
 import { DateRange, Guests } from "./DateRange";
 import { createBooking, revealPhone, toggleFavorite } from "@/app/(site)/obj/[number]/actions";
@@ -38,7 +39,7 @@ export function BookBox({ listingId, pricing, maxGuests, init, fav: fav0, user, 
         : <button className="btn wide" onClick={async () => { const r = await revealPhone(listingId); if ("error" in r) setPhoneErr(r.error!); else setPhone(r as any); }}>Показать телефон</button>}
       {phoneErr && <div className="err">{phoneErr}</div>}
       {allowRequests && (!form ? <button className="btn ghost wide" disabled={over} onClick={() => setForm(true)}>Уточнить даты заявкой</button> :
-        <form action={action} className="stack">
+        <form action={action} className="stack"><Honeypot />
           <input type="hidden" name="listingId" value={listingId} /><input type="hidden" name="ci" value={ci} /><input type="hidden" name="co" value={co} />
           <input type="hidden" name="adults" value={adults} /><input type="hidden" name="children" value={children} />
           <div className="field"><label htmlFor="b-name">Имя</label><input className="input" id="b-name" name="name" defaultValue={user?.name} required /></div>
