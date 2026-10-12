@@ -28,8 +28,8 @@ status() { printf '{"state":"%s","at":"%s","from":"%s","to":"%s","error":"%s"}\n
 as_renta() { sudo -u renta -H bash -c "cd $APP && $*"; }
 
 BRANCH=$(setting githubBranch); BRANCH=${BRANCH:-main}
-TOKEN=$(setting githubToken)
-GITAUTH=""; [ -n "$TOKEN" ] && GITAUTH="-c http.extraHeader='Authorization: Bearer $TOKEN'"
+TOKEN=$(setting githubToken); TOKEN=${TOKEN:-${GITHUB_TOKEN:-}}
+GITAUTH=""; [ -n "$TOKEN" ] && GITAUTH="-c http.extraHeader='Authorization: Basic $(printf 'x-access-token:%s' "$TOKEN" | base64 -w0)'"
 
 cd "$APP"
 OLD=$(as_renta git rev-parse HEAD)

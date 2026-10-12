@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Установка сайта на чистый сервер Ubuntu 24.04. Запускать от root:
 #   curl -fsSL https://raw.githubusercontent.com/JazzyTM/renta/main/deploy/install.sh | bash
-# С доменом (сразу получит HTTPS-сертификат):
-#   curl -fsSL https://raw.githubusercontent.com/JazzyTM/renta/main/deploy/install.sh | DOMAIN=example.ru EMAIL=you@mail.ru bash
+# Репозиторий приватный, поэтому нужен токен GitHub только на чтение (Contents: Read-only):
+#   T=github_pat_...; curl -fsSL -H "Authorization: Bearer $T" https://raw.githubusercontent.com/JazzyTM/renta/main/deploy/install.sh | GITHUB_TOKEN=$T EMAIL=you@mail.ru bash
+# С доменом добавьте DOMAIN=example.ru — сразу получит HTTPS-сертификат.
 # Скрипт можно запускать повторно: он ничего не сломает и не сотрёт данные.
 set -Eeuo pipefail
 
@@ -13,6 +14,9 @@ STATE=/var/lib/renta
 BACKUPS=/var/backups/renta
 DOMAIN="${DOMAIN:-}"
 EMAIL="${EMAIL:-}"
+GITHUB_TOKEN="${GITHUB_TOKEN:-}"
+[ -z "$GITHUB_TOKEN" ] && [ -f "$APP/.env" ] && GITHUB_TOKEN=$(grep -oP '^GITHUB_TOKEN="\K[^"]*' "$APP/.env" || true)
+GIT=(git); [ -n "$GITHUB_TOKEN" ] && GIT=(git -c "http.extraHeader=Authorization: Basic $(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w0)")
 
 say() { printf '\n\033[1;33m== %s\033[0m\n' "$*"; }
 [ "$(id -u)" = 0 ] || { echo "Запустите от root (sudo -i)"; exit 1; }
@@ -45,10 +49,10 @@ chown root:renta "$BACKUPS"; chmod 750 "$BACKUPS"
 
 say "Код сайта"
 if [ -d "$APP/.git" ]; then
-  sudo -u renta git -C "$APP" fetch -q origin "$BRANCH"
+  sudo -u renta "${GIT[@]}" -C "$APP" fetch -q origin "$BRANCH"
 else
   mkdir -p "$APP" && chown renta:renta "$APP"
-  sudo -u renta git clone -q -b "$BRANCH" "$REPO" "$APP"
+  sudo -u renta "${GIT[@]}" clone -q -b "$BRANCH" "$REPO" "$APP" || { echo "Не удалось скачать код. Репозиторий приватный: передайте GITHUB_TOKEN"; exit 1; }
 fi
 chown -R renta:renta "$APP"
 
@@ -70,6 +74,7 @@ APP_URL="$URL"
 UPLOAD_DIR="$STATE/uploads"
 STATE_DIR="$STATE"
 BACKUP_DIR="$BACKUPS"
+GITHUB_TOKEN="$GITHUB_TOKEN"
 ENV
   chown renta:renta "$APP/.env"; chmod 600 "$APP/.env"
 fi

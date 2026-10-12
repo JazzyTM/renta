@@ -21,8 +21,9 @@ export async function currentVersion() {
 
 async function gh(path: string) {
   const s = await getSettings();
+  const token = s.githubToken || process.env.GITHUB_TOKEN;
   const r = await fetch(`https://api.github.com/repos/${s.githubRepo}${path}`, {
-    headers: { Accept: "application/vnd.github+json", "User-Agent": "renta-updater", ...(s.githubToken ? { Authorization: `Bearer ${s.githubToken}` } : {}) },
+    headers: { Accept: "application/vnd.github+json", "User-Agent": "renta-updater", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     cache: "no-store", signal: AbortSignal.timeout(10000),
   });
   if (!r.ok) throw new Error(`GitHub ответил ${r.status}`);

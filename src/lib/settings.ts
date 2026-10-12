@@ -77,7 +77,7 @@ export const SETTINGS: Section[] = [
   { id: "updates", title: "Обновления", fields: [
     { key: "githubRepo", label: "Репозиторий с кодом", type: "text", def: "JazzyTM/renta" },
     { key: "githubBranch", label: "Ветка", type: "text", def: "main" },
-    { key: "githubToken", label: "GitHub токен (для приватного репозитория, только чтение)", type: "password", def: "" },
+    { key: "githubToken", label: "GitHub токен (для приватного репозитория, только чтение)", type: "password", def: "", hint: "Пусто: берётся токен, указанный при установке" },
     { key: "autoUpdate", label: "Ставить обновления автоматически ночью", type: "bool", def: false },
   ]},
 ];

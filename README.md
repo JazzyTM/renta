@@ -9,7 +9,8 @@
 От root:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/JazzyTM/renta/main/deploy/install.sh | EMAIL=you@mail.ru bash
+T=github_pat_...   # токен GitHub только на чтение этого репозитория
+curl -fsSL -H "Authorization: Bearer $T" https://raw.githubusercontent.com/JazzyTM/renta/main/deploy/install.sh | GITHUB_TOKEN=$T EMAIL=you@mail.ru bash
 ```
 
 Скрипт ставит Node.js 22, PostgreSQL, nginx, создаёт базу, собирает сайт и запускает его как службу `renta`. В конце печатает почту и пароль администратора (они же в `/root/renta-admin.txt`).
