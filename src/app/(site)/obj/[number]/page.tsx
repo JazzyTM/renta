@@ -8,6 +8,25 @@ import { LISTING_TYPES, BEACH_TYPES, PREPAY } from "@/lib/labels";
 import { walkMinutes, fmtDate } from "@/lib/format";
 import { BookBox } from "@/components/BookBox";
 import { ComplaintForm } from "@/components/ComplaintForm";
+import { Gallery } from "@/components/Gallery";
+import { MobileBar } from "@/components/MobileBar";
+import { Recent } from "@/components/Recent";
+import { ListingCard } from "@/components/ListingCard";
+import { cardInclude, visibleWhere } from "@/lib/queries";
+import { toCard } from "@/lib/card";
+
+// Похожие: тот же курорт, затем регион; ближе по цене выше
+async function similar(l: { id: string; resortId: string; priceFrom: number; resort: { regionId: string } }) {
+  const where = await visibleWhere();
+  const near = (a: { priceFrom: number }, b: { priceFrom: number }) => Math.abs(a.priceFrom - l.priceFrom) - Math.abs(b.priceFrom - l.priceFrom);
+  const same = await db.listing.findMany({ where: { AND: [where, { resortId: l.resortId, id: { not: l.id } }] }, include: cardInclude, take: 24 });
+  let out = same.sort(near).slice(0, 4);
+  if (out.length < 4) {
+    const more = await db.listing.findMany({ where: { AND: [where, { resort: { regionId: l.resort.regionId }, resortId: { not: l.resortId }, id: { not: l.id } }] }, include: cardInclude, take: 24 });
+    out = [...out, ...more.sort(near).slice(0, 4 - out.length)];
+  }
+  return out.map(toCard);
+}
 
 type P = { params: Promise<{ number: string }>; searchParams: Promise<Record<string, string>> };
 
@@ -34,7 +53,7 @@ export default async function ListingPage({ params, searchParams }: P) {
   await db.listing.update({ where: { id: l.id }, data: { views: { increment: 1 } } });
   const d = new Date(new Date().toISOString().slice(0, 10) + "T00:00:00Z");
   await db.listingStatDaily.upsert({ where: { listingId_date: { listingId: l.id, date: d } }, create: { listingId: l.id, date: d, views: 1 }, update: { views: { increment: 1 } } });
-  const fav = user ? !!(await db.favorite.findUnique({ where: { userId_listingId: { userId: user.id, listingId: l.id } } })) : false;
+  const like = await similar(l);
   const groups = new Map<string, string[]>();
   for (const a of l.amenities) { const g = a.amenity.group; if (!groups.has(g)) groups.set(g, []); groups.get(g)!.push(a.amenity.name); }
   const jsonLd = { "@context": "https://schema.org", "@type": "LodgingBusiness", name: l.title, address: l.address, image: l.photos.map(p => p.url),
@@ -50,7 +69,7 @@ export default async function ListingPage({ params, searchParams }: P) {
         <h1 className="h1">{l.title}</h1>
         {l.ratingCount > 0 && <span className="rating"><b>{l.ratingAvg.toFixed(1)}</b> {l.ratingCount} отзывов</span>}
       </div>
-      {l.photos.length > 0 && <div className="gallery" style={{ ["--n" as any]: l.photos.length }}>{l.photos.slice(0, 5).map(p => <img key={p.id} src={p.url} alt={p.caption ?? ""} />)}</div>}
+      <Gallery photos={l.photos.map(p => ({ url: p.url, caption: p.caption }))} title={l.title} />
       <div className="detail">
         <div className="dmain">
           <div className="facts">
@@ -82,8 +101,11 @@ export default async function ListingPage({ params, searchParams }: P) {
           <ComplaintForm listingId={l.id} />
         </div>
         <BookBox listingId={l.id} pricing={{ prices: l.prices, priceFrom: l.priceFrom, baseGuests: l.baseGuests, extraGuestPrice: l.extraGuestPrice, prepayType: l.prepayType, prepayPercent: l.prepayPercent }}
-          maxGuests={l.maxGuests} init={{ ci: sp.ci, co: sp.co }} fav={fav} user={user ? { name: user.name, email: user.email ?? "" } : null} allowRequests={!!s.bookingRequests} cancelDays={l.cancelDays} />
+          maxGuests={l.maxGuests} init={{ ci: sp.ci, co: sp.co }} user={user ? { name: user.name, email: user.email ?? "" } : null} allowRequests={!!s.bookingRequests} cancelDays={l.cancelDays} />
       </div>
+      {like.length > 0 && <section className="section" style={{ paddingTop: 0 }}><h2 className="h2" style={{ marginBottom: 14 }}>Похожие варианты</h2><div className="cards">{like.map(c => <ListingCard key={c.id} l={c} />)}</div></section>}
+      <Recent id={l.id} />
+      {visible && <MobileBar price={l.priceFrom} requests={!!s.bookingRequests} />}
     </main>
   );
 }

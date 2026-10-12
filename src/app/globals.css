@@ -468,3 +468,126 @@ a.stat:hover { transform: translateY(-2px); box-shadow: var(--shadow) }
 .tabs button { flex: 1; padding: 9px; border-radius: 9px; font-weight: 700; color: var(--ink-2) }
 .tabs button.on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm) }
 @media (max-width: 640px) { .hide-sm { display: none } }
+
+/* галерея объявления */
+.gal { position: relative }
+.gal-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 210px 210px; gap: 8px; border-radius: var(--r); overflow: hidden }
+.gal-grid > button { padding: 0; overflow: hidden; background: var(--surface-2) }
+.gal-grid > :first-child { grid-row: span 2 }
+.gal-grid[data-n="1"] { grid-template-columns: 1fr; grid-template-rows: 440px }
+.gal-grid[data-n="2"] { grid-template-columns: 2fr 1fr }
+.gal-grid[data-n="2"] > :nth-child(2) { grid-row: span 2 }
+.gal-grid[data-n="3"] { grid-template-columns: 2fr 1fr }
+.gal-grid[data-n="4"] > :nth-child(4) { grid-column: span 2 }
+.gal-grid img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s var(--ease), filter .2s }
+.gal-grid > button:hover img { transform: scale(1.03); filter: brightness(.94) }
+.gal-all { position: absolute; right: 14px; bottom: 14px; background: #fff; border-radius: 999px; padding: 9px 16px; font-weight: 700; font-size: 14px; box-shadow: var(--shadow) }
+.gal-strip, .gal-count { display: none }
+@media (max-width: 760px) {
+  .gal { margin-inline: -16px }
+  .gal-grid, .gal-all { display: none }
+  .gal-strip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none }
+  .gal-strip::-webkit-scrollbar { display: none }
+  .gal-strip > button { flex: 0 0 100%; scroll-snap-align: start; padding: 0; aspect-ratio: 4 / 3; background: var(--surface-2) }
+  .gal-strip img { width: 100%; height: 100%; object-fit: cover; display: block }
+  .gal-count { display: block; position: absolute; right: 26px; bottom: 12px; background: rgba(27,23,20,.6); color: #fff; font-size: 12.5px; padding: 3px 9px; border-radius: 999px }
+}
+.lb { position: fixed; inset: 0; z-index: 100; background: rgba(14,12,10,.96); color: #fff; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; animation: fade .2s var(--ease) }
+.lb-top { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; font-size: 14px }
+.lb-top button { color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 18px }
+.lb-top button:hover { background: rgba(255,255,255,.12) }
+.lb-main { display: grid; grid-template-columns: 64px minmax(0, 1fr) 64px; align-items: center; min-height: 0 }
+.lb-main figure { margin: 0; grid-column: 2; height: 100%; display: grid; place-items: center; min-height: 0; gap: 8px; grid-template-rows: minmax(0, 1fr) auto }
+.lb-main figure img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px }
+.lb-main figcaption { font-size: 14px; opacity: .8 }
+.lb-nav { width: 48px; height: 48px; border-radius: 50%; color: #fff; font-size: 30px; line-height: 1; justify-self: center; background: rgba(255,255,255,.1) }
+.lb-nav:hover { background: rgba(255,255,255,.2) }
+.lb-nav.prev { grid-column: 1; grid-row: 1 } .lb-nav.next { grid-column: 3; grid-row: 1 }
+.lb-thumbs { display: flex; gap: 6px; padding: 12px 16px; overflow-x: auto; justify-content: safe center }
+.lb-thumbs button { flex: 0 0 72px; height: 54px; padding: 0; border-radius: 6px; overflow: hidden; opacity: .5; outline: 2px solid transparent; transition: opacity .15s }
+.lb-thumbs button.on { opacity: 1; outline-color: var(--accent) }
+.lb-thumbs img { width: 100%; height: 100%; object-fit: cover }
+@media (max-width: 760px) { .lb-main { grid-template-columns: 0 minmax(0, 1fr) 0 } .lb-nav { display: none } }
+@keyframes fade { from { opacity: 0 } }
+
+/* нижняя панель на телефоне */
+.mbar { display: none }
+@media (max-width: 960px) {
+  .mbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.94); backdrop-filter: blur(12px); border-top: 1px solid var(--line); box-shadow: 0 -6px 24px rgba(27,23,20,.06) }
+  .mbar .btn { min-height: 42px; padding-inline: 18px }
+  body:has(.mbar) .toasts { bottom: 76px }
+  body:has(.mbar) footer { padding-bottom: 80px }
+}
+.book { scroll-margin-top: 80px }
+
+/* =========================================================
+   Дизайн v3: плоский, как у «Куда на море». Без теней и градиентов,
+   тонкие рамки, сплошной оранжевый. Тень остаётся только у
+   выпадающих окон, чтобы они отделялись от страницы.
+   ========================================================= */
+:root {
+  --accent: #E8620C; --accent-2: #F07A2E; --accent-hover: #D25506; --accent-soft: #FFF0E5; --accent-bg: #FFF7F1;
+  --surface-2: #F6F6F6; --surface-3: #EEEEEE; --line: #E3E3E3; --line-2: #CFCFCF; --ink: #222222; --ink-2: #707070;
+  --grad: var(--accent); --glow: none;
+  --shadow-sm: none; --shadow: none; --shadow-lg: none;
+  --pop: 0 4px 16px rgba(0,0,0,.12);
+  --r: 10px; --r-sm: 8px;
+}
+::selection { background: var(--accent-soft) }
+
+/* кнопки: сплошная заливка, без свечения и подпрыгивания */
+.btn, .btn:hover, .btn:active { box-shadow: none; transform: none; filter: none }
+.btn { background: var(--accent); border-radius: var(--r-sm); border: 1px solid transparent; transition: background .15s }
+.btn:hover { background: var(--accent-hover) }
+.btn.ghost { background: #fff; border-color: var(--line-2); color: var(--ink) }
+.btn.ghost:hover { background: #fff; border-color: var(--accent); color: var(--accent) }
+.btn.danger { background: var(--bad) } .btn.danger:hover { background: #B0281F }
+.btn.okb { background: var(--ok) } .btn.okb:hover { background: #1D7A4B }
+.btn.soft, .btn.soft:hover { background: var(--accent-soft); color: var(--accent) }
+.btn.soft:hover { background: #FFE3CF }
+.btn[disabled], .btn[disabled]:hover { background: var(--accent); opacity: .5 }
+.btn.ghost[disabled] { background: #fff }
+
+/* поля: белые с рамкой */
+.input { background: #fff; border: 1px solid var(--line-2); border-radius: var(--r-sm); min-height: 46px }
+.input:hover { background: #fff; border-color: #B5B5B5 }
+.input:focus, .dbtn.on { background: #fff; border-color: var(--accent); box-shadow: none; outline: none }
+.chip { box-shadow: none; border-color: var(--line-2); border-radius: 999px }
+.chip:hover { border-color: var(--accent); color: var(--accent) }
+.chip.on { background: var(--accent); border-color: var(--accent); color: #fff }
+
+/* поиск: одна строка в рамке */
+.search, .search.compact { box-shadow: none; border: 1px solid var(--line); border-radius: var(--r); padding: 14px; background: #fff }
+.hero .search { border: 0; box-shadow: none }
+.search .btn { min-height: 46px }
+
+/* выпадающие окна */
+.sugg, .pop, .dp, .drop { box-shadow: var(--pop); border: 1px solid var(--line); border-radius: var(--r) }
+.modal { box-shadow: var(--pop); border-radius: 14px }
+.toast { box-shadow: var(--pop) }
+
+/* шапка: белая, тонкая линия снизу */
+header.top, .hdr { background: #fff; backdrop-filter: none; box-shadow: none; border-bottom: 1px solid var(--line) }
+
+/* первый экран */
+.hero { background: var(--accent-bg) }
+.hero::before, .hero::after { display: none }
+
+/* карточки */
+.lcard .ph { box-shadow: none; border-radius: var(--r) }
+.lcard:hover .ph img { transform: none }
+.lcard:hover .t b, .lcard:hover h3 { color: var(--accent) }
+.fav { box-shadow: none; border: 1px solid var(--line) }
+
+/* блоки */
+.card-box, .tablewrap, .stat, .fside .filters, .book { box-shadow: none; border: 1px solid var(--line); border-radius: var(--r) }
+a.stat:hover { transform: none; box-shadow: none; border-color: var(--accent) }
+.fact { border-radius: var(--r-sm) }
+.tabs button.on { box-shadow: none; border: 1px solid var(--line) }
+.avatar { box-shadow: none; border-color: var(--line) }
+.gal-all { box-shadow: none; border: 1px solid var(--line) }
+.gal-grid, .gallery { border-radius: var(--r) }
+.mbar { box-shadow: none }
+.switch i::after { box-shadow: none }
+.hero h1 em { background: none; -webkit-background-clip: initial; background-clip: initial; color: var(--accent) }
+.sbar { background: var(--accent-bg); border-bottom: 1px solid var(--line) }
