@@ -1,0 +1,7 @@
+[Unit]
+Description=Renta hourly tasks
+
+[Service]
+Type=oneshot
+EnvironmentFile=/opt/renta/.env
+ExecStart=/bin/sh -c 'curl -fsS -H "x-cron-key: $CRON_SECRET" http://127.0.0.1:3000/api/cron'

@@ -1,0 +1,7 @@
+[Unit]
+Description=Nightly auto-update of renta (if enabled in admin settings)
+
+[Service]
+Type=oneshot
+ExecStart=/opt/renta/deploy/update.sh --auto
+TimeoutStartSec=1800

@@ -1,0 +1,14 @@
+[Unit]
+Description=Renta site (Next.js)
+After=network.target postgresql.service
+
+[Service]
+User=renta
+WorkingDirectory=/opt/renta
+EnvironmentFile=/opt/renta/.env
+ExecStart=/usr/bin/npm run start -- -H 127.0.0.1 -p 3000
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,6 @@
+[Unit]
+Description=Nightly backup of renta database and photos
+
+[Service]
+Type=oneshot
+ExecStart=/opt/renta/deploy/backup.sh

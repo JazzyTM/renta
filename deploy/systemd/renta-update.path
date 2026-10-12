@@ -1,0 +1,8 @@
+[Unit]
+Description=Watch for update requests from the admin panel
+
+[Path]
+PathExists=/var/lib/renta/update-request
+
+[Install]
+WantedBy=multi-user.target

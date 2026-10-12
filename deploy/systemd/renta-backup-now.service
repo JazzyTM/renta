@@ -1,0 +1,6 @@
+[Unit]
+Description=Backup renta database on request
+
+[Service]
+Type=oneshot
+ExecStart=/opt/renta/deploy/backup.sh --db-only

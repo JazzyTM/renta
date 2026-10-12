@@ -1,0 +1,675 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- Пользователи и доступ ----------
+
+enum Role {
+  GUEST
+  OWNER
+  MODERATOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+}
+
+model User {
+  id            String     @id @default(cuid())
+  email         String?    @unique
+  emailVerified DateTime?
+  passwordHash  String?
+  name          String     @default("")
+  avatarUrl     String?
+  phone         String? // контакт для объявлений, не для входа
+  role          Role       @default(GUEST)
+  status        UserStatus @default(ACTIVE)
+  blockReason   String?
+  adminNote     String?
+  lastLoginAt   DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  tokens        Token[]
+  listings      Listing[]
+  bookings      Booking[]       @relation("GuestBookings")
+  messages      Message[]
+  favorites     Favorite[]
+  reviews       Review[]
+  complaints    Complaint[]     @relation("ComplaintAuthor")
+  payout        PayoutDetails?
+  subscriptions Subscription[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
+  orders        Order[]
+}
+
+// Вход через соцсети: VK ID, Яндекс ID
+model Account {
+  id                String   @id @default(cuid())
+  userId            String
+  provider          String // "vk" | "yandex"
+  providerAccountId String
+  createdAt         DateTime @default(now())
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  userAgent String?
+  ip        String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum TokenType {
+  EMAIL_VERIFY
+  PASSWORD_RESET
+}
+
+model Token {
+  id        String    @id @default(cuid())
+  userId    String
+  type      TokenType
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ---------- География ----------
+
+model Region {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  sort      Int      @default(0)
+  isActive  Boolean  @default(true)
+  resorts   Resort[]
+}
+
+model Resort {
+  id              String    @id @default(cuid())
+  regionId        String
+  name            String
+  slug            String    @unique
+  lat             Float?
+  lng             Float?
+  isActive        Boolean   @default(true)
+  isPopular       Boolean   @default(false)
+  sort            Int       @default(0)
+  seoTitle        String?
+  seoDescription  String?
+  seoText         String?
+  coverUrl        String?
+  region          Region    @relation(fields: [regionId], references: [id])
+  listings        Listing[]
+  beaches         Beach[]
+
+  @@index([regionId])
+}
+
+model Beach {
+  id       String     @id @default(cuid())
+  resortId String
+  name     String
+  type     BeachType
+  lat      Float
+  lng      Float
+  resort   Resort     @relation(fields: [resortId], references: [id], onDelete: Cascade)
+}
+
+// ---------- Объекты ----------
+
+enum ListingType {
+  GUESTHOUSE
+  APARTMENT
+  HOTEL
+  HOUSE
+  ROOM
+  HOSTEL
+  CAMPING
+}
+
+enum BeachType {
+  PEBBLE
+  SAND
+  MIXED
+}
+
+enum ListingStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+  BLOCKED
+  ARCHIVED
+}
+
+enum ModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CHANGES_REQUESTED
+}
+
+enum PrepayType {
+  NONE
+  NIGHT
+  PERCENT
+}
+
+model Listing {
+  id               String           @id @default(cuid())
+  number           Int              @unique @default(autoincrement())
+  ownerId          String
+  resortId         String
+  type             ListingType
+  title            String
+  slug             String           @unique
+  description      String           @default("")
+  address          String           @default("")
+  lat              Float?
+  lng              Float?
+  seaDistance      Int? // метры до ближайшего пляжа
+  beachType        BeachType?
+  contactPhone     String           @default("")
+  contactName      String           @default("")
+  whatsapp         Boolean          @default(false)
+  telegram         String?
+  maxGuests        Int              @default(2)
+  baseGuests       Int              @default(2)
+  extraGuestPrice  Int              @default(0)
+  minNights        Int              @default(1)
+  priceFrom        Int              @default(0) // кэш минимальной цены для сортировки
+  prepayType       PrepayType       @default(NIGHT)
+  prepayPercent    Int              @default(0)
+  cancelDays       Int              @default(7)
+  checkInTime      String           @default("14:00")
+  checkOutTime     String           @default("12:00")
+  childrenAllowed  Boolean          @default(true)
+  petsAllowed      Boolean          @default(false)
+  smokingAllowed   Boolean          @default(false)
+  status           ListingStatus    @default(DRAFT)
+  moderation       ModerationStatus @default(PENDING)
+  moderationNote   String?
+  moderatedAt      DateTime?
+  moderatedById    String?
+  verified         Boolean          @default(false)
+  isFeatured       Boolean          @default(false)
+  promotedUntil    DateTime?
+  highlightedUntil DateTime?
+  boostedAt        DateTime? // «поднятие» в выдаче
+  seoTitle         String?
+  seoDescription   String?
+  views            Int              @default(0)
+  phoneViews       Int              @default(0)
+  ratingAvg        Float            @default(0)
+  ratingCount      Int              @default(0)
+  publishedAt      DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  owner       User              @relation(fields: [ownerId], references: [id])
+  resort      Resort            @relation(fields: [resortId], references: [id])
+  photos      ListingPhoto[]
+  amenities   ListingAmenity[]
+  prices      SeasonPrice[]
+  rooms       Room[]
+  bookings    Booking[]
+  reviews     Review[]
+  favorites   Favorite[]
+  complaints  Complaint[]
+  promotions  Promotion[]
+  statsDaily  ListingStatDaily[]
+
+  @@index([resortId, status, moderation])
+  @@index([ownerId])
+}
+
+model ListingPhoto {
+  id        String   @id @default(cuid())
+  listingId String
+  url       String
+  caption   String?
+  sort      Int      @default(0)
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+}
+
+model Amenity {
+  id       String           @id @default(cuid())
+  code     String           @unique
+  name     String
+  group    String           @default("Общее")
+  isFilter Boolean          @default(false) // показывать в фильтрах поиска
+  sort     Int              @default(0)
+  listings ListingAmenity[]
+}
+
+model ListingAmenity {
+  listingId String
+  amenityId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  amenity   Amenity @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@id([listingId, amenityId])
+}
+
+// Цена за ночь по месяцам (1–12)
+model SeasonPrice {
+  id        String  @id @default(cuid())
+  listingId String
+  month     Int
+  price     Int
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([listingId, month])
+}
+
+// Номера/категории внутри гостевого дома или отеля
+model Room {
+  id        String  @id @default(cuid())
+  listingId String
+  name      String
+  guests    Int     @default(2)
+  count     Int     @default(1)
+  price     Int     @default(0)
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+}
+
+model ListingStatDaily {
+  listingId  String
+  date       DateTime @db.Date
+  views      Int      @default(0)
+  phoneViews Int      @default(0)
+  requests   Int      @default(0)
+  listing    Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@id([listingId, date])
+}
+
+model Favorite {
+  userId    String
+  listingId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@id([userId, listingId])
+}
+
+// ---------- Заявки и оплата ----------
+
+enum BookingStatus {
+  NEW
+  ACCEPTED // хозяин подтвердил даты, ждём предоплату
+  PREPAID
+  DECLINED
+  CANCELLED
+  COMPLETED
+  NO_RESPONSE
+}
+
+model Booking {
+  id           String        @id @default(cuid())
+  number       Int           @unique @default(autoincrement())
+  listingId    String
+  guestId      String?
+  guestName    String
+  guestEmail   String
+  guestPhone   String        @default("")
+  checkIn      DateTime      @db.Date
+  checkOut     DateTime      @db.Date
+  adults       Int           @default(2)
+  children     Int           @default(0)
+  comment      String        @default("")
+  totalEstimate Int          @default(0)
+  prepayAmount Int           @default(0)
+  status       BookingStatus @default(NEW)
+  ownerNote    String?
+  adminNote    String?
+  respondedAt  DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  listing  Listing   @relation(fields: [listingId], references: [id])
+  guest    User?     @relation("GuestBookings", fields: [guestId], references: [id])
+  messages Message[]
+  payments Payment[]
+  review   Review?
+
+  @@index([listingId, status])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  bookingId String
+  authorId  String?
+  fromOwner Boolean  @default(false)
+  isSystem  Boolean  @default(false)
+  text      String
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  author    User?    @relation(fields: [authorId], references: [id])
+}
+
+// Заготовка под онлайн-оплату: таблицы есть, провайдер подключается позже
+enum PaymentStatus {
+  PENDING
+  HELD
+  CAPTURED
+  REFUNDED
+  FAILED
+}
+
+model Payment {
+  id         String        @id @default(cuid())
+  bookingId  String
+  provider   String // "manual" | "yookassa" | "cloudpayments"
+  amount     Int
+  fee        Int           @default(0)
+  status     PaymentStatus @default(PENDING)
+  externalId String?
+  raw        Json?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  booking    Booking       @relation(fields: [bookingId], references: [id])
+  refunds    Refund[]
+}
+
+model Refund {
+  id        String   @id @default(cuid())
+  paymentId String
+  amount    Int
+  reason    String?
+  createdAt DateTime @default(now())
+  payment   Payment  @relation(fields: [paymentId], references: [id])
+}
+
+enum LegalForm {
+  SELF_EMPLOYED
+  IP
+  PERSON
+  COMPANY
+}
+
+model PayoutDetails {
+  userId    String    @id
+  legalForm LegalForm @default(SELF_EMPLOYED)
+  fullName  String    @default("")
+  inn       String    @default("")
+  bik       String    @default("")
+  account   String    @default("")
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ---------- Монетизация ----------
+
+model Tariff {
+  id            String         @id @default(cuid())
+  name          String
+  description   String         @default("")
+  price         Int // ₽ за период
+  periodDays    Int            @default(180)
+  maxListings   Int            @default(1)
+  maxPhotos     Int            @default(10)
+  priorityBoost Int            @default(0)
+  showStats     Boolean        @default(false)
+  isActive      Boolean        @default(true)
+  sort          Int            @default(0)
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String
+  tariffId  String
+  startsAt  DateTime @default(now())
+  endsAt    DateTime
+  amount    Int      @default(0)
+  note      String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tariff    Tariff   @relation(fields: [tariffId], references: [id])
+}
+
+enum PromotionType {
+  BOOST // поднятие
+  HIGHLIGHT // выделение цветом
+  FEATURED // на главной курорта
+  TOP // закреп вверху выдачи
+}
+
+model Promotion {
+  id        String        @id @default(cuid())
+  listingId String
+  type      PromotionType
+  startsAt  DateTime      @default(now())
+  endsAt    DateTime
+  price     Int           @default(0)
+  createdAt DateTime      @default(now())
+  listing   Listing       @relation(fields: [listingId], references: [id], onDelete: Cascade)
+}
+
+// Покупки хозяев: тариф или платная услуга для объявления. Провайдер оплаты подключается в src/lib/payments.ts
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+  FAILED
+}
+
+model Order {
+  id         String         @id @default(cuid())
+  number     Int            @unique @default(autoincrement())
+  userId     String
+  kind       String // "tariff" | "promotion"
+  tariffId   String?
+  listingId  String?
+  promoType  PromotionType?
+  days       Int            @default(0)
+  amount     Int
+  promoCode  String?
+  status     OrderStatus    @default(PENDING)
+  provider   String         @default("manual")
+  externalId String?
+  raw        Json?
+  paidAt     DateTime?
+  createdAt  DateTime       @default(now())
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+model PromoCode {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  discountPct Int       @default(0)
+  freeDays    Int       @default(0)
+  maxUses     Int       @default(0)
+  used        Int       @default(0)
+  validUntil  DateTime?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+}
+
+// ---------- Отзывы, жалобы ----------
+
+enum ReviewStatus {
+  PENDING
+  PUBLISHED
+  HIDDEN
+}
+
+model Review {
+  id          String       @id @default(cuid())
+  listingId   String
+  bookingId   String?      @unique
+  authorId    String?
+  authorName  String
+  rating      Int
+  text        String
+  ownerReply  String?
+  status      ReviewStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  listing     Listing      @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  booking     Booking?     @relation(fields: [bookingId], references: [id])
+  author      User?        @relation(fields: [authorId], references: [id])
+}
+
+enum ComplaintStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
+}
+
+model Complaint {
+  id         String          @id @default(cuid())
+  listingId  String?
+  authorId   String?
+  email      String?
+  reason     String
+  text       String          @default("")
+  status     ComplaintStatus @default(OPEN)
+  resolution String?
+  createdAt  DateTime        @default(now())
+  listing    Listing?        @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  author     User?           @relation("ComplaintAuthor", fields: [authorId], references: [id])
+}
+
+// ---------- Контент и настройки ----------
+
+model Page {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  title          String
+  body           String   @default("")
+  seoTitle       String?
+  seoDescription String?
+  isPublished    Boolean  @default(true)
+  showInFooter   Boolean  @default(false)
+  updatedAt      DateTime @updatedAt
+}
+
+model Article {
+  id             String    @id @default(cuid())
+  slug           String    @unique
+  title          String
+  excerpt        String    @default("")
+  body           String    @default("")
+  coverUrl       String?
+  resortId       String?
+  isPublished    Boolean   @default(false)
+  publishedAt    DateTime?
+  seoTitle       String?
+  seoDescription String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Banner {
+  id        String   @id @default(cuid())
+  title     String
+  text      String   @default("")
+  link      String?
+  place     String   @default("home") // home | search | listing
+  isActive  Boolean  @default(true)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  sort      Int      @default(0)
+}
+
+model Redirect {
+  id        String  @id @default(cuid())
+  from      String  @unique
+  to        String
+  permanent Boolean @default(true)
+}
+
+model StopWord {
+  id    String @id @default(cuid())
+  word  String @unique
+  action String @default("flag") // flag | block
+}
+
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model EmailTemplate {
+  key     String @id // booking_new_owner, booking_accepted_guest, ...
+  subject String
+  body    String
+}
+
+enum CampaignStatus {
+  DRAFT
+  SENT
+}
+
+model Campaign {
+  id        String         @id @default(cuid())
+  subject   String
+  body      String
+  audience  String         @default("owners") // owners | guests | all
+  status    CampaignStatus @default(DRAFT)
+  sentCount Int            @default(0)
+  sentAt    DateTime?
+  createdAt DateTime       @default(now())
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  title     String
+  body      String    @default("")
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  to        String
+  subject   String
+  status    String   @default("sent") // sent | failed | logged
+  error     String?
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  data      Json?
+  ip        String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+}

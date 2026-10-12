@@ -1,0 +1,7 @@
+[Unit]
+Description=Update renta from GitHub
+
+[Service]
+Type=oneshot
+ExecStart=/opt/renta/deploy/update.sh --from-request
+TimeoutStartSec=1800
