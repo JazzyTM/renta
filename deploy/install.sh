@@ -2,7 +2,7 @@
 # Установка сайта на чистый сервер Ubuntu 24.04. Запускать от root:
 #   curl -fsSL https://raw.githubusercontent.com/JazzyTM/renta/main/deploy/install.sh | bash
 # Репозиторий приватный, поэтому нужен токен GitHub только на чтение (Contents: Read-only):
-#   T=github_pat_...; curl -fsSL -H "Authorization: Bearer $T" https://raw.githubusercontent.com/JazzyTM/renta/main/deploy/install.sh | GITHUB_TOKEN=$T EMAIL=you@mail.ru bash
+#   T=github_pat_...; curl -fsSL -H "Authorization: Bearer $T" -H "Accept: application/vnd.github.raw" https://api.github.com/repos/JazzyTM/renta/contents/deploy/install.sh | GITHUB_TOKEN=$T EMAIL=you@mail.ru bash
 # С доменом добавьте DOMAIN=example.ru — сразу получит HTTPS-сертификат.
 # Скрипт можно запускать повторно: он ничего не сломает и не сотрёт данные.
 set -Eeuo pipefail
