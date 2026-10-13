@@ -59,7 +59,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <>
       <header className="top"><div className="wrap" style={{ maxWidth: "none" }}>
         <Link href="/admin" className="logo"><LogoMark />{String(s.siteName).toLowerCase()} · админка</Link>
-        <nav><Link className="navlink" href="/" target="_blank">Открыть сайт</Link><Link className="navlink" href="/account">{u.name || u.email}</Link></nav>
+        <nav><Link className="navlink" href="/" target="_blank">Открыть сайт</Link><Link className="navlink hide-sm" href="/account">{u.name || u.email}</Link></nav>
       </div></header>
       <div className="shell"><SideNav root="/admin" items={items} /><div className="main">{children}</div></div>
     </>

@@ -152,7 +152,7 @@ export default async function ListingPage({ params, searchParams }: P) {
             <aside className="oside"><OwnerCard name={l.contactName || l.owner.name} since={l.owner.createdAt.getUTCFullYear()} reply={reply} idOk={l.owner.idStatus === "APPROVED"} siteName={s.siteName} showPhone={!!s.showPhone} /></aside>
           </div>
         </BookingProvider>
-        {like.length > 0 && <section className="hsec"><h2 className="h2" style={{ marginBottom: 16 }}>Другие объекты {prepOf(l.resort)} и рядом</h2><div className="cards">{like.map(c => <ListingCard key={c.id} l={c} />)}</div></section>}
+        {like.length > 0 && <section className="hsec"><h2 className="h2" style={{ marginBottom: 16 }}>Другие объекты {prepOf(l.resort)} и рядом</h2><div className="cards strip">{like.map(c => <ListingCard key={c.id} l={c} />)}</div></section>}
         <Recent id={l.id} />
         {nearby.length > 0 && <section className="hsec"><h2 className="h2" style={{ marginBottom: 12 }}>Курорты рядом</h2><div className="qchips wrapchips">{nearby.map(r => <Link key={r.slug} className="chip" href={`/kurort/${r.slug}`}>{r.name}</Link>)}</div></section>}
       </div>

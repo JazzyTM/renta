@@ -8,6 +8,7 @@ import { SearchForm } from "@/components/SearchForm";
 import { ListingCard } from "@/components/ListingCard";
 import { RichText } from "@/components/RichText";
 import { ShowMore, Tabs } from "@/components/ShowMore";
+import { HeroArt, SceneArt, OwnersArt } from "@/components/Art";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +40,7 @@ export default async function Home() {
   return (
     <main className="home">
       <section className={`hero ${s.heroImage ? "img" : ""}`} style={s.heroImage ? { backgroundImage: `url(${s.heroImage})` } : undefined}>
+        {!s.heroImage && <HeroArt />}
         <div className="wrap">
           <h1>{s.tagline}</h1>
           <SearchForm resorts={resorts} init={{}} />
@@ -53,6 +55,7 @@ export default async function Home() {
         </div></section>}
         {s.bannerShow && <section className="hsec"><div className="wrap">
           <div className={`owners ${s.bannerImage ? "img" : ""}`} style={s.bannerImage ? { backgroundImage: `url(${s.bannerImage})` } : undefined}>
+            {!s.bannerImage && <OwnersArt />}
             <h2>{s.bannerTitle}</h2><p>{s.bannerText}</p><Link className="btn" href="/cabinet/new">Добавить объект</Link>
           </div>
         </div></section>}
@@ -60,18 +63,18 @@ export default async function Home() {
           <h2 className="h2">Популярные курорты</h2>
           <ShowMore className="rtiles" limit={6}>{popular.map(r => (
             <Link key={r.id} href={`/kurort/${r.slug}`} className={`rtile ${r.coverUrl ? "" : "noimg"}`} style={r.coverUrl ? { backgroundImage: `url(${r.coverUrl})` } : undefined}>
-              <b>{r.name}</b><span>{r.region.name}</span>
+              {!r.coverUrl && <SceneArt seed={r.slug} />}<b>{r.name}</b><span>{r.region.name}</span>
             </Link>))}</ShowMore>
         </div></section>}
       </div>
       {latest.length > 0 && <section className="hsec"><div className="wrap">
         <h2 className="h2">Последние добавленные объекты</h2>
-        <div className="cards">{latest.map(l => <ListingCard key={l.id} l={toCard(l)} />)}</div>
+        <div className="cards strip">{latest.map(l => <ListingCard key={l.id} l={toCard(l)} />)}</div>
       </div></section>}
       {articles.length > 0 && <section className="hsec"><div className="wrap">
         <h2 className="h2">Статьи об отдыхе</h2>
         <div className="arts">{articles.map(a => <Link key={a.id} href={`/articles/${a.slug}`} className="art">
-          <div className="aph">{a.coverUrl ? <img src={a.coverUrl} alt="" loading="lazy" /> : null}</div>
+          <div className="aph">{a.coverUrl ? <img src={a.coverUrl} alt="" loading="lazy" /> : <SceneArt seed={a.slug} />}</div>
           <div className="atx"><b>{a.title}</b>{a.excerpt && <p>{a.excerpt}</p>}<span className="small muted">{fmtDate(a.publishedAt ?? a.createdAt)}</span></div>
         </Link>)}</div>
         <Link className="btn gray wide more" href="/articles">Читать больше статей</Link>

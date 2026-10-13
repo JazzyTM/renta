@@ -28,7 +28,7 @@ export function FavButton({ id, big }: { id: string; big?: boolean }) {
   return (
     <button type="button" className={`fav ${on ? "on" : ""} ${big ? "big" : ""}`} aria-label={on ? "Убрать из избранного" : "В избранное"} aria-pressed={on} onClick={click}>
       <svg viewBox="0 0 24 24" width={big ? 22 : 20} height={big ? 22 : 20} aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.4 3 5 6.4 5c2 0 3.4 1.1 4.1 2.3h3C14.2 6.1 15.6 5 17.6 5 21 5 23 8.4 21.6 11.8 19.5 16.4 12 21 12 21z" /></svg>
-      {big && <span>{on ? "В избранном" : "В избранное"}</span>}
+      {big && <span className="lbl">{on ? "В избранном" : "В избранное"}</span>}
     </button>
   );
 }

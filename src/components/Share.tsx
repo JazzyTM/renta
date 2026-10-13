@@ -20,8 +20,8 @@ export function ShareButton({ title }: { title: string }) {
   const u = encodeURIComponent(url), t = encodeURIComponent(title);
   return (
     <div className="share" ref={ref}>
-      <button type="button" className="cmpbtn big" onClick={click} aria-expanded={open}>
-        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 002 2h10a2 2 0 002-2v-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>Поделиться</button>
+      <button type="button" className="cmpbtn big" onClick={click} aria-expanded={open} aria-label="Поделиться">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 002 2h10a2 2 0 002-2v-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg><span className="lbl">Поделиться</span></button>
       {open && <div className="share-pop">
         <button type="button" onClick={async () => { try { await navigator.clipboard.writeText(url); toast("Ссылка скопирована"); } catch { toast("Не получилось скопировать", "err"); } setOpen(false); }}>Скопировать ссылку</button>
         <a href={`https://t.me/share/url?url=${u}&text=${t}`} target="_blank" rel="noopener">Telegram</a>

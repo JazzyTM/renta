@@ -1,4 +1,5 @@
 "use client";
+import { HouseArt } from "./Art";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { LISTING_TYPES } from "@/lib/labels";
@@ -18,7 +19,7 @@ function Photos({ photos, title }: { photos: string[]; title: string }) {
     const el = box.current!; const n = Math.max(0, Math.min(photos.length - 1, i + d));
     el.scrollTo({ left: n * el.clientWidth, behavior: "smooth" });
   };
-  if (!photos.length) return <span className="noimg">Нет фото</span>;
+  if (!photos.length) return <span className="noimg"><HouseArt /><span>Хозяин ещё не добавил фото</span></span>;
   return (
     <>
       <div className="slides" ref={box} onScroll={e => setI(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}>

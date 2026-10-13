@@ -23,9 +23,9 @@ export function CompareButton({ id, className = "cmpbtn" }: { id: string; classN
     if (ids.length >= MAX) { toast(`Сравнить можно до ${MAX} вариантов`, "err"); return; }
     write([...ids, id]); toast("Добавлено к сравнению");
   }
-  return <button type="button" className={`${className} ${on ? "on" : ""}`} aria-pressed={on} onClick={click}>
+  return <button type="button" className={`${className} ${on ? "on" : ""}`} aria-pressed={on} aria-label={on ? "В сравнении" : "Сравнить"} onClick={click}>
     <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d={on ? "M5 12.5l4.5 4.5L19 7" : "M5 20V10M12 20V4M19 20v-7"} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
-    {on ? "В сравнении" : "Сравнить"}</button>;
+    <span className="lbl">{on ? "В сравнении" : "Сравнить"}</span></button>;
 }
 
 // Плашка внизу экрана, когда что-то добавлено к сравнению

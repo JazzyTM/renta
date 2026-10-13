@@ -995,3 +995,157 @@ body:has(.mbar) .cmpbar { bottom: 84px }
 .crit i { grid-column: 1 / -1; height: 4px; border-radius: 2px; background: var(--gray-2); position: relative; overflow: hidden; }
 .crit i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--w); background: var(--accent); }
 .fast { color: #2F8F3E; font-size: 13px; }
+
+/* =========================================================
+   Адаптив: телефоны и планшеты. Последний слой, правит всё выше.
+   ========================================================= */
+html, body { overflow-x: clip }
+
+/* рисунки вместо фото */
+.home .hero { overflow: hidden }
+.hero-art { position: absolute; inset: 0; width: 100%; height: 100%; display: block }
+.rtile > .art { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 0 }
+.rtile::before { z-index: 1 }
+.rtile > b, .rtile > span { z-index: 2 }
+.aph { position: relative; overflow: hidden }
+.aph .art { position: absolute; inset: 0; width: 100%; height: 100%; display: block }
+.owners > .owners-art { position: absolute; right: 28px; bottom: 0; width: 280px; height: auto }
+.owners h2, .owners p { max-width: calc(100% - 300px) }
+.ph .noimg, .cmph .noimg { display: grid; place-items: center; align-content: center; gap: 4px; background: var(--gray); color: #8A8E95; font-size: 12.5px; text-align: center; padding: 8px }
+.house-art { width: min(52%, 170px); height: auto; display: block }
+
+/* меню кабинета и админки */
+.side-t { display: none; width: 100%; align-items: center; gap: 10px; height: 44px; font-size: 15px; font-weight: 500; color: var(--ink); background: transparent; border: 0; padding: 0 }
+.side-t > span:not(.tag) { flex: 1; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.side-t .chev { transition: transform .2s }
+.side.open .side-t .chev { transform: rotate(180deg) }
+.side-l { display: grid; gap: 2px; align-content: start }
+@media (max-width: 900px) {
+  .shell { grid-template-columns: minmax(0, 1fr) !important }
+  .side { position: static !important; height: auto !important; display: block !important; overflow: visible !important; padding: 6px 16px !important; border-right: 0 !important; border-bottom: 1px solid var(--line) !important; background: #fff !important }
+  .side-t { display: flex }
+  .side-l { display: none }
+  .side.open .side-l { display: grid; padding: 4px 0 12px; max-height: 70vh; overflow-y: auto }
+  .side .grp { display: block !important; padding: 12px 12px 4px }
+  .side a.on::before { display: none }
+  .main { padding: 16px !important }
+}
+
+/* поиск на планшете: курорт во всю ширину, даты и гости рядом */
+@media (min-width: 601px) and (max-width: 860px) {
+  .search:not(.dsearch) { grid-template-columns: 1fr 1fr }
+  .search:not(.dsearch) > :nth-child(1), .search:not(.dsearch) > .btn { grid-column: 1 / -1 }
+  .search:not(.dsearch) > :nth-child(1) .input.seg { border-radius: var(--r-sm) var(--r-sm) 0 0 !important }
+  .search:not(.dsearch) > :nth-child(2) .input.seg { border-radius: 0 0 0 var(--r-sm) !important }
+  .search:not(.dsearch) > :nth-child(3) .input.seg { margin-left: -1px !important; width: calc(100% + 1px) !important; border-radius: 0 0 var(--r-sm) 0 !important }
+}
+
+/* главная */
+@media (max-width: 900px) {
+  .owners > .owners-art { width: 200px; right: 16px }
+  .owners h2, .owners p { max-width: calc(100% - 200px) }
+}
+@media (max-width: 600px) {
+  .home .hero { padding: 80px 0 52px }
+  .home .hero .wrap { gap: 18px }
+  .hsec { padding-block: 18px }
+  .hsec .h2 { font-size: 20px; margin-bottom: 14px }
+  .feats { gap: 10px }
+  .feat { padding: 16px 18px }
+  .feat svg { width: 36px; height: 36px }
+  .owners { padding: 22px 18px 150px; min-height: 0 }
+  .owners > .owners-art { width: 170px; right: 12px; bottom: 0 }
+  .owners h2, .owners p { max-width: none }
+  .owners h2 { font-size: 22px }
+  .owners p { font-size: 15px; margin-bottom: 8px }
+  .owners .btn { min-width: 0 }
+  .rtiles { grid-template-columns: 1fr 1fr !important; gap: 10px }
+  .rtile { height: 118px; padding: 12px }
+  .rtile b { font-size: 16px; line-height: 1.2 }
+  .rtile span { font-size: 12.5px }
+  .arts { gap: 14px }
+  .art .atx { padding: 16px 18px }
+  .utabs-h { gap: 22px; margin-bottom: 16px }
+  .utabs-h button { font-size: 14px; padding-bottom: 12px }
+  .allres { columns: 2; column-gap: 16px }
+  .allres h3 { font-size: 16px }
+  .allres ul { gap: 8px }
+  .allres a { font-size: 14.5px }
+  .prose.seo { font-size: 15.5px }
+}
+
+/* карточки на телефоне листаются вбок */
+@media (max-width: 640px) {
+  .cards.strip { display: grid; grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 78%; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; margin-inline: -20px; padding-inline: 20px; scroll-padding-inline: 20px; scrollbar-width: none }
+  .cards.strip::-webkit-scrollbar { display: none }
+  .cards.strip > * { scroll-snap-align: start; min-width: 0 }
+}
+
+/* страница объявления: сначала даты, потом хозяин, потом остальное */
+@media (max-width: 960px) {
+  .ogrid { display: flex; flex-direction: column; gap: 16px }
+  .ocol { display: contents }
+  .ocol > * { order: 3 }
+  .ocol > #dates { order: 1 }
+  .oside { order: 2; position: static }
+}
+@media (max-width: 640px) {
+  .obj .crumbs { font-size: 13px; gap: 6px; padding-top: 12px }
+  .oid { margin-top: 10px }
+  .ohead { gap: 12px; margin-bottom: 12px }
+  .oacts { justify-content: flex-start; flex-wrap: nowrap }
+  .oacts .lbl { display: none }
+  .oacts .cmpbtn.big, .oacts .fav.big { width: 44px; height: 44px; padding: 0; justify-content: center }
+  .panel { padding: 18px 16px }
+  .ph2 { font-size: 19px }
+  .ptable { grid-template-columns: 1fr 1fr }
+  .ptable > div { font-size: 14px; padding: 9px 10px }
+  .room { padding: 14px 16px }
+  .rp { min-width: 0 }
+  .desc { font-size: 15px }
+}
+
+/* выдача */
+@media (max-width: 640px) {
+  .rtop { padding-block: 14px }
+  .rtop .wrap { gap: 12px }
+  .rtop .h2 { font-size: 19px }
+  .rbody { padding-block: 12px 28px }
+  .lrow .ttl { font-size: 16px }
+  .lrow .amen { gap: 4px 12px; font-size: 13.5px }
+}
+
+/* подвал */
+@media (max-width: 700px) {
+  footer.foot { padding-block: 28px 20px }
+  .foot-r ul { grid-template-columns: 1fr 1fr; gap: 8px 16px }
+}
+@media (max-width: 420px) {
+  .top .wrap { gap: 8px }
+  .rpick-btn { max-width: 112px; padding: 0 8px }
+  .top nav { gap: 0 }
+  .ibtn { width: 36px }
+  .obtn { padding: 0 8px }
+}
+@media (max-width: 960px) { .ogrid { align-items: stretch } }
+@media (max-width: 600px) {
+  .stats { grid-template-columns: 1fr 1fr; gap: 10px }
+  .stat { padding: 12px 14px }
+  .stat b { font-size: 22px }
+  .home .hero { padding-bottom: 96px }
+  .h1 { font-size: 24px }
+}
+@media (max-width: 900px) {
+  .shell { align-content: start }
+  .main .row:has(> .chip) { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -16px; padding-inline: 16px }
+  .main .row:has(> .chip)::-webkit-scrollbar { display: none }
+  .main .row:has(> .chip) > .chip { flex: none }
+}
+@media (min-width: 701px) and (max-width: 900px) { .feats { grid-template-columns: repeat(3, 1fr); gap: 12px } .feat { flex-direction: column-reverse; justify-content: flex-end } }
+@media (min-width: 601px) and (max-width: 700px) { .feats { grid-template-columns: 1fr } }
+@media (max-width: 640px) {
+  .rpick-pop { position: fixed; left: 10px; right: 10px; top: 64px; width: auto; max-height: calc(100dvh - 80px); padding: 16px; grid-template-columns: 1fr 1fr; gap: 14px 16px }
+  .rpick-pop a { font-size: 15px; display: block; padding: 3px 0 }
+}
+.home .hero:not(.img) { padding-bottom: 130px }
+@media (max-width: 600px) { .home .hero:not(.img) { padding-bottom: 100px } }
