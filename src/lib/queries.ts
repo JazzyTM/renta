@@ -28,11 +28,12 @@ export const cardInclude = {
   resort: true,
   prices: true,
   amenities: { where: { amenity: { isFilter: true } }, select: { amenity: { select: { name: true, code: true } } }, take: 8 },
+  owner: { select: { replyMinutes: true } },
 } satisfies Prisma.ListingInclude;
 
 export type CardListing = Prisma.ListingGetPayload<{ include: typeof cardInclude }>;
 
-export type Filters = { type?: string[]; sea?: number; priceMax?: number; priceMin?: number; amen?: string[]; beach?: string; verified?: boolean; guests?: number; sort?: string; page?: number };
+export type Filters = { type?: string[]; sea?: number; priceMax?: number; priceMin?: number; amen?: string[]; beach?: string; verified?: boolean; guests?: number; sort?: string; page?: number; near?: string };
 
 export async function searchListings(base: Prisma.ListingWhereInput, f: Filters) {
   const s = await getSettings();
@@ -45,6 +46,11 @@ export async function searchListings(base: Prisma.ListingWhereInput, f: Filters)
   if (f.beach) and.push({ beachType: f.beach as any });
   if (f.verified) and.push({ verified: true });
   if (f.guests) and.push({ maxGuests: { gte: f.guests } });
+  // «Рядом с пляжем»: объявления в квадрате ~1 км вокруг точки пляжа
+  if (f.near) {
+    const b = await db.beach.findUnique({ where: { id: f.near }, select: { lat: true, lng: true } });
+    if (b) { const dl = 0.009, dg = 0.009 / Math.cos(b.lat * Math.PI / 180); and.push({ lat: { gte: b.lat - dl, lte: b.lat + dl }, lng: { gte: b.lng - dg, lte: b.lng + dg } }); }
+  }
   for (const code of f.amen ?? []) and.push({ amenities: { some: { amenity: { code } } } });
   const orderBy: Prisma.ListingOrderByWithRelationInput[] =
     f.sort === "price" ? [{ priceFrom: "asc" }] :
@@ -67,7 +73,7 @@ export function parseFilters(sp: Record<string, string | string[] | undefined>):
   const okDate = (v: unknown) => (typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : undefined);
   return {
     type: arr(sp.type), amen: arr(sp.amen), sea: Number(sp.sea) || undefined, priceMax: Number(sp.price) || undefined, priceMin: Number(sp.pmin) || undefined,
-    beach: typeof sp.beach === "string" ? sp.beach : undefined, verified: sp.verified === "1", sort: typeof sp.sort === "string" ? sp.sort : "rec",
+    beach: typeof sp.beach === "string" ? sp.beach : undefined, near: typeof sp.near === "string" ? sp.near : undefined, verified: sp.verified === "1", sort: typeof sp.sort === "string" ? sp.sort : "rec",
     page: Number(sp.page) || 1, ci: okDate(sp.ci), co: okDate(sp.co), adults, children, guests: adults + children,
   };
 }

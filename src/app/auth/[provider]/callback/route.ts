@@ -26,6 +26,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ provider
       await db.account.create({ data: { provider, providerAccountId: p.id, userId: u.id } });
       userId = u.id;
       await audit(u.id, existing ? "link_social" : "register_social", "User", u.id, { provider });
+      if (!existing) await (await import("@/lib/referral")).attachReferrer(u.id, (await cookies()).get("ref")?.value);
     }
     const u = await db.user.findUnique({ where: { id: userId } });
     if (!u || u.status === "BLOCKED") return fail;

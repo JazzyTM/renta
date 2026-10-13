@@ -5,19 +5,20 @@ import { LISTING_TYPES } from "@/lib/labels";
 import { plural, rub } from "@/lib/format";
 import { ListingRow, RowSkeleton } from "./ListingCard";
 import { PriceRange } from "./PriceRange";
+import { AlertButton } from "./AlertButton";
 
 type Hist = { min: number; max: number; bins: number[] };
 type Res = { items: CardData[]; total: number; page: number; pages: number; hist?: Hist };
-type F = { sea: string; pmin: string; price: string; type: string[]; amen: string[]; beach: string; verified: boolean; sort: string };
+type F = { sea: string; pmin: string; price: string; type: string[]; amen: string[]; beach: string; near: string; verified: boolean; sort: string };
 
 const SORTS: [string, string][] = [["rec", "Рекомендуем"], ["price", "Дешевле"], ["sea", "Ближе к морю"], ["rating", "Рейтинг"], ["new", "Новые"]];
 const arr = (v: unknown) => (Array.isArray(v) ? v : v ? [v] : []) as string[];
 
-export function LiveResults({ title, scope, initial, sp, amenities, action, ci, co, guests, children, search }: {
+export function LiveResults({ title, scope, initial, sp, amenities, action, ci, co, guests, children, search, email, beaches = [] }: {
   title: string; scope: { resort?: string; filter?: string }; initial: Res; sp: Record<string, any>; amenities: { code: string; name: string }[];
-  action: string; ci?: string; co?: string; guests: number; children?: React.ReactNode; search?: React.ReactNode;
+  action: string; ci?: string; co?: string; guests: number; children?: React.ReactNode; search?: React.ReactNode; email?: string; beaches?: { id: string; name: string }[];
 }) {
-  const [f, setF] = useState<F>({ sea: sp.sea ?? "", pmin: sp.pmin ?? "", price: sp.price ?? "", type: arr(sp.type), amen: arr(sp.amen), beach: sp.beach ?? "", verified: sp.verified === "1", sort: sp.sort ?? "rec" });
+  const [f, setF] = useState<F>({ sea: sp.sea ?? "", pmin: sp.pmin ?? "", price: sp.price ?? "", type: arr(sp.type), amen: arr(sp.amen), beach: sp.beach ?? "", near: sp.near ?? "", verified: sp.verified === "1", sort: sp.sort ?? "rec" });
   const [res, setRes] = useState<Res>(initial);
   const [hist] = useState<Hist | undefined>(initial.hist);
   const [loading, setLoading] = useState(false);
@@ -31,7 +32,7 @@ export function LiveResults({ title, scope, initial, sp, amenities, action, ci, 
     const p = new URLSearchParams();
     if (ci) p.set("ci", ci); if (co) p.set("co", co);
     for (const k of ["adults", "children"]) if (sp[k]) p.set(k, sp[k]);
-    if (f.sea) p.set("sea", f.sea); if (f.pmin) p.set("pmin", f.pmin); if (f.price) p.set("price", f.price); if (f.beach) p.set("beach", f.beach);
+    if (f.sea) p.set("sea", f.sea); if (f.pmin) p.set("pmin", f.pmin); if (f.price) p.set("price", f.price); if (f.beach) p.set("beach", f.beach); if (f.near) p.set("near", f.near);
     if (f.verified) p.set("verified", "1"); if (f.sort !== "rec") p.set("sort", f.sort);
     f.type.forEach(t => p.append("type", t)); f.amen.forEach(a => p.append("amen", a));
     return p;
@@ -68,8 +69,8 @@ export function LiveResults({ title, scope, initial, sp, amenities, action, ci, 
 
   const set = (patch: Partial<F>) => setF(x => ({ ...x, ...patch }));
   const toggle = (k: "type" | "amen", v: string) => setF(x => ({ ...x, [k]: x[k].includes(v) ? x[k].filter(y => y !== v) : [...x[k], v] }));
-  const active = (f.sea ? 1 : 0) + (f.pmin || f.price ? 1 : 0) + f.type.length + f.amen.length + (f.beach ? 1 : 0) + (f.verified ? 1 : 0);
-  const reset = () => setF({ sea: "", pmin: "", price: "", type: [], amen: [], beach: "", verified: false, sort: f.sort });
+  const active = (f.sea ? 1 : 0) + (f.pmin || f.price ? 1 : 0) + f.type.length + f.amen.length + (f.beach ? 1 : 0) + (f.near ? 1 : 0) + (f.verified ? 1 : 0);
+  const reset = () => setF({ sea: "", pmin: "", price: "", type: [], amen: [], beach: "", near: "", verified: false, sort: f.sort });
   const count = `${res.total} ${plural(res.total, ["вариант", "варианта", "вариантов"])}`;
 
   const filters = (
@@ -86,6 +87,9 @@ export function LiveResults({ title, scope, initial, sp, amenities, action, ci, 
       <div className="fgroup"><span className="flabel">Пляж</span>
         <div className="chips">{[["", "Любой"], ["PEBBLE", "Галька"], ["SAND", "Песок"], ["MIXED", "Песок и галька"]].map(([v, t]) =>
           <button type="button" key={v} className={`chip ${f.beach === v ? "on" : ""}`} onClick={() => set({ beach: v })}>{t}</button>)}</div></div>
+      {beaches.length > 0 && <div className="fgroup"><span className="flabel">Рядом с пляжем, до 1 км</span>
+        <div className="chips"><button type="button" className={`chip ${!f.near ? "on" : ""}`} onClick={() => set({ near: "" })}>Любой</button>
+          {beaches.map(b => <button type="button" key={b.id} className={`chip ${f.near === b.id ? "on" : ""}`} onClick={() => set({ near: f.near === b.id ? "" : b.id })}>{b.name}</button>)}</div></div>}
       <label className="switch"><input type="checkbox" checked={f.verified} onChange={e => set({ verified: e.target.checked })} /><i /> Только проверенные</label>
       {active > 0 && <button type="button" className="link" onClick={reset}>Сбросить фильтры</button>}
     </div>
@@ -109,6 +113,7 @@ export function LiveResults({ title, scope, initial, sp, amenities, action, ci, 
           </label>
           {quick.map(([c, t]) => <button type="button" key={c} className={`chip ${f.amen.includes(c) ? "on" : ""}`} onClick={() => toggle("amen", c)}>{t}</button>)}
           <button type="button" className={`chip ${f.verified ? "on" : ""}`} onClick={() => set({ verified: !f.verified })}>Только проверенные</button>
+          <AlertButton title={title} email={email} />
         </div>
       </div></div>
       {sheet && <div className="modal-bg" onClick={() => setSheet(false)}><div className="modal sheet" onClick={e => e.stopPropagation()}>

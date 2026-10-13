@@ -6,6 +6,7 @@ import { getSettings } from "@/lib/settings";
 import { db } from "@/lib/db";
 import { Header } from "@/components/Header";
 import { FavSync } from "@/components/Fav";
+import { CompareBar } from "@/components/Compare";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const [s, user] = await Promise.all([getSettings(), getUser()]);
@@ -22,6 +23,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <Header user={user ? { name: user.name, email: user.email, staff: isStaff(user.role) } : null} siteName={s.siteName} social={{ vk: !!(s.vkEnabled && (s.vkClientId || process.env.VK_CLIENT_ID)), ya: !!(s.yandexEnabled && (s.yandexClientId || process.env.YANDEX_CLIENT_ID)) }} regions={regions} />
       {user && <FavSync server={favIds} />}
       <ViewTransition>{children}</ViewTransition>
+      <CompareBar />
       <footer className="foot"><div className="wrap">
         <div className="foot-l">
           <Link href="/" className="logo">{s.siteName}</Link>

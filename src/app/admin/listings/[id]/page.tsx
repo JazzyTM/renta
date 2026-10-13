@@ -7,6 +7,7 @@ import { LISTING_STATUS, MODERATION, BOOKING_STATUS, PROMO_TYPES } from "@/lib/l
 import { ListingEditor } from "@/components/ListingEditor";
 import { ActionForm, ConfirmButton } from "@/components/Forms";
 import { listingAdmin, grantPromotion, deleteListing } from "../../actions";
+import { translateListing } from "@/lib/listing-actions";
 
 export default async function AdminListing({ params }: { params: Promise<{ id: string }> }) {
   const u = await requireStaff();
@@ -49,6 +50,13 @@ export default async function AdminListing({ params }: { params: Promise<{ id: s
       </div>
       {l.bookings.length > 0 && <div className="card-box stack"><b>Последние заявки</b>
         <div className="lines">{l.bookings.map(b => <div className="l" key={b.id}><Link href={`/admin/bookings/${b.number}`}>№{b.number} {b.guestName}, {fmtRange(b.checkIn, b.checkOut)}</Link><span className={`tag ${BOOKING_STATUS[b.status][1]}`}>{BOOKING_STATUS[b.status][0]}</span></div>)}</div></div>}
+      <div className="card-box stack"><b>Английская версия</b>
+        <span className="small muted">Гости увидят переключатель English на странице объявления. Перевод можно поправить вручную.</span>
+        <ActionForm action={translateListing.bind(null, id)} submit="Перевести автоматически"><input type="hidden" name="auto" value="1" /></ActionForm>
+        <ActionForm action={translateListing.bind(null, id)}>
+          <div className="field"><label>Title</label><input className="input" name="titleEn" defaultValue={l.titleEn ?? ""} /></div>
+          <div className="field"><label>Description</label><textarea className="input" name="descriptionEn" rows={5} defaultValue={l.descriptionEn ?? ""} /></div>
+        </ActionForm></div>
       <h2 className="h2">Содержимое объявления</h2>
       <ListingEditor id={id} />
       <div className="card-box stack"><b>История</b>

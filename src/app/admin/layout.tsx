@@ -11,13 +11,14 @@ export const metadata = { title: { default: "Админка", template: "%s · �
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const u = await requireStaff();
   const admin = u.role === "ADMIN";
-  const [mod, bookings, reviews, complaints, orders, s] = await Promise.all([
+  const [mod, bookings, reviews, complaints, orders, s, ids] = await Promise.all([
     db.listing.count({ where: { status: "PUBLISHED", moderation: "PENDING" } }),
     db.booking.count({ where: { status: "NEW" } }),
     db.review.count({ where: { status: "PENDING" } }),
     db.complaint.count({ where: { status: "OPEN" } }),
     db.order.count({ where: { status: "PENDING" } }),
     getSettings(),
+    db.user.count({ where: { idStatus: "PENDING" } }),
   ]);
   const c = (k: string) => ({ href: `/admin/c/${k}`, label: CRUD[k].title });
   const items: NavItem[] = [
@@ -29,6 +30,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { href: "/admin/reviews", label: "Отзывы", badge: reviews },
     { href: "/admin/complaints", label: "Жалобы", badge: complaints },
     { href: "/admin/users", label: "Пользователи" },
+    { href: "/admin/idcheck", label: "Проверка личности", badge: ids },
+    { group: "Аналитика" },
+    { href: "/admin/demand", label: "Спрос по курортам" },
+    { href: "/admin/experiments", label: "A/B-тесты" },
     { group: "Справочники" },
     c("regions"), c("resorts"), c("beaches"), c("amenities"), c("stopwords"),
     { group: "Контент" },

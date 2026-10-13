@@ -22,6 +22,9 @@ export const PROMO_TYPES: Record<string, string> = { BOOST: "Поднятие", 
 export const AUD: Record<string, string> = { owners: "Хозяева (есть объявления)", guests: "Гости (без объявлений)", all: "Все пользователи", staff: "Только сотрудники (проверка)" };
 export const TPL_NAMES: Record<string, string> = {
   verify_email: "Подтверждение почты", password_reset: "Восстановление пароля", booking_new_owner: "Хозяину: новая заявка",
-  booking_accepted_guest: "Гостю: даты подтверждены", booking_declined_guest: "Гостю: заявка отклонена", booking_message: "Новое сообщение в заявке",
+  booking_accepted_guest: "Гостю: даты подтверждены", booking_declined_guest: "Гостю: заявка отклонена", booking_message: "Новое сообщение в заявке", search_alert: "Гостю: новые варианты по подписке", id_checked: "Хозяину: результат проверки личности",
   listing_rejected: "Хозяину: объявление нужно поправить", listing_approved: "Хозяину: объявление проверено",
 };
+
+// Оценки по пунктам в отзывах
+export const CRIT: [("cleanliness" | "location" | "value" | "service"), string][] = [["cleanliness", "Чистота"], ["location", "Расположение"], ["value", "Цена и качество"], ["service", "Хозяин и сервис"]];

@@ -7,6 +7,7 @@ import { quote } from "@/lib/pricing";
 import { thumb } from "@/lib/img";
 import type { CardData } from "@/lib/card";
 import { FavButton } from "./Fav";
+import { CompareButton } from "./Compare";
 
 // Листание фото прямо в карточке: свайп на телефоне, стрелки при наведении на компьютере
 function Photos({ photos, title }: { photos: string[]; title: string }) {
@@ -82,13 +83,14 @@ export function ListingRow({ l, ci, co, guests = 2, onHover }: { l: CardData; ci
         <span className="meta">
           {l.ratingCount > 0 && <><span className="score num">{l.ratingAvg.toFixed(1)}</span><span>{l.ratingCount} {plural(l.ratingCount, ["отзыв", "отзыва", "отзывов"])}</span></>}
           {l.verified && <span className="vtag">Проверен</span>}
+          {l.fast && <span className="fast">Отвечает быстро</span>}
         </span>
         {l.seaDistance != null && <span className="sea">{l.seaDistance} м до моря</span>}
         {l.amen.length > 0 && <span className="amen">{l.amen.slice(0, 4).map(a => <span key={a.code}><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d={amenIcon(a.code)} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>{a.name}</span>)}</span>}
       </div>
       <div className="pside">
         <Price l={l} ci={ci} co={co} guests={guests} />
-        <span className="btn gray">Подробнее</span>
+        <span className="pbtns"><CompareButton id={l.id} /><span className="btn gray">Подробнее</span></span>
       </div>
     </Link>
   );

@@ -38,7 +38,15 @@ export const CRUD: Record<string, CrudEntity> = {
     { key: "lat", label: "Широта", type: "text" }, { key: "lng", label: "Долгота", type: "text" },
     { key: "coverUrl", label: "Фото курорта", type: "image", hint: "Для плитки на главной и шапки страницы курорта. Горизонтальное, от 1200 px" },
     ...seo,
+    { key: "guide", label: "Гид по курорту", type: "rich", hint: "Пляжи, что посмотреть, как добраться. Показывается на странице курорта под списком" },
     { key: "seoText", label: "SEO-текст внизу страницы курорта", type: "rich" },
+  ]},
+  experiments: { title: "A/B-тесты", one: "тест", model: "experiment", adminOnly: true, columns: ["title", "key", "variants", "isActive"], orderBy: { createdAt: "desc" }, fields: [
+    { key: "title", label: "Название", type: "text", required: true },
+    { key: "key", label: "Что тестируем", type: "select", required: true, options: async () => (await import("./ab")).AB_PLACES.map(p => [p.key, `${p.title} (сейчас: «${p.def}»)`] as [string, string]) },
+    { key: "variants", label: "Варианты текста через |", type: "text", required: true, hint: "Например: Узнать цены|Найти жильё. Первый вариант — контрольный" },
+    { key: "goal", label: "Цель", type: "select", def: "request", options: [["request", "Заявка хозяину"], ["phone", "Показ телефона"], ["search", "Поиск"]] },
+    { key: "isActive", label: "Идёт", type: "bool", def: true },
   ]},
   seopages: { title: "SEO-подборки", one: "текст подборки", model: "seoPage", columns: ["filter", "resortId", "h1", "isActive"], orderBy: [{ filter: "asc" }], fields: [
     { key: "filter", label: "Подборка", type: "select", required: true, options: async () => (await import("./collections")).COLLECTIONS.map(c => [c.slug, `${c.title} (/${c.slug})`] as [string, string]) },

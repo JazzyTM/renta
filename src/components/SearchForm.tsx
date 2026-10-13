@@ -1,8 +1,9 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { DateRange, Guests } from "./DateRange";
 import { plural } from "@/lib/format";
+import { useAB, abGoal } from "./AB";
 
 export type ResortOpt = { name: string; slug: string; region: string; count?: number; popular?: boolean };
 
@@ -20,6 +21,7 @@ export function SearchForm({ resorts, init, compact }: { resorts: ResortOpt[]; i
   const [co, setCo] = useState(init.co ?? "");
   const [adults, setAdults] = useState(init.adults ?? 2);
   const [children, setChildren] = useState(init.children ?? 0);
+  const label = useAB("search_button", "Узнать цены");
   // Подсказки: совпадение с начала слова выше, затем по числу объявлений; без ввода — популярные
   const matches = useMemo(() => {
     const v = norm(q.trim());
@@ -27,6 +29,22 @@ export function SearchForm({ resorts, init, compact }: { resorts: ResortOpt[]; i
     return resorts.map(r => { const n = norm(r.name); const i = n.indexOf(v); return { r, s: i < 0 ? (norm(r.region).includes(v) ? 3 : -1) : i === 0 ? 0 : 1 }; })
       .filter(x => x.s >= 0).sort((a, b) => a.s - b.s || (b.r.count ?? 0) - (a.r.count ?? 0)).slice(0, 8).map(x => x.r);
   }, [q, resorts, slug, initial]);
+
+  // Голосовой поиск (Chrome, Яндекс Браузер, Edge): говорим название курорта
+  const [canVoice, setCanVoice] = useState(false);
+  const [listening, setListening] = useState(false);
+  useEffect(() => { setCanVoice(!!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)); }, []);
+  function voice() {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition; if (!SR) return;
+    const r = new SR(); r.lang = "ru-RU"; r.interimResults = false; r.maxAlternatives = 3;
+    r.onresult = (e: any) => {
+      const alts: string[] = Array.from(e.results[0]).map((a: any) => a.transcript);
+      const hit = alts.map(t => resorts.find(x => norm(t).includes(norm(x.name)))).find(Boolean);
+      if (hit) pick(hit); else { setQ(alts[0] ?? ""); setSlug(""); setShow(true); }
+    };
+    r.onend = () => setListening(false); r.onerror = () => setListening(false);
+    setListening(true); r.start();
+  }
 
   function pick(r: ResortOpt) { setQ(r.name); setSlug(r.slug); setShow(false); }
 
@@ -37,7 +55,7 @@ export function SearchForm({ resorts, init, compact }: { resorts: ResortOpt[]; i
     if (ci) p.set("ci", ci); if (co) p.set("co", co);
     if (adults !== 2) p.set("adults", String(adults)); if (children) p.set("children", String(children));
     const url = r ? `/kurort/${r}${p.size ? "?" + p : ""}` : `/search${p.size ? "?" + p : ""}`;
-    setShow(false);
+    setShow(false); abGoal("search");
     start(() => { if (location.pathname + location.search === url) router.refresh(); else router.push(url); });
   }
 
@@ -53,6 +71,8 @@ export function SearchForm({ resorts, init, compact }: { resorts: ResortOpt[]; i
             if (e.key === "Enter" && !slug) { e.preventDefault(); pick(matches[act]); }
             if (e.key === "Escape") setShow(false);
           }} />
+        {canVoice && !q && <button type="button" className={`mic ${listening ? "on" : ""}`} aria-label="Сказать название курорта" title="Голосовой поиск" onClick={voice}>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 15a3 3 0 003-3V6a3 3 0 00-6 0v6a3 3 0 003 3zM5 11a7 7 0 0014 0M12 18v3" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg></button>}
         {q && <button type="button" className="clr" aria-label="Очистить" onMouseDown={e => { e.preventDefault(); setQ(""); setSlug(""); setShow(true); }}>×</button>}
         {show && (
           <div className="sugg" id="s-sugg" role="listbox">
@@ -67,7 +87,7 @@ export function SearchForm({ resorts, init, compact }: { resorts: ResortOpt[]; i
       </div>
       <DateRange single ci={ci} co={co} onChange={(a, b) => { setCi(a); setCo(b); }} />
       <Guests bare adults={adults} children={children} onChange={(a, c) => { setAdults(a); setChildren(c); }} />
-      <button className="btn" type="submit" disabled={pending}>{pending ? <><span className="spin" /> Ищем</> : "Узнать цены"}</button>
+      <button className="btn" type="submit" disabled={pending}>{pending ? <><span className="spin" /> Ищем</> : label}</button>
     </form>
   );
 }

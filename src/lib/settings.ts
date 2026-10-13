@@ -68,6 +68,12 @@ export const SETTINGS: Section[] = [
     { key: "reviewsOnlyAfterStay", label: "Отзывы только после заявки", type: "bool", def: true },
     { key: "reviewsPremoderation", label: "Отзывы публиковать после проверки", type: "bool", def: true },
   ]},
+  { id: "translate", title: "Перевод и рефералы", fields: [
+    { key: "yandexTranslateKey", label: "Яндекс Переводчик: API-ключ", type: "password", def: "", hint: "Yandex Cloud → сервисный аккаунт → API-ключ с ролью ai.translate.user. Нужен для кнопки «Перевести на английский» в объявлении" },
+    { key: "yandexFolderId", label: "Яндекс Переводчик: ID каталога", type: "text", def: "", hint: "Можно не заполнять, если ключ сервисного аккаунта" },
+    { key: "referralOn", label: "Приглашения хозяев включены", type: "bool", def: true },
+    { key: "referralDays", label: "Бонус за приглашённого хозяина, дней тарифа", type: "number", def: 30, hint: "Начисляется, когда приглашённый опубликует первое объявление" },
+  ]},
   { id: "auth", title: "Регистрация и вход", fields: [
     { key: "registrationOpen", label: "Регистрация открыта", type: "bool", def: true },
     { key: "requireEmailVerify", label: "Требовать подтверждение почты", type: "bool", def: true },

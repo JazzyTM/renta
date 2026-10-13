@@ -13,8 +13,10 @@ export function guessPrep(name: string) {
 export const prepOf = (r: { name: string; namePrep?: string | null }) => r.namePrep || guessPrep(r.name);
 
 // Подборки: адрес /kurort/{курорт}/{фильтр}
-export type Collection = { slug: string; title: string; h1: (prep: string) => string; where: Prisma.ListingWhereInput };
+export type Collection = { slug: string; title: string; h1: (prep: string) => string; where: Prisma.ListingWhereInput; season?: boolean };
 const amen = (code: string): Prisma.ListingWhereInput => ({ amenities: { some: { amenity: { code } } } });
+// Сдаётся в эти месяцы: есть цена хотя бы на один из них
+const months = (...m: number[]): Prisma.ListingWhereInput => ({ prices: { some: { month: { in: m }, price: { gt: 0 } } } });
 
 export const COLLECTIONS: Collection[] = [
   { slug: "gostevye-doma", title: "Гостевые дома", h1: p => `Гостевые дома ${p}`, where: { type: "GUESTHOUSE" } },
@@ -35,5 +37,11 @@ export const COLLECTIONS: Collection[] = [
   { slug: "s-zavtrakom", title: "С завтраком", h1: p => `Жильё с завтраком ${p}`, where: amen("breakfast") },
   { slug: "s-vidom-na-more", title: "С видом на море", h1: p => `Жильё с видом на море ${p}`, where: amen("sea_view") },
   { slug: "nedorogo", title: "Недорого", h1: p => `Недорогое жильё ${p}`, where: { priceFrom: { gt: 0, lte: 2500 } } },
+  // Сезонные подборки
+  { slug: "na-mayskie", title: "На майские", h1: p => `Жильё на майские праздники ${p}`, where: months(5), season: true },
+  { slug: "letom", title: "Летом", h1: p => `Жильё на лето ${p}`, where: months(6, 7, 8), season: true },
+  { slug: "barhatnyy-sezon", title: "Бархатный сезон", h1: p => `Жильё на бархатный сезон ${p}`, where: months(9, 10), season: true },
+  { slug: "zimoy", title: "Зимой", h1: p => `Жильё зимой ${p}`, where: months(12, 1, 2), season: true },
+  { slug: "na-novyy-god", title: "На Новый год", h1: p => `Жильё на Новый год ${p}`, where: months(12, 1), season: true },
 ];
 export const collectionBySlug = (s: string) => COLLECTIONS.find(c => c.slug === s);

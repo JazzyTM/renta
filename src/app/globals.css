@@ -937,3 +937,61 @@ main .rtop .chip, main .modal .chip { background: var(--gray) } main .rtop .chip
 .cb .tip.l { left: auto; right: 0; transform: none }
 .cb .tip .cur { color: #FFB59C }
 .cb .tip b { font-weight: 700 }
+.day.wp { display: flex; flex-direction: column; justify-content: center; gap: 0; line-height: 1.1 }
+.day small { font-size: 9.5px; font-weight: 400; color: #8A8E95 }
+.day.edge small, .day.inr small { color: inherit; opacity: .85 }
+.day.busy { text-decoration: line-through; color: #B0B3B8 }
+.dp:has(.wp) { width: min(640px, calc(100vw - 24px)) }
+
+/* сравнение */
+.pbtns { display: grid; gap: 6px }
+.cmpbtn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 13.5px; color: #333; padding: 4px 0 }
+.cmpbtn:hover, .cmpbtn.on { color: var(--accent) }
+.cmpbtn.big { border: 1px solid #111; border-radius: var(--r-sm); height: 40px; padding: 0 14px; font-weight: 500; font-size: 14px; background: #fff; color: #111 }
+.cmpbar { position: fixed; z-index: 45; left: 50%; bottom: 16px; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; background: #111; color: #fff; border-radius: 999px; padding: 6px 8px 6px 18px; font-size: 14px }
+.cmpbar .x { color: #fff; width: 32px; height: 32px; border-radius: 50%; font-size: 18px }
+body:has(.mbar) .cmpbar { bottom: 84px }
+.cmpwrap { overflow-x: auto; padding: 0 }
+.cmpt { width: 100%; border-collapse: collapse; min-width: 560px }
+.cmpt th, .cmpt td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 14.5px }
+.cmpt td:first-child { color: #555; width: 180px }
+.cmpt th { font-weight: 400; width: 22% }
+.cmph { display: grid; gap: 8px; color: var(--ink) !important }
+.cmph img, .cmph .noimg { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--r-sm); background: var(--gray); display: block }
+.cmpt .good { color: #2F8F3E; font-weight: 700 }
+.oacts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end }
+.share { position: relative }
+.share-pop { position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; background: #fff; border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--pop); padding: 6px; display: grid; min-width: 210px }
+.share-pop a, .share-pop button { padding: 9px 12px; border-radius: 6px; color: var(--ink); text-align: left; font-size: 14.5px }
+.share-pop a:hover, .share-pop button:hover { background: var(--gray) }
+@media (max-width: 640px) { .ohead { flex-direction: column; align-items: stretch } .oacts { justify-content: flex-start } }
+.seg-resort .mic { position: absolute; right: 10px; top: 10px; width: 30px; height: 30px; border-radius: 50%; color: #555; display: grid; place-items: center; z-index: 3 }
+.seg-resort .mic:hover { color: var(--accent) }
+.seg-resort .mic.on { color: #fff; background: var(--accent); animation: pulse 1s infinite }
+@keyframes pulse { 50% { box-shadow: 0 0 0 6px rgba(255,87,34,.25) } }
+
+/* Карта спроса */
+.heat-wrap { overflow-x: auto; }
+.heat { border-collapse: separate; border-spacing: 2px; font-size: 13px; width: 100%; }
+.heat th { font-weight: 500; text-align: left; padding: 4px 8px; white-space: nowrap; }
+.heat thead th { color: var(--ink-2); font-weight: 400; text-align: center; }
+.heat td { text-align: center; padding: 6px 4px; min-width: 34px; border-radius: 4px; background: var(--gray); font-variant-numeric: tabular-nums; }
+
+/* Погода на странице курорта */
+.weather h2 { font-size: 18px; font-weight: 500; margin: 0 0 12px; }
+.w-now { display: flex; gap: 24px; }
+.w-now div { display: flex; flex-direction: column; }
+.w-now b { font-size: 28px; font-weight: 500; line-height: 1.1; }
+.w-now span { font-size: 13px; color: var(--ink-2); }
+.w-days { list-style: none; padding: 0; margin: 14px 0 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; text-align: center; font-size: 13px; }
+.w-days li { display: flex; flex-direction: column; gap: 2px; background: var(--gray); border-radius: var(--r-sm); padding: 6px 0; }
+.w-days b { font-weight: 500; }
+.guide-panel h2 { font-size: 22px; font-weight: 500; margin: 0 0 12px; }
+
+/* Оценки по пунктам */
+.crit-in { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.crit { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px 24px; margin: 0 0 16px; }
+.crit div { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 10px; font-size: 14px; }
+.crit i { grid-column: 1 / -1; height: 4px; border-radius: 2px; background: var(--gray-2); position: relative; overflow: hidden; }
+.crit i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--w); background: var(--accent); }
+.fast { color: #2F8F3E; font-size: 13px; }

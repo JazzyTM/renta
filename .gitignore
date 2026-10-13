@@ -5,3 +5,4 @@ uploads
 src/generated
 *.tsbuildinfo
 next-env.d.ts
+private

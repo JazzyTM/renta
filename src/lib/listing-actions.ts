@@ -174,6 +174,7 @@ export async function publish(id: string): Promise<FormState> {
     moderation: l.moderation === "APPROVED" && !hit ? "APPROVED" : "PENDING", moderationNote: hit ? `Стоп-слово: ${hit.word}` : l.moderationNote,
   }});
   await audit(u.id, "publish", "Listing", id);
+  if (!l.publishedAt) await (await import("./referral")).rewardReferrer(l.ownerId).catch(() => {});
   paths(id);
   return { ok: s.postModeration ? "Опубликовано. Модератор проверит объявление в ближайшее время" : "Отправлено на проверку. После проверки объявление появится в поиске" };
 }
@@ -183,4 +184,34 @@ export async function setStatus(id: string, status: "HIDDEN" | "ARCHIVED" | "DRA
   await db.listing.update({ where: { id }, data: { status } });
   await audit(u.id, "status:" + status, "Listing", id);
   paths(id); revalidatePath("/cabinet");
+}
+
+// Календарь занятости с других площадок (.ics)
+export async function saveIcal(id: string, _: unknown, fd: FormData): Promise<FormState> {
+  await canEdit(id);
+  const url = str(fd.get("icalUrl"), 1000);
+  if (url && !/^https?:\/\//.test(url)) return { error: "Ссылка должна начинаться с https://" };
+  await db.listing.update({ where: { id }, data: { icalUrl: url || null, icalError: null, ...(url ? {} : { icalSyncedAt: null }) } });
+  if (!url) { await db.busyDate.deleteMany({ where: { listingId: id, source: "ical" } }); paths(id); return { ok: "Календарь отключён" }; }
+  const { syncIcal } = await import("./ical");
+  const r = await syncIcal(id);
+  paths(id);
+  return r.ok ? { ok: `Календарь загружен, занятых ночей: ${r.count}` } : { error: `Ссылка сохранена, но загрузить не вышло: ${r.error}` };
+}
+
+// Перевод названия и описания на английский (только для сотрудников)
+export async function translateListing(id: string, _: unknown, fd: FormData): Promise<FormState> {
+  const { u, l } = await canEdit(id);
+  if (!isStaff(u.role)) return { error: "Нет доступа" };
+  if (fd.get("auto") === "1") {
+    try {
+      const { translate } = await import("./translate");
+      const [titleEn, descriptionEn] = await translate([l.title, l.description || " "]);
+      await db.listing.update({ where: { id }, data: { titleEn, descriptionEn } });
+    } catch (e) { return { error: (e as Error).message }; }
+  } else {
+    await db.listing.update({ where: { id }, data: { titleEn: str(fd.get("titleEn"), 200) || null, descriptionEn: str(fd.get("descriptionEn"), 10000) || null } });
+  }
+  paths(id); revalidatePath(`/obj/${l.number}`);
+  return { ok: "Сохранено" };
 }

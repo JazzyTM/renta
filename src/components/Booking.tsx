@@ -6,20 +6,21 @@ import { createBooking, revealPhone } from "@/app/(site)/obj/[number]/actions";
 import { quote, type ListingPricing } from "@/lib/pricing";
 import { rub, plural } from "@/lib/format";
 import { toast } from "./Toaster";
+import { useAB, abGoal } from "./AB";
 
 type Phone = { phone: string; name: string; whatsapp: boolean; telegram: string | null };
 type Ctx = {
   listingId: string; pricing: ListingPricing; maxGuests: number; cancelDays: number; allowRequests: boolean;
   ci: string; co: string; setDates: (a: string, b: string) => void; adults: number; children: number; setGuests: (a: number, c: number) => void;
-  phone: Phone | null; showPhone: () => Promise<void>; openRequest: (room?: string) => void;
+  phone: Phone | null; showPhone: () => Promise<void>; openRequest: (room?: string) => void; busy: string[];
 };
 const C = createContext<Ctx | null>(null);
 const use = () => useContext(C)!;
 
 // Общее состояние страницы объявления: даты, гости, телефон, окно заявки
-export function BookingProvider({ children, listingId, pricing, maxGuests, cancelDays, allowRequests, init, user }: {
+export function BookingProvider({ children, listingId, pricing, maxGuests, cancelDays, allowRequests, init, user, busy = [] }: {
   children: React.ReactNode; listingId: string; pricing: ListingPricing; maxGuests: number; cancelDays: number; allowRequests: boolean;
-  init: { ci?: string; co?: string }; user: { name: string; email: string } | null;
+  init: { ci?: string; co?: string }; user: { name: string; email: string } | null; busy?: string[];
 }) {
   const [ci, setCi] = useState(init.ci ?? ""), [co, setCo] = useState(init.co ?? "");
   const [adults, setAdults] = useState(2), [children_, setChildren] = useState(0);
@@ -30,7 +31,7 @@ export function BookingProvider({ children, listingId, pricing, maxGuests, cance
     if (phone) return;
     const r = await revealPhone(listingId);
     if ("error" in r) { toast(r.error!, "err"); return; }
-    setPhone(r as Phone);
+    setPhone(r as Phone); abGoal("phone");
     window.dispatchEvent(new CustomEvent("phone", { detail: (r as Phone).phone }));
   }
   const openRequest = (room?: string) => setReq({ room });
@@ -45,7 +46,7 @@ export function BookingProvider({ children, listingId, pricing, maxGuests, cance
   });
 
   const v: Ctx = { listingId, pricing, maxGuests, cancelDays, allowRequests, ci, co, setDates: (a, b) => { setCi(a); setCo(b); },
-    adults, children: children_, setGuests: (a, c) => { setAdults(a); setChildren(c); }, phone, showPhone, openRequest };
+    adults, children: children_, setGuests: (a, c) => { setAdults(a); setChildren(c); }, phone, showPhone, openRequest, busy };
   return <C.Provider value={v}>{children}{req && <RequestModal room={req.room} user={user} onClose={() => setReq(null)} />}</C.Provider>;
 }
 
@@ -64,7 +65,7 @@ export function DatesPanel() {
     <section className="panel" ref={box} id="dates">
       <h2 className="ph2">Даты и гости</h2>
       <div className="search dsearch">
-        <DateRange single ci={x.ci} co={x.co} onChange={x.setDates} />
+        <DateRange single ci={x.ci} co={x.co} onChange={x.setDates} prices={x.pricing.prices} busy={x.busy} />
         <Guests bare adults={x.adults} children={x.children} onChange={x.setGuests} />
         <button type="button" className="btn" onClick={check}>Узнать цены</button>
       </div>
@@ -84,18 +85,20 @@ export function DatesPanel() {
 // Кнопка заявки у номера
 export function RequestButton({ room }: { room?: string }) {
   const x = use();
+  const label = useAB("request_button", "Отправить заявку");
   if (!x.allowRequests) return <button type="button" className="btn sm" onClick={() => { document.getElementById("owner")?.scrollIntoView({ behavior: "smooth", block: "center" }); x.showPhone(); }}>Позвонить</button>;
-  return <button type="button" className="btn sm" onClick={() => x.openRequest(room)}>Отправить заявку</button>;
+  return <button type="button" className="btn sm" onClick={() => x.openRequest(room)}>{label}</button>;
 }
 
 // Карточка хозяина справа
-export function OwnerCard({ name, since, siteName, showPhone }: { name: string; since: number; siteName: string; showPhone: boolean }) {
+export function OwnerCard({ name, since, siteName, showPhone, reply, idOk }: { name: string; since: number; siteName: string; showPhone: boolean; reply?: string | null; idOk?: boolean }) {
   const x = use();
   const p = x.phone;
+  const reqLabel = useAB("request_button", "Отправить заявку"), phoneLabel = useAB("phone_button", "Показать телефон");
   const tel = p ? p.phone.replace(/[^+\d]/g, "") : "";
   return (
     <div className="panel owner" id="owner">
-      <div className="ow-h"><span className="ow-av">{(name || "Х").trim()[0].toUpperCase()}</span><div><b>{name || "Хозяин"}</b><span>На сайте с {since} года</span></div></div>
+      <div className="ow-h"><span className="ow-av">{(name || "Х").trim()[0].toUpperCase()}</span><div><b>{name || "Хозяин"}</b><span>На сайте с {since} года</span>{idOk && <span className="vtag">Личность подтверждена</span>}{reply && <span className="fast">{reply}</span>}</div></div>
       <p className="small">При звонке скажите, что нашли объявление на {siteName}</p>
       {p ? <div className="ow-ph">
         {p.name && p.name !== name && <span className="small muted">{p.name}</span>}
@@ -104,8 +107,8 @@ export function OwnerCard({ name, since, siteName, showPhone }: { name: string; 
           {p.whatsapp && <a href={`https://wa.me/${tel.replace("+", "")}`} target="_blank" rel="noopener">WhatsApp</a>}
           {p.telegram && <a href={`https://t.me/${p.telegram.replace(/^@/, "")}`} target="_blank" rel="noopener">Telegram</a>}
         </span>
-      </div> : showPhone && <button type="button" className="btn ghost wide" onClick={x.showPhone}>Показать телефон</button>}
-      {x.allowRequests && <button type="button" className="btn wide" onClick={() => x.openRequest()}>Отправить заявку</button>}
+      </div> : showPhone && <button type="button" className="btn ghost wide" onClick={x.showPhone}>{phoneLabel}</button>}
+      {x.allowRequests && <button type="button" className="btn wide" onClick={() => x.openRequest()}>{reqLabel}</button>}
     </div>
   );
 }
@@ -123,11 +126,11 @@ function RequestModal({ room, user, onClose }: { room?: string; user: { name: st
       <button className="x" aria-label="Закрыть" onClick={onClose}>×</button>
       <h2 className="h2">Заявка хозяину</h2>
       {room && <p className="small muted">{room}</p>}
-      <form action={action} className="stack" style={{ marginTop: 14 }}><Honeypot />
+      <form action={action} onSubmit={() => abGoal("request")} className="stack" style={{ marginTop: 14 }}><Honeypot />
         <input type="hidden" name="listingId" value={x.listingId} /><input type="hidden" name="ci" value={x.ci} /><input type="hidden" name="co" value={x.co} />
         <input type="hidden" name="adults" value={x.adults} /><input type="hidden" name="children" value={x.children} />
         <div className="search dsearch col">
-          <DateRange single ci={x.ci} co={x.co} onChange={x.setDates} />
+          <DateRange single ci={x.ci} co={x.co} onChange={x.setDates} prices={x.pricing.prices} busy={x.busy} />
           <Guests bare adults={x.adults} children={x.children} onChange={x.setGuests} />
         </div>
         <div className="field"><label htmlFor="b-name">Имя</label><input className="input" id="b-name" name="name" defaultValue={user?.name} required /></div>

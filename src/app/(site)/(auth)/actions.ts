@@ -50,6 +50,7 @@ export async function register(_: unknown, fd: FormData): Promise<FormState> {
   if (await db.user.findUnique({ where: { email: p.data.email } })) return { error: "Эта почта уже зарегистрирована. Войдите или восстановите пароль" };
   const u = await db.user.create({ data: { email: p.data.email, name: p.data.name, passwordHash: await hashPassword(p.data.password), role: fd.get("owner") ? "OWNER" : "GUEST" } });
   await audit(u.id, "register", "User", u.id);
+  await (await import("@/lib/referral")).attachReferrer(u.id, (await (await import("next/headers")).cookies()).get("ref")?.value);
   if (s.requireEmailVerify) {
     await sendVerify(u.id, u.email!, u.name);
     return { ok: "Мы отправили письмо со ссылкой для подтверждения почты" };

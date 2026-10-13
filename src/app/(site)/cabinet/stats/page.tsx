@@ -2,12 +2,14 @@ import { db } from "@/lib/db";
 import { Chart } from "@/components/Chart";
 import { requireUser } from "@/lib/auth";
 import { isoDate, fmtDate } from "@/lib/format";
+import { demandMap } from "@/lib/demand";
+import { Heatmap } from "@/components/Heatmap";
 
 export default async function Stats({ searchParams }: { searchParams: Promise<{ listing?: string; days?: string }> }) {
   const u = await requireUser("/cabinet/stats");
   const sp = await searchParams;
   const days = [7, 30, 90].includes(Number(sp.days)) ? Number(sp.days) : 30;
-  const listings = await db.listing.findMany({ where: { ownerId: u.id }, select: { id: true, title: true } });
+  const listings = await db.listing.findMany({ where: { ownerId: u.id }, select: { id: true, title: true, resortId: true } });
   const ids = sp.listing && listings.some(l => l.id === sp.listing) ? [sp.listing] : listings.map(l => l.id);
   const from = new Date(Date.now() - (days - 1) * 86400000); from.setUTCHours(0, 0, 0, 0);
   const rows = await db.listingStatDaily.groupBy({ by: ["date"], where: { listingId: { in: ids }, date: { gte: from } }, _sum: { views: true, phoneViews: true, requests: true } });
@@ -16,6 +18,7 @@ export default async function Stats({ searchParams }: { searchParams: Promise<{ 
   const sum = (k: "v" | "p" | "q") => series.reduce((a, x) => a + x[k], 0);
   const max = Math.max(1, ...series.map(x => x.v));
   const per = await db.listingStatDaily.groupBy({ by: ["listingId"], where: { listingId: { in: listings.map(l => l.id) }, date: { gte: from } }, _sum: { views: true, phoneViews: true, requests: true } });
+  const demand = await demandMap(90, [...new Set(listings.map(l => l.resortId))]);
   const conv = sum("v") ? ((sum("p") + sum("q")) / sum("v") * 100).toFixed(1) : "0";
   return (
     <>
@@ -37,6 +40,9 @@ export default async function Stats({ searchParams }: { searchParams: Promise<{ 
       {listings.length > 1 && <div className="tablewrap"><table className="t"><thead><tr><th>Объект</th><th>Просмотры</th><th>Телефон</th><th>Заявки</th></tr></thead><tbody>
         {listings.map(l => { const r = per.find(p => p.listingId === l.id)?._sum; return <tr key={l.id}><td>{l.title}</td><td className="num">{r?.views ?? 0}</td><td className="num">{r?.phoneViews ?? 0}</td><td className="num">{r?.requests ?? 0}</td></tr>; })}
       </tbody></table></div>}
+      {listings.length > 0 && <div className="card-box stack"><b>Когда ищут жильё на ваших курортах</b>
+        <span className="small muted">Поиски за 90 дней по месяцу заезда. Помогает понять, на какие даты поднять или снизить цену.</span>
+        <Heatmap {...demand} /></div>}
     </>
   );
 }

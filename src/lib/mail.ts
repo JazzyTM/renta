@@ -12,6 +12,8 @@ export const EMAIL_DEFAULTS: Record<string, { subject: string; body: string; var
   booking_declined_guest: { subject: "Даты заняты", body: "К сожалению, «{listing}» не сможет принять вас {dates}.\n\nПохожие варианты: {link}", vars: "{listing} {dates} {link}" },
   booking_message: { subject: "Новое сообщение по заявке №{number}", body: "{text}\n\nОтветить: {link}", vars: "{number} {text} {link}" },
   listing_rejected: { subject: "Объявление нужно поправить", body: "Объявление «{listing}» не прошло проверку.\n\nПричина: {reason}\n\nИсправить: {link}", vars: "{listing} {reason} {link}" },
+  search_alert: { subject: "Новые варианты: {title}", body: "По вашему поиску «{title}» появились новые объявления:\n\n{items}\n\nВсе варианты: {link}\n\nОтписаться: {unsubscribe}", vars: "{title} {items} {link} {unsubscribe}" },
+  id_checked: { subject: "Проверка личности: {result}", body: "Здравствуйте!\n\n{text}\n\n{link}", vars: "{result} {text} {link}" },
   listing_approved: { subject: "Объявление проверено", body: "Объявление «{listing}» проверено модератором и показывается в поиске.\n\n{link}", vars: "{listing} {link}" },
 };
 

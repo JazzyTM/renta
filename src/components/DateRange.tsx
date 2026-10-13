@@ -12,7 +12,10 @@ const nightsWord = (n: number) => { const a = n % 10, b = n % 100; return a === 
 const Chev = () => <svg className="chev" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 const label = (s: string) => { const d = new Date(D(s)); return `${d.getUTCDate()} ${MG[d.getUTCMonth()]}, ${WD[d.getUTCDay()]}`; };
 
-export function DateRange({ ci, co, onChange, alignRight, single }: { ci: string; co: string; onChange: (ci: string, co: string) => void; alignRight?: boolean; single?: boolean }) {
+export function DateRange({ ci, co, onChange, alignRight, single, prices, busy }: { ci: string; co: string; onChange: (ci: string, co: string) => void; alignRight?: boolean; single?: boolean; prices?: { month: number; price: number }[]; busy?: string[] }) {
+  const busySet = new Set(busy ?? []);
+  const priceIn = (m: number) => prices?.find(p => p.month === m + 1)?.price ?? 0;
+  const kfmt = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(n % 1000 ? 1 : 0).replace(".", ",")}к` : String(n);
   const [open, setOpen] = useState<null | "ci" | "co">(null);
   const today = iso(Date.now() - (Date.now() % 86400000));
   const start = new Date(D(ci || today));
@@ -43,7 +46,9 @@ export function DateRange({ ci, co, onChange, alignRight, single }: { ci: string
     for (let d = 1; d <= days; d++) {
       const s = iso(Date.UTC(y, m, d));
       const edge = s === ci || s === co, inr = ci && co && D(s) > D(ci) && D(s) < D(co);
-      cells.push(<button type="button" key={s} className={`day ${edge ? "edge" : inr ? "inr" : ""}`} disabled={D(s) < D(today)} onClick={() => pick(s)} aria-label={label(s)}>{d}</button>);
+      const isBusy = busySet.has(s), pr = prices ? priceIn(m) : 0;
+      cells.push(<button type="button" key={s} className={`day ${edge ? "edge" : inr ? "inr" : ""} ${isBusy ? "busy" : ""} ${prices ? "wp" : ""}`} disabled={D(s) < D(today) || (isBusy && open === "ci")} onClick={() => pick(s)} aria-label={`${label(s)}${isBusy ? ", занято" : pr ? `, ${pr} ₽` : ""}`}>
+        {d}{prices && <small>{isBusy ? "занято" : pr ? kfmt(pr) : "—"}</small>}</button>);
     }
     return (
       <div><h3 style={{ fontSize: 15, marginBottom: 8 }}>{MN[m]} {y}</h3>

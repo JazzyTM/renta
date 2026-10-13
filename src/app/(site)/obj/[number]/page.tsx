@@ -4,11 +4,14 @@ import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { getUser, isStaff } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
-import { LISTING_TYPES, BEACH_TYPES, PREPAY } from "@/lib/labels";
+import { LISTING_TYPES, BEACH_TYPES, PREPAY, CRIT } from "@/lib/labels";
+import { replyLabel } from "@/lib/alerts";
 import { walkMinutes, fmtDate, rub, plural } from "@/lib/format";
 import { prepOf } from "@/lib/collections";
 import { BookingProvider, DatesPanel, OwnerCard, RequestButton } from "@/components/Booking";
 import { FavButton } from "@/components/Fav";
+import { CompareButton } from "@/components/Compare";
+import { ShareButton } from "@/components/Share";
 import { ComplaintForm } from "@/components/ComplaintForm";
 import { Gallery } from "@/components/Gallery";
 import { MobileBar } from "@/components/MobileBar";
@@ -36,7 +39,7 @@ async function load(number: string) {
   const n = Number(number);
   if (!Number.isInteger(n)) return null;
   return db.listing.findUnique({ where: { number: n }, include: {
-    photos: { orderBy: { sort: "asc" } }, resort: { include: { region: true } }, prices: true, rooms: true, owner: { select: { name: true, createdAt: true } },
+    photos: { orderBy: { sort: "asc" } }, resort: { include: { region: true } }, prices: true, rooms: true, owner: { select: { name: true, createdAt: true, replyMinutes: true, idStatus: true } },
     amenities: { include: { amenity: true } }, reviews: { where: { status: "PUBLISHED" }, orderBy: { createdAt: "desc" }, take: 20 },
   }});
 }
@@ -69,10 +72,14 @@ export default async function ListingPage({ params, searchParams }: P) {
   await db.listing.update({ where: { id: l.id }, data: { views: { increment: 1 } } });
   const d = new Date(new Date().toISOString().slice(0, 10) + "T00:00:00Z");
   await db.listingStatDaily.upsert({ where: { listingId_date: { listingId: l.id, date: d } }, create: { listingId: l.id, date: d, views: 1 }, update: { views: { increment: 1 } } });
-  const [like, nearby] = await Promise.all([
+  const [like, nearby, crit, busy] = await Promise.all([
     similar(l),
     db.resort.findMany({ where: { regionId: l.resort.regionId, isActive: true, id: { not: l.resortId } }, orderBy: { name: "asc" }, select: { name: true, slug: true } }),
+    db.review.aggregate({ where: { listingId: l.id, status: "PUBLISHED" }, _avg: { cleanliness: true, location: true, value: true, service: true }, _count: { cleanliness: true } }),
+    db.busyDate.findMany({ where: { listingId: l.id, date: { gte: d } }, select: { date: true }, distinct: ["date"], take: 400 }),
   ]);
+  const en = sp.lang === "en" && !!l.descriptionEn;
+  const reply = replyLabel(l.owner.replyMinutes);
   const groups = new Map<string, string[]>();
   for (const a of l.amenities) { const g = a.amenity.group; if (!groups.has(g)) groups.set(g, []); groups.get(g)!.push(a.amenity.name); }
   const jsonLd = { "@context": "https://schema.org", "@type": "LodgingBusiness", name: l.title, address: l.address, image: l.photos.map(p => p.url),
@@ -95,15 +102,17 @@ export default async function ListingPage({ params, searchParams }: P) {
         {!visible && <div className="notice" style={{ marginBottom: 12 }}>Объявление не видно в поиске: {l.status === "PUBLISHED" ? "ждёт проверки" : "не опубликовано"}.</div>}
         <span className="oid">ID {l.number}</span>
         <div className="ohead">
-          <div><h1 className="h1">{l.title}</h1>
+          <div><h1 className="h1">{en && l.titleEn ? l.titleEn : l.title}</h1>
             <div className="osub">{l.lat && l.lng ? <a href="#map">{where}</a> : <span>{where}</span>}
               {l.ratingCount > 0 && <span className="meta"><span className="score num">{l.ratingAvg.toFixed(1)}</span><a href="#reviews">{l.ratingCount} {plural(l.ratingCount, ["отзыв", "отзыва", "отзывов"])}</a></span>}
-              {l.verified && <span className="vtag">Хозяин проверен</span>}</div></div>
-          <FavButton id={l.id} big />
+              {l.verified && <span className="vtag">Хозяин проверен</span>}
+              {l.owner.idStatus === "APPROVED" && <span className="vtag">Личность подтверждена</span>}
+              {reply && <span className="fast">{reply}</span>}</div></div>
+          <div className="oacts"><ShareButton title={l.title} /><CompareButton id={l.id} className="cmpbtn big" /><FavButton id={l.id} big /></div>
         </div>
         <Gallery photos={l.photos.map(p => ({ url: p.url, caption: p.caption }))} title={l.title} />
         <BookingProvider listingId={l.id} pricing={{ prices: l.prices, priceFrom: l.priceFrom, baseGuests: l.baseGuests, extraGuestPrice: l.extraGuestPrice, prepayType: l.prepayType, prepayPercent: l.prepayPercent }}
-          maxGuests={l.maxGuests} cancelDays={l.cancelDays} allowRequests={!!s.bookingRequests} init={{ ci: sp.ci, co: sp.co }} user={user ? { name: user.name, email: user.email ?? "" } : null}>
+          maxGuests={l.maxGuests} cancelDays={l.cancelDays} allowRequests={!!s.bookingRequests} init={{ ci: sp.ci, co: sp.co }} user={user ? { name: user.name, email: user.email ?? "" } : null} busy={busy.map(b => b.date.toISOString().slice(0, 10))}>
           <div className="ogrid">
             <div className="ocol">
               <DatesPanel />
@@ -117,12 +126,13 @@ export default async function ListingPage({ params, searchParams }: P) {
                 <div className="ptable">{prices.map(p => <div key={p.month} className={p.month === curMonth ? "cur" : ""}><span>{MON[p.month - 1]}</span><b className="num">{rub(p.price)}</b></div>)}</div>
                 <p className="small muted" style={{ marginTop: 10 }}>Цена за сутки за всё жильё до {l.baseGuests} гостей{l.extraGuestPrice ? `, каждый следующий гость +${rub(l.extraGuestPrice)}` : ""}.</p>
               </details>}
-              <section className="panel"><h2 className="ph2">Описание</h2>
+              <section className="panel"><div className="row between"><h2 className="ph2">{en ? "Description" : "Описание"}</h2>
+                {l.descriptionEn && <Link className="small" scroll={false} href={en ? `/obj/${l.number}` : `/obj/${l.number}?lang=en`} hrefLang={en ? "ru" : "en"}>{en ? "По-русски" : "English"}</Link>}</div>
                 <div className="facts2">
                   {l.seaDistance != null && <span><b className="num">{l.seaDistance} м</b> до моря, {walkMinutes(l.seaDistance)} мин пешком</span>}
                   {l.beachType && <span>Пляж: <b>{BEACH_TYPES[l.beachType].toLowerCase()}</b></span>}
                 </div>
-                <p className="desc">{l.description}</p></section>
+                <p className="desc" lang={en ? "en" : undefined}>{en ? l.descriptionEn : l.description}</p></section>
               {groups.size > 0 && <section className="panel"><h2 className="ph2">Что у нас есть</h2>
                 <div className="amen2">{[...groups].map(([g, list]) => <div key={g}><h3>{g}</h3><ul>{list.map(n => <li key={n}><Ic d={I.check} />{n}</li>)}</ul></div>)}</div></section>}
               <section className="panel"><h2 className="ph2">Правила проживания</h2>
@@ -131,6 +141,7 @@ export default async function ListingPage({ params, searchParams }: P) {
                 <a className="mapbox" href={`https://yandex.ru/maps/?pt=${l.lng},${l.lat}&z=16&l=map`} target="_blank" rel="noopener"><span className="btn ghost sm">Показать на карте</span></a></section>}
               <section className="panel" id="reviews"><h2 className="ph2">Отзывы гостей</h2>
                 {l.ratingCount > 0 && <p className="meta" style={{ marginBottom: 12 }}><span className="score num">{l.ratingAvg.toFixed(1)}</span> {l.ratingCount} {plural(l.ratingCount, ["отзыв", "отзыва", "отзывов"])}</p>}
+                {crit._count.cleanliness >= 3 && <div className="crit">{CRIT.map(([k, t]) => { const v = crit._avg[k]; return v ? <div key={k}><span>{t}</span><b className="num">{v.toFixed(1)}</b><i style={{ "--w": `${v / 5 * 100}%` } as React.CSSProperties} /></div> : null; })}</div>}
                 {l.reviews.length ? <div className="revs">{l.reviews.map(r => <div key={r.id} className="rev">
                   <div className="rv-h"><span className="ow-av sm">{r.authorName.trim()[0]?.toUpperCase()}</span><div><b>{r.authorName}</b><span className="small muted">{fmtDate(r.createdAt)}</span></div><span className="score num">{r.rating}</span></div>
                   <p>{r.text}</p>{r.ownerReply && <div className="reply"><b className="small">Ответ хозяина</b><p>{r.ownerReply}</p></div>}</div>)}</div>
@@ -138,7 +149,7 @@ export default async function ListingPage({ params, searchParams }: P) {
               </section>
               <ComplaintForm listingId={l.id} />
             </div>
-            <aside className="oside"><OwnerCard name={l.contactName || l.owner.name} since={l.owner.createdAt.getUTCFullYear()} siteName={s.siteName} showPhone={!!s.showPhone} /></aside>
+            <aside className="oside"><OwnerCard name={l.contactName || l.owner.name} since={l.owner.createdAt.getUTCFullYear()} reply={reply} idOk={l.owner.idStatus === "APPROVED"} siteName={s.siteName} showPhone={!!s.showPhone} /></aside>
           </div>
         </BookingProvider>
         {like.length > 0 && <section className="hsec"><h2 className="h2" style={{ marginBottom: 16 }}>Другие объекты {prepOf(l.resort)} и рядом</h2><div className="cards">{like.map(c => <ListingCard key={c.id} l={c} />)}</div></section>}

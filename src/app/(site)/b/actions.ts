@@ -17,6 +17,7 @@ export async function postMessage(number: number, k: string | null, fd: FormData
   const a = await bookingAccess(number, k);
   if (!a || a.role === "staff") return;
   await db.message.create({ data: { bookingId: a.b.id, text, fromOwner: a.role === "owner", authorId: a.user?.id } });
+  if (a.role === "owner" && !a.b.respondedAt) await db.booking.update({ where: { id: a.b.id }, data: { respondedAt: new Date() } });
   const base = process.env.APP_URL || "";
   if (a.role === "guest") await notifyEmail(a.b.listing.ownerId, "booking_message", { number, text, link: `${base}/cabinet/bookings/${number}` }, `Сообщение по заявке №${number}`, `/cabinet/bookings/${number}`);
   else await sendTemplate(a.b.guestEmail, "booking_message", { number, text, link: `${base}/b/${number}?k=${sign(number)}` });
@@ -39,9 +40,10 @@ export async function leaveReview(number: number, k: string | null, _: unknown, 
   if (await db.review.findUnique({ where: { bookingId: b.id } })) return { error: "Отзыв уже оставлен" };
   const rating = Math.min(5, Math.max(1, Number(fd.get("rating")) || 0));
   const text = String(fd.get("text") || "").trim().slice(0, 3000);
+  const crit = (k: string) => { const v = Number(fd.get(k)); return v >= 1 && v <= 5 ? Math.round(v) : null; };
   if (text.length < 10) return { error: "Напишите пару предложений" };
   const s = await getSettings();
-  await db.review.create({ data: { listingId: b.listingId, bookingId: b.id, authorId: a.user?.id, authorName: b.guestName, rating, text, status: s.reviewsPremoderation ? "PENDING" : "PUBLISHED" } });
+  await db.review.create({ data: { listingId: b.listingId, bookingId: b.id, authorId: a.user?.id, authorName: b.guestName, rating, cleanliness: crit("cleanliness"), location: crit("location"), value: crit("value"), service: crit("service"), text, status: s.reviewsPremoderation ? "PENDING" : "PUBLISHED" } });
   if (!s.reviewsPremoderation) await recomputeRating(b.listingId);
   revalidatePath(`/b/${number}`);
   return { ok: s.reviewsPremoderation ? "Спасибо! Отзыв появится после проверки" : "Спасибо за отзыв!" };

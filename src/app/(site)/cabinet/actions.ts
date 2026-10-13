@@ -10,6 +10,7 @@ import type { FormState } from "@/lib/form";
 import { redirect } from "next/navigation";
 import { getSettings } from "@/lib/settings";
 import { ownerPlan } from "@/lib/plan";
+import { markBookingBusy } from "@/lib/ical";
 import { activeProvider, applyPromoCode, markOrderPaid, promoPrice, PROMO_DAYS } from "@/lib/payments";
 
 async function ownBooking(number: number) {
@@ -54,6 +55,8 @@ export async function setBookingStatus(number: number, status: "PREPAID" | "COMP
   const { u, b } = await ownBooking(number);
   const text = { PREPAID: "Хозяин получил предоплату. Бронь подтверждена", COMPLETED: "Поездка завершена", CANCELLED: "Хозяин отменил бронь" }[status];
   await db.booking.update({ where: { id: b.id }, data: { status, messages: { create: { isSystem: true, text } } } });
+  if (status === "PREPAID") await markBookingBusy(b.listingId, b.checkIn, b.checkOut, true);
+  if (status === "CANCELLED") await markBookingBusy(b.listingId, b.checkIn, b.checkOut, false);
   await sendTemplate(b.guestEmail, "booking_message", { number, text, link: guestLink(number) });
   await audit(u.id, "status:" + status, "Booking", b.id);
   refresh(number);
@@ -127,4 +130,41 @@ export async function buyPromotion(listingId: string, type: string, _: unknown, 
   const plan = await ownerPlan(u.id);
   const amount = plan.free && s.freePromotions ? 0 : await promoPrice(type);
   return checkout(u.id, { kind: "promotion", listingId, promoType: type, days: PROMO_DAYS[type] ?? 7, amount }, String(fd.get("code") || "") || undefined);
+}
+
+// Шаблоны ответов на заявки
+export async function saveTemplate(id: string | null, _: unknown, fd: FormData): Promise<FormState> {
+  const u = await requireUser();
+  const title = String(fd.get("title") ?? "").trim().slice(0, 60), text = String(fd.get("text") ?? "").trim().slice(0, 2000);
+  if (!title || !text) return { error: "Заполните название и текст" };
+  if (id) await db.replyTemplate.updateMany({ where: { id, ownerId: u.id }, data: { title, text } });
+  else {
+    if (await db.replyTemplate.count({ where: { ownerId: u.id } }) >= 30) return { error: "Не больше 30 шаблонов" };
+    await db.replyTemplate.create({ data: { ownerId: u.id, title, text } });
+  }
+  revalidatePath("/cabinet/templates");
+  return { ok: "Сохранено" };
+}
+
+export async function deleteTemplate(id: string) {
+  const u = await requireUser();
+  await db.replyTemplate.deleteMany({ where: { id, ownerId: u.id } });
+  revalidatePath("/cabinet/templates");
+}
+
+// Проверка личности: хозяин загружает фото паспорта (страница с фото)
+export async function uploadIdDoc(_: unknown, fd: FormData): Promise<FormState> {
+  const u = await requireUser("/cabinet/verify");
+  if (u.idStatus === "APPROVED") return { ok: "Личность уже подтверждена" };
+  const f = fd.get("doc");
+  if (!(f instanceof File) || !f.size) return { error: "Выберите фото" };
+  if (fd.get("agree") !== "on") return { error: "Нужно согласие на обработку данных" };
+  const { saveIdDoc, removeIdDoc } = await import("@/lib/idcheck");
+  let name: string;
+  try { name = await saveIdDoc(f); } catch (e) { return { error: (e as Error).message }; }
+  await removeIdDoc(u.idDocPath);
+  await db.user.update({ where: { id: u.id }, data: { idStatus: "PENDING", idDocPath: name, idNote: null } });
+  await audit(u.id, "id_upload", "User", u.id);
+  revalidatePath("/cabinet/verify");
+  return { ok: "Фото отправлено. Проверим и удалим его, обычно в течение дня" };
 }

@@ -29,7 +29,7 @@ export function Chat({ b, me, k }: { b: B; me: "guest" | "owner" | "staff"; k?: 
         <div className="msg sys">Заявка создана</div>
         {b.messages.map(m => <div key={m.id} className={`msg ${m.isSystem ? "sys" : (m.fromOwner ? me === "owner" : me === "guest") ? "me" : "them"}`}>{m.text}</div>)}
       </div>
-      {me !== "staff" && <form action={send} className="row"><input className="input" name="text" placeholder="Сообщение" style={{ flex: 1 }} required /><button className="btn">Отправить</button></form>}
+      {me !== "staff" && <form action={send} className="row chat-form"><textarea className="input" id="chat-text" name="text" placeholder="Сообщение" rows={2} style={{ flex: 1 }} required /><button className="btn">Отправить</button></form>}
     </div>
   );
 }

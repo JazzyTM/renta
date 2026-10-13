@@ -1,3 +1,4 @@
+import { CRIT } from "@/lib/labels";
 import { notFound } from "next/navigation";
 import { bookingAccess } from "@/lib/booking";
 import { BookingSummary, Chat } from "@/components/BookingView";
@@ -29,6 +30,8 @@ export default async function BookingPage({ params, searchParams }: { params: Pr
       {canReview && <div className="card-box stack"><b>Как прошла поездка?</b>
         <ActionForm action={leaveReview.bind(null, b.number, k)} submit="Оставить отзыв">
           <div className="field"><label>Оценка</label><select className="input" name="rating" defaultValue="5">{[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{"★".repeat(n)} {n}</option>)}</select></div>
+          <div className="crit-in">{CRIT.map(([k, t]) => <div className="field" key={k}><label htmlFor={`r-${k}`}>{t}</label>
+            <select className="input" id={`r-${k}`} name={k} defaultValue=""><option value="">—</option>{[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n}</option>)}</select></div>)}</div>
           <div className="field"><label>Отзыв</label><textarea className="input" name="text" rows={4} placeholder="Что понравилось, что нет" /></div>
         </ActionForm></div>}
       {a.role === "guest" && <p className="small muted">Сохраните эту страницу: по ссылке из письма вы всегда сможете вернуться к переписке.</p>}

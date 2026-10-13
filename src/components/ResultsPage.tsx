@@ -5,21 +5,26 @@ import { toCard } from "@/lib/card";
 import { SearchForm } from "./SearchForm";
 import { RichText } from "./RichText";
 import { LiveResults } from "./LiveResults";
+import { getUser } from "@/lib/auth";
+import { logSearch } from "@/lib/demand";
 
-export async function ResultsPage({ title, intro, scope, action, sp, collections, active }: {
+export async function ResultsPage({ title, intro, scope, action, sp, collections, active, aside, after }: {
   title: string; intro?: string | null; scope: { resort?: string; filter?: string }; action: string; sp: Record<string, any>;
-  collections?: { slug: string; title: string; count: number }[]; active?: string;
+  collections?: { slug: string; title: string; count: number }[]; active?: string; aside?: React.ReactNode; after?: React.ReactNode;
 }) {
   const f = parseFilters(sp);
   const base = (await scopeWhere(scope))!;
-  const [resorts, amenities, res, hist] = await Promise.all([
-    resortOptions(), db.amenity.findMany({ where: { isFilter: true }, orderBy: { sort: "asc" }, select: { code: true, name: true } }), searchListings(base, f), priceHistogram(base),
+  const [resorts, amenities, res, hist, user, beaches] = await Promise.all([
+    resortOptions(), db.amenity.findMany({ where: { isFilter: true }, orderBy: { sort: "asc" }, select: { code: true, name: true } }), searchListings(base, f), priceHistogram(base), getUser(),
+    scope.resort ? db.beach.findMany({ where: { resort: { slug: scope.resort } }, orderBy: { name: "asc" }, select: { id: true, name: true } }) : [],
   ]);
+  if (f.page === 1) logSearch(scope.resort, f.ci, f.guests).catch(() => {});
   const initial = { items: res.items.map(toCard), total: res.total, page: res.page, pages: res.pages, hist };
   return (
     <main className="gray">
-      <LiveResults title={title} scope={scope} initial={initial} sp={sp} amenities={amenities} action={action} ci={f.ci} co={f.co} guests={f.guests ?? 2}
+      <LiveResults title={title} scope={scope} initial={initial} sp={sp} amenities={amenities} action={action} ci={f.ci} co={f.co} guests={f.guests ?? 2} email={user?.email ?? undefined} beaches={beaches}
         search={<SearchForm resorts={resorts} init={{ resort: scope.resort, ci: f.ci, co: f.co, adults: f.adults, children: f.children }} compact />}>
+        {aside}
         {collections && collections.some(c => c.count > 0) && <nav className="panel colls2" aria-label="Подборки">
           <h2>Подборки</h2>
           <ul>
@@ -28,6 +33,7 @@ export async function ResultsPage({ title, intro, scope, action, sp, collections
           </ul>
         </nav>}
       </LiveResults>
+      {after}
       {intro && <div className="wrap"><article className="panel prose-panel"><RichText text={intro} /></article></div>}
     </main>
   );

@@ -342,3 +342,19 @@ export async function bookingRemind() {
   await audit(u.id, "remind", "Booking", null, { n: list.length });
   revalidatePath("/admin/bookings");
 }
+
+// Проверка личности: решение модератора, фото документа удаляется в любом случае
+export async function idDecision(userId: string, ok: boolean, _: unknown, fd: FormData): Promise<FormState> {
+  const u = await requireStaff();
+  const t = await db.user.findUnique({ where: { id: userId } });
+  if (!t) return { error: "Пользователь не найден" };
+  const note = String(fd.get("note") ?? "").trim().slice(0, 300);
+  if (!ok && !note) return { error: "Напишите причину, её увидит хозяин" };
+  const { removeIdDoc } = await import("@/lib/idcheck");
+  await removeIdDoc(t.idDocPath);
+  await db.user.update({ where: { id: userId }, data: { idStatus: ok ? "APPROVED" : "REJECTED", idNote: ok ? null : note, idDocPath: null } });
+  await audit(u.id, ok ? "id_approve" : "id_reject", "User", userId, ok ? undefined : { note });
+  if (t.email) await sendTemplate(t.email, "id_checked", { result: ok ? "подтверждена" : "не подтверждена", text: ok ? "Личность подтверждена, в объявлениях появилась отметка. Фото документа удалено." : `Не получилось подтвердить личность: ${note}. Фото удалено, можно загрузить новое.`, link: `${process.env.APP_URL || ""}/cabinet/verify` });
+  revalidatePath("/admin/idcheck");
+  return { ok: ok ? "Подтверждено, фото удалено" : "Отклонено, фото удалено" };
+}

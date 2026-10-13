@@ -34,9 +34,18 @@ model User {
   blockReason   String?
   adminNote     String?
   lastLoginAt   DateTime?
+  replyMinutes  Int? // типичное время ответа на заявку, считается раз в час
+  refCode       String?    @unique // код приглашения других хозяев
+  referredById  String?
+  idStatus      String? // проверка паспорта: PENDING | APPROVED | REJECTED
+  idDocPath     String? // путь к фото паспорта в закрытой папке, удаляется после проверки
+  idNote        String?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
+  referredBy    User?      @relation("Referrals", fields: [referredById], references: [id])
+  referrals     User[]     @relation("Referrals")
+  replyTemplates ReplyTemplate[]
   accounts      Account[]
   sessions      Session[]
   tokens        Token[]
@@ -118,6 +127,7 @@ model Resort {
   seoTitle        String?
   seoDescription  String?
   seoText         String?
+  guide           String? // гид по курорту: пляжи, что посмотреть, как добраться
   coverUrl        String?
   region          Region    @relation(fields: [regionId], references: [id])
   listings        Listing[]
@@ -218,6 +228,11 @@ model Listing {
   boostedAt        DateTime? // «поднятие» в выдаче
   seoTitle         String?
   seoDescription   String?
+  titleEn          String?
+  descriptionEn    String?
+  icalUrl          String? // календарь занятости с Авито, Суточно и т.п.
+  icalSyncedAt     DateTime?
+  icalError        String?
   views            Int              @default(0)
   phoneViews       Int              @default(0)
   ratingAvg        Float            @default(0)
@@ -238,6 +253,7 @@ model Listing {
   complaints  Complaint[]
   promotions  Promotion[]
   statsDaily  ListingStatDaily[]
+  busy        BusyDate[]
 
   @@index([resortId, status, moderation])
   @@index([ownerId])
@@ -527,6 +543,10 @@ model Review {
   authorId    String?
   authorName  String
   rating      Int
+  cleanliness Int? // оценки по пунктам, 1–5
+  location    Int?
+  value       Int?
+  service     Int?
   text        String
   ownerReply  String?
   status      ReviewStatus @default(PENDING)
@@ -688,4 +708,73 @@ model AuditLog {
 
   @@index([entity, entityId])
   @@index([createdAt])
+}
+
+// Занятые даты из внешних календарей (iCal) и подтверждённых заявок
+model BusyDate {
+  listingId String
+  date      DateTime @db.Date
+  source    String // "ical" | "booking"
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@id([listingId, date, source])
+}
+
+// Подписка на новые объявления по поиску
+model SearchAlert {
+  id         String   @id @default(cuid())
+  email      String
+  userId     String?
+  resortId   String?
+  query      String   @default("") // параметры фильтров как в адресе страницы
+  title      String   @default("")
+  token      String   @unique
+  isActive   Boolean  @default(true)
+  lastSentAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@index([isActive])
+}
+
+// Шаблоны ответов хозяина на заявки
+model ReplyTemplate {
+  id        String   @id @default(cuid())
+  ownerId   String
+  title     String
+  text      String
+  sort      Int      @default(0)
+  createdAt DateTime @default(now())
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+}
+
+// Что ищут: курорт и месяц заезда, для карты спроса
+model SearchLog {
+  id        String   @id @default(cuid())
+  resortId  String?
+  month     Int?
+  guests    Int?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+// A/B-тесты: варианты текста или блока и их результат
+model Experiment {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  title     String
+  variants  String // через «|», например: «Найти|Узнать цены»
+  goal      String   @default("request") // request | phone
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model ExperimentEvent {
+  id        String   @id @default(cuid())
+  key       String
+  variant   Int
+  kind      String // view | goal
+  createdAt DateTime @default(now())
+
+  @@index([key, kind])
 }

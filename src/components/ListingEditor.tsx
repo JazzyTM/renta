@@ -8,6 +8,7 @@ import { ownerPlan } from "@/lib/plan";
 import { getSettings } from "@/lib/settings";
 import { Steps } from "./Steps";
 import * as A from "@/lib/listing-actions";
+import { sign } from "@/lib/sign";
 
 export async function ListingEditor({ id }: { id: string }) {
   const [l, resorts, amenities] = await Promise.all([
@@ -127,6 +128,17 @@ export async function ListingEditor({ id }: { id: string }) {
           : <><p className="muted">Когда всё готово, нажмите «Опубликовать». {s.postModeration ? "Объявление появится сразу, модератор проверит его позже." : "Объявление появится после проверки модератором."}</p><PublishButton id={id} /></>}
       </section>
       </Steps>
+
+      <section className="card-box stack" id="calendar"><h2 className="h2">Календарь занятости</h2>
+        <p className="small muted">Если сдаёте и на других сайтах (Авито, Суточно, Островок), вставьте ссылку на их календарь в формате .ics. Занятые даты будут видны гостям и обновляются каждые 3 часа.</p>
+        <ActionForm action={A.saveIcal.bind(null, id)} submit="Сохранить и загрузить">
+          <div className="field"><label htmlFor="ical">Ссылка на календарь .ics</label><input className="input" id="ical" name="icalUrl" defaultValue={l.icalUrl ?? ""} placeholder="https://…/calendar.ics" /></div>
+          {l.icalUrl && <span className="small muted">{l.icalError ? `Ошибка: ${l.icalError}` : l.icalSyncedAt ? `Загружен ${l.icalSyncedAt.toLocaleString("ru-RU", { timeZone: "Europe/Moscow", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}` : ""}</span>}
+        </ActionForm>
+        <div className="field"><label htmlFor="ical-out">Наш календарь для других сайтов</label>
+          <input className="input" id="ical-out" readOnly value={`${process.env.APP_URL || ""}/ical/${l.number}-${sign("ical" + l.id)}.ics`} />
+          <span className="small muted">Вставьте эту ссылку на другой площадке, чтобы там закрывались даты подтверждённых здесь броней.</span></div>
+      </section>
 
       {l.status !== "ARCHIVED" && <form action={A.setStatus.bind(null, id, "ARCHIVED")}><ConfirmButton message="Убрать объявление в архив? Его не будет видно на сайте.">Убрать в архив</ConfirmButton></form>}
     </div>
