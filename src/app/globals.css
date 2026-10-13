@@ -1149,3 +1149,86 @@ html, body { overflow-x: clip }
 }
 .home .hero:not(.img) { padding-bottom: 130px }
 @media (max-width: 600px) { .home .hero:not(.img) { padding-bottom: 100px } }
+
+/* =========================================================
+   Шапка: единый размер кнопок. Все иконки 40×40, ровно по центру.
+   ========================================================= */
+.top .wrap { display: flex; align-items: center; min-height: 64px; gap: 16px; flex-wrap: nowrap }
+.top nav { display: flex; align-items: center; gap: 6px; margin-left: auto; flex-wrap: nowrap }
+.top nav > * { flex: none }
+.ibtn, .umenu, .top nav .obtn { height: 40px }
+.ibtn { width: 40px; display: grid; place-items: center; border-radius: 50%; padding: 0; color: #111 }
+.ibtn svg { width: 24px; height: 24px; display: block }
+.ibtn .cnt { top: 3px; right: 3px; min-width: 16px; height: 16px; font-size: 10.5px; line-height: 1; border: 2px solid #fff; box-sizing: content-box }
+.top.overlay .ibtn .cnt { border-color: transparent }
+.umenu { width: 40px; display: grid; place-items: center }
+.umenu .avatar { width: 32px; height: 32px; min-height: 0; padding: 0; border: 0; font-size: 14px; line-height: 1; display: grid; place-items: center }
+.top.overlay .umenu .avatar { background: #fff; color: var(--accent) }
+.obtn svg { width: 20px; height: 20px; display: block; flex: none }
+.rpick-btn { gap: 6px }
+.rpick-ico { display: none }
+.rpick-chev { display: inline-grid; place-items: center }
+.rpick-btn > span { line-height: 1 }
+@media (max-width: 767px) {
+  .top .wrap { min-height: 56px; gap: 8px; padding-inline: 12px 8px }
+  .logo { font-size: 18px }
+  .top nav { gap: 2px }
+  .rpick-btn, .top.overlay .rpick-btn { width: 40px; height: 40px; max-width: none; padding: 0; justify-content: center; border: 0; border-radius: 50%; background: transparent; color: #111 }
+  .top.overlay .rpick-btn { color: #fff }
+  .rpick-btn:hover { background: transparent; color: var(--accent) }
+  .rpick-ico { display: inline-grid; place-items: center }
+  .rpick-t, .rpick-chev { display: none }
+  .rpick { order: 2 }
+  .top nav { order: 3; margin-left: 0 }
+  .logo { order: 1; margin-right: auto }
+  .top nav .obtn, .top.overlay nav .obtn { width: 40px; padding: 0; border: 0; border-radius: 50%; justify-content: center; gap: 0 }
+  .obtn-t { display: none }
+  .rpick-pop { position: fixed; left: 8px; right: 8px; top: 60px; width: auto }
+}
+
+/* ===== Адаптив, второй проход: таблицы, панели инструментов, формы ===== */
+.fline { display: flex; gap: 8px; flex-wrap: wrap; align-items: center }
+.fline > .input { flex: 1 1 220px; min-width: 0; width: auto }
+.wrapchips { align-items: center; gap: 8px }
+.wrapchips .chip, .shell .chip { background: #fff; border: 1px solid var(--line) }
+.shell .chip:hover { background: var(--gray-2) } .shell .chip.on { background: #111; color: #fff; border-color: #111 }
+.chat-form { align-items: end; gap: 8px }
+.chat-form textarea { min-width: 0 }
+
+/* Выдача: правая колонка (подборки, гид) уходит вниз, пока карточкам тесно */
+@media (max-width: 1180px) { .results2 { grid-template-columns: minmax(0, 1fr) 280px } }
+@media (max-width: 1060px) { .results2 { grid-template-columns: 1fr } .rside { position: static } }
+
+@media (max-width: 640px) {
+  /* Панели поиска в админке: поля по два в ряд, первое на всю ширину */
+  .toolbar { gap: 8px }
+  .toolbar > .input, .toolbar > select, .toolbar > label { flex: 1 1 calc(50% - 8px); min-width: 0; width: auto }
+  .toolbar > .input:first-child { flex-basis: 100% }
+  .toolbar > .btn { flex: 1 1 auto }
+  .chat-form { flex-direction: column; align-items: stretch }
+  .chat-form .btn { width: 100% }
+
+  /* Таблицы карточками: заголовок столбца пишется над значением */
+  .tablewrap { overflow: visible; border: 0; background: transparent }
+  table.t, table.t tbody { display: block; width: 100% }
+  table.t thead { display: none }
+  table.t tr { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; background: #fff; border: 1px solid var(--line); border-radius: var(--r); padding: 14px; margin-bottom: 10px }
+  table.t tr:hover td { background: transparent }
+  table.t td { display: block; padding: 0; border: 0; min-width: 0; overflow-wrap: anywhere; font-size: 14px }
+  table.t td[data-label]:not([data-label=""])::before { content: attr(data-label); display: block; font-size: 12px; color: var(--ink-2); margin-bottom: 2px }
+  table.t td[colspan], table.t td:first-child { grid-column: 1 / -1 }
+  table.t td:empty { display: none }
+  table.t td:has(> input[type=checkbox]:only-child) { grid-column: auto; position: absolute; opacity: 1 }
+  table.t tr:has(td > input[type=checkbox]:only-child) { position: relative; padding-left: 44px }
+  table.t td:has(> input[type=checkbox]:only-child) { left: 14px; top: 16px }
+  table.t td:has(> input[type=checkbox]:only-child)::before { display: none }
+}
+@media (max-width: 640px) {
+  .toolbar > label:has(input[type=checkbox]) { flex: 0 1 auto; display: inline-flex; align-items: center; gap: 6px; min-height: 40px }
+  .toolbar > .btn, .toolbar > a.btn { flex: 1 1 100% }
+}
+@media (max-width: 640px) {
+  .toolbar > label:has(input[type=date]) { display: flex; align-items: center; gap: 6px; flex: 1 1 calc(50% - 8px) }
+  .toolbar > label:has(input[type=date]) .input { flex: 1; min-width: 0; width: 100% }
+  .toolbar > select:first-child + label, .toolbar > .input + select { flex-basis: 100% }
+}

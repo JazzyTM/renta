@@ -14,7 +14,7 @@ export default async function EmailLog({ searchParams }: { searchParams: Promise
   return (
     <>
       <h1 className="h1">Журнал писем</h1>
-      <div className="card-box"><ActionForm action={testMail} submit="Отправить тестовое письмо" className="row"><input className="input" name="to" type="email" placeholder="Куда" required style={{ flex: 1 }} /></ActionForm></div>
+      <div className="card-box"><ActionForm action={testMail} submit="Отправить тестовое письмо" className="fline"><input className="input" name="to" type="email" placeholder="Куда" required /></ActionForm></div>
       <form className="toolbar"><input className="input" name="q" defaultValue={q} placeholder="Получатель" /><button className="btn ghost sm">Найти</button></form>
       <div className="tablewrap"><table className="t"><thead><tr><th>Кому</th><th>Тема</th><th>Статус</th><th>Когда</th></tr></thead><tbody>
         {list.map(e => <tr key={e.id}><td>{e.to}</td><td>{e.subject}</td><td><span className={`tag ${ST[e.status]?.[1]}`}>{ST[e.status]?.[0] ?? e.status}</span>{e.error && <div className="small muted">{e.error}</div>}</td><td className="small muted">{fmtDateTime(e.createdAt)}</td></tr>)}

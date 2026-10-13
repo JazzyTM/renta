@@ -13,6 +13,7 @@ const Ico = ({ d, size = 24 }: { d: string; size?: number }) => (
   <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true"><path d={d} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
 );
 const HEART = "M12 20.5s-7.8-4.7-9.5-9.6C1.4 7.6 3.5 4.5 6.8 4.5c2.1 0 3.6 1.2 5.2 3 1.6-1.8 3.1-3 5.2-3 3.3 0 5.4 3.1 4.3 6.4-1.7 4.9-9.5 9.6-9.5 9.6z";
+const PIN = "M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0113 0c0 5.4-6.5 11-6.5 11zM12 12.3a2.3 2.3 0 100-4.6 2.3 2.3 0 000 4.6z";
 const LOGIN = "M10 17l5-5-5-5M15 12H3M14 3h4a3 3 0 013 3v12a3 3 0 01-3 3h-4";
 
 export function Header({ user, siteName, social, regions }: { user: U; siteName: string; social: { vk: boolean; ya: boolean }; regions: Reg[] }) {
@@ -43,8 +44,9 @@ export function Header({ user, siteName, social, regions }: { user: U; siteName:
     <header className={`top ${overlay ? "overlay" : ""}`}><div className="wrap">
       <Link href="/" className="logo">{siteName}</Link>
       <div className="rpick" ref={pref}>
-        <button type="button" className="rpick-btn" aria-expanded={pick} onClick={() => setPick(p => !p)}>
-          <span>{current ?? "Выберите курорт"}</span><Ico size={16} d="M6 9l6 6 6-6" />
+        <button type="button" className="rpick-btn" aria-label="Выбрать курорт" aria-expanded={pick} onClick={() => setPick(p => !p)}>
+          <span className="rpick-ico"><Ico size={22} d={PIN} /></span>
+          <span className="rpick-t">{current ?? "Выберите курорт"}</span><span className="rpick-chev"><Ico size={16} d="M6 9l6 6 6-6" /></span>
         </button>
         {pick && <div className="rpick-pop">
           {regions.map(r => <section key={r.name}><h4>{r.name}</h4><ul>{r.resorts.map(x => <li key={x.slug}><Link href={`/kurort/${x.slug}`} className={x.slug === slug ? "on" : ""}>{x.name}</Link></li>)}</ul></section>)}
@@ -66,7 +68,7 @@ export function Header({ user, siteName, social, regions }: { user: U; siteName:
             </div>}
           </div>
         ) : <button type="button" className="ibtn" aria-label="Войти" title="Войти" onClick={() => setAuth(true)}><Ico d={LOGIN} /></button>}
-        <Link className="obtn" href="/cabinet/new"><Ico size={18} d="M12 3a9 9 0 100 18 9 9 0 000-18zM12 8v8M8 12h8" /><span className="hide-sm">Сдать жильё</span></Link>
+        <Link className="obtn" href="/cabinet/new" aria-label="Сдать жильё" title="Сдать жильё"><Ico size={20} d="M12 3a9 9 0 100 18 9 9 0 000-18zM12 8v8M8 12h8" /><span className="obtn-t">Сдать жильё</span></Link>
       </nav>
       {auth && <AuthModal onClose={() => setAuth(false)} social={social} />}
     </div></header>
