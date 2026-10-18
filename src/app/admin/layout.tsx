@@ -58,8 +58,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <>
       <header className="top"><div className="wrap" style={{ maxWidth: "none" }}>
-        <Link href="/admin" className="logo"><LogoMark />{String(s.siteName).toLowerCase()} · админка</Link>
-        <nav><Link className="navlink" href="/" target="_blank">Открыть сайт</Link><Link className="navlink hide-sm" href="/account">{u.name || u.email}</Link></nav>
+        <Link href="/admin" className="logo alogo"><LogoMark size={28} /><span>{s.siteName}</span><span className="alogo-t">Админка</span></Link>
+        <nav>
+          <Link className="obtn alink" href="/" target="_blank"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5H5V6h5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg><span className="obtn-t">Открыть сайт</span></Link>
+          <Link className="auser hide-sm" href="/account"><span className="avatar">{(u.name || u.email || "?").trim()[0]?.toUpperCase()}</span><span>{u.name || u.email}</span></Link>
+        </nav>
       </div></header>
       <div className="shell"><SideNav root="/admin" items={items} /><div className="main">{children}</div></div>
     </>
