@@ -1495,3 +1495,21 @@ a.stat:hover b { color: var(--accent) }
 select.input, select.input:hover, select.input:focus, .toolbar select { appearance: none; -webkit-appearance: none; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6' fill='none' stroke='%23555' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center; padding-right: 36px }
 table.t td { font-variant-numeric: tabular-nums }
 @media (max-width: 640px) { .auser { padding: 0 } .auser > span:not(.avatar) { display: none } }
+
+/* v5, правка: подсказки и календарь не обрезаются краем первого экрана; главная на сером фоне с белыми блоками */
+.home .hero, .home .hero:not(.img) { overflow: visible; position: relative; z-index: 5 }
+.home .hero .hero-art { clip-path: inset(0 round var(--r-lg)) }
+.home .hero.img::before { border-radius: inherit }
+.search .sugg { min-width: 320px; max-height: 360px; margin-top: 8px }
+main.home { background: var(--gray); padding-bottom: 8px }
+.home .feat { border-color: transparent }
+.home .utabs { background: #fff; border-radius: 20px; padding: 24px 28px }
+.home .lcard .ph, .home .ph .noimg, .home .art .aph { background: #fff }
+.home .prose.seo { background: #fff; border-radius: 20px; padding: 24px 28px }
+main.home + footer.foot, main.home ~ footer.foot { margin-top: 0 }
+@media (max-width: 600px) {
+  .home .hero .hero-art { clip-path: inset(0 round 20px) }
+  .home .utabs, .home .prose.seo { padding: 18px 16px; border-radius: 16px }
+  .home .utabs .utabs-h { margin-inline: -16px; padding-inline: 16px }
+}
+.home .btn.gray { background: #fff } .home .btn.gray:hover { background: var(--gray-2) }
