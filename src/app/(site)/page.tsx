@@ -50,8 +50,9 @@ export default async function Home() {
         {banners.map(b => <div key={b.id} className="wrap" style={{ paddingTop: 20 }}><div className="notice"><b>{b.title}</b> {b.text} {b.link && <Link href={b.link}>Подробнее</Link>}</div></div>)}
         {s.featuresShow && features.length > 0 && <section className="hsec"><div className="wrap">
           <h2 className="h2">Почему ищут жильё у нас</h2>
-          <div className="feats">{features.map((f, i) => <div key={i} className="feat"><div><b>{f.title}</b><p>{f.text}</p></div>
-            <svg viewBox="0 0 24 24" width="44" height="44" aria-hidden="true"><path d={ICONS[i]} fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" /></svg></div>)}</div>
+          <div className="feats">{features.map((f, i) => <div key={i} className="feat">
+            <span className="feat-i"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d={ICONS[i]} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
+            <div><b>{f.title}</b><p>{f.text}</p></div></div>)}</div>
         </div></section>}
         {s.bannerShow && <section className="hsec"><div className="wrap">
           <div className={`owners ${s.bannerImage ? "img" : ""}`} style={s.bannerImage ? { backgroundImage: `url(${s.bannerImage})` } : undefined}>

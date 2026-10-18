@@ -38,10 +38,9 @@ export function Header({ user, siteName, social, regions }: { user: U; siteName:
   const slug = path.match(/^\/kurort\/([^/]+)/)?.[1];
   const current = slug ? regions.flatMap(r => r.resorts).find(r => r.slug === slug)?.name : undefined;
   const initial = (user?.name || user?.email || "?").trim()[0]?.toUpperCase();
-  const overlay = path === "/";
 
   return (
-    <header className={`top ${overlay ? "overlay" : ""}`}><div className="wrap">
+    <header className="top"><div className="wrap">
       <Link href="/" className="logo">{siteName}</Link>
       <div className="rpick" ref={pref}>
         <button type="button" className="rpick-btn" aria-label="Выбрать курорт" aria-expanded={pick} onClick={() => setPick(p => !p)}>

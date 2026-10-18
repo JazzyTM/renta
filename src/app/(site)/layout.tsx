@@ -28,14 +28,17 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         <div className="foot-l">
           <Link href="/" className="logo">{s.siteName}</Link>
           {s.footerTagline && <span className="small">{s.footerTagline}</span>}
-          {socials.length > 0 && <><b className="foot-h">Мы в соцсетях</b>
-            <span className="socials">{socials.map(([k, t, ic]) => <a key={k} href={s[k]} target="_blank" rel="noopener" aria-label={t} title={t}>{ic}</a>)}</span></>}
+          {socials.length > 0 && <span className="socials">{socials.map(([k, t, ic]) => <a key={k} href={s[k]} target="_blank" rel="noopener" aria-label={t} title={t}>{ic}</a>)}</span>}
           {(s.contactEmail || s.contactPhone) && <span className="small muted">{[s.contactPhone, s.contactEmail].filter(Boolean).join(" · ")}</span>}
         </div>
-        <div className="foot-r">
-          <Link className="btn dark wide" href="/cabinet/new">Добавить объявление</Link>
+        <div className="foot-c"><b>Гостям</b><ul>
+          <li><Link href="/favorites">Избранное</Link></li><li><Link href="/compare">Сравнение</Link></li>
+          <li><Link href="/my">Мои поездки</Link></li><li><Link href="/articles">Статьи</Link></li>
+        </ul></div>
+        {pages.length > 0 && <div className="foot-c"><b>Информация</b><ul>{pages.map(p => <li key={p.slug}><Link href={`/p/${p.slug}`}>{p.title}</Link></li>)}</ul></div>}
+        <div className="foot-c foot-r"><b>Хозяевам</b>
+          <Link className="btn wide" href="/cabinet/new">Добавить объявление</Link>
           <Link className="btn ghost wide" href="/cabinet">Личный кабинет</Link>
-          <ul>{pages.map(p => <li key={p.slug}><Link href={`/p/${p.slug}`}>{p.title}</Link></li>)}<li><Link href="/articles">Статьи</Link></li></ul>
         </div>
         <div className="foot-b small muted">© {new Date().getFullYear()} {s.siteName}{s.footerText ? `. ${s.footerText}` : ""}</div>
       </div></footer>
