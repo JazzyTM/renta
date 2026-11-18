@@ -1513,3 +1513,216 @@ main.home + footer.foot, main.home ~ footer.foot { margin-top: 0 }
   .home .utabs .utabs-h { margin-inline: -16px; padding-inline: 16px }
 }
 .home .btn.gray { background: #fff } .home .btn.gray:hover { background: var(--gray-2) }
+
+/* =========================================================
+   Дизайн v6: 1 в 1 с kudanamore.ru (публичная часть).
+   Системный шрифт, #FF5722, серый фон #F0F2F4, белые блоки 12 px,
+   поиск полями стык в стык и кнопкой отдельно, прозрачная шапка на главной.
+   Кабинет и админка остаются в стиле v5. Последний слой, правит всё выше.
+   ========================================================= */
+:root { --accent: #FF5722; --accent-hover: #F4511E; --ink: #131416; --ink-2: #495057; --ink-3: #555E66; --gray: #F0F2F4; --gray-2: #E6E8EB; --line: #E6E7EA; --line-2: #A9B1B8; --r: 12px; --r-sm: 8px; --r-lg: 12px }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif !important; color: var(--ink); letter-spacing: 0; background: var(--gray) }
+.wrap { max-width: 1170px; padding-inline: 15px }
+.h2 { font-size: 22px; font-weight: 700; letter-spacing: 0; line-height: 1.2 }
+
+/* кнопки и чипы */
+.btn { border-radius: var(--r-sm); font-weight: 500; font-size: 16px; min-height: 48px; padding-inline: 16px }
+.btn.sm { border-radius: 6px; min-height: 36px; font-size: 14px }
+.btn.dark, .btn.dark:hover { background: #131416; color: #fff; border-color: #131416 }
+.btn.dark:hover { background: #2B2E33 }
+.btn.ghost { border: 1px solid #131416; color: #131416; background: #fff }
+.btn.ghost:hover { border-color: var(--accent); color: var(--accent); background: #fff }
+.btn.gray, .home .btn.gray { background: var(--gray); color: var(--ink); border-color: transparent; font-weight: 400 }
+.btn.gray:hover, .home .btn.gray:hover { background: var(--gray-2) }
+.btn.more { min-height: 48px; margin-top: 20px; font-weight: 400 }
+.chip, main.gray .chip, main .rtop .chip, main .modal .chip, .wrapchips .chip { background: var(--gray); border: 0; border-radius: 100px; color: var(--ink); padding: 8px 16px; font-size: 14px; font-weight: 400; line-height: 20px }
+.chip:hover, main.gray .chip:hover, main .rtop .chip:hover, main .modal .chip:hover { background: var(--gray-2); color: var(--ink); border: 0 }
+.chip.on, main.gray .chip.on, main .rtop .chip.on, main .modal .chip.on { background: #131416; color: #fff }
+.input { border-radius: var(--r-sm); border-color: var(--line-2) }
+.score { background: #44A049; color: #fff; border-radius: 100px; padding: 0 6px; font-size: 12px; font-weight: 400; line-height: 18px; min-width: 28px; text-align: center; display: inline-block }
+
+/* шапка */
+.top { background: #fff; border-bottom: 0; box-shadow: none }
+.top .wrap { min-height: 72px; gap: 16px }
+.logo { font-size: 22px; font-weight: 700; letter-spacing: .07em; color: var(--accent) !important }
+.rpick-btn, .rpick-btn:hover { height: 36px; border: 0; border-radius: var(--r-sm); background: var(--gray); padding: 0 12px; font-size: 14px; color: var(--ink) }
+.rpick-btn:hover { background: var(--gray-2) }
+.ibtn { width: 40px; height: 40px; border-radius: 8px; color: var(--ink) }
+.ibtn:hover { background: transparent; color: var(--accent) }
+.top nav .obtn { height: 36px; border: 1px solid #131416; border-radius: var(--r-sm); background: transparent; color: #131416; padding: 0 12px; font-size: 14px; font-weight: 400; gap: 6px }
+.top nav .obtn:hover { background: transparent; border-color: var(--accent); color: var(--accent) }
+.rpick-pop { border-radius: var(--r); box-shadow: 0 8px 30px rgba(0, 0, 0, .14); border: 0 }
+@media (min-width: 768px) { .rpick-ico { display: none } }
+
+/* главная: прозрачная шапка поверх фото */
+body:has(main.home) .top { position: absolute; left: 0; right: 0; top: 0; background: transparent }
+body:has(main.home) .top .logo { color: #fff !important }
+body:has(main.home) .top .rpick-btn { background: transparent; border: 1px solid rgba(255, 255, 255, .85); color: #fff }
+body:has(main.home) .top .rpick-btn:hover { background: rgba(255, 255, 255, .12) }
+body:has(main.home) .top .ibtn { color: #fff }
+body:has(main.home) .top .ibtn:hover { color: #fff; background: rgba(255, 255, 255, .12) }
+body:has(main.home) .top nav .obtn { border-color: #fff; color: #fff }
+body:has(main.home) .top nav .obtn:hover { background: rgba(255, 255, 255, .12); color: #fff; border-color: #fff }
+
+/* поиск: поля стык в стык, кнопка «Узнать цены» отдельно */
+.search, .search.compact { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) 200px; gap: 0; padding: 0; background: transparent; border: 0; border-radius: 0; align-items: stretch }
+.hero .search { border: 0 }
+.search > :nth-child(2)::before, .search > :nth-child(3)::before, .search:not(.dsearch) > :nth-child(1)::after { display: none !important }
+.search .input.seg, .search > * .input.seg { height: 48px; min-height: 48px; margin: 0 !important; width: 100% !important; border: 1px solid var(--line-2) !important; border-radius: 0 !important; background: #fff; padding-inline: 16px; font-size: 16px; color: var(--ink); box-shadow: none }
+.search > :nth-child(1) .input.seg { border-radius: var(--r-sm) 0 0 var(--r-sm) !important }
+.search > :nth-child(2) .input.seg { margin-left: -1px !important; width: calc(100% + 1px) !important }
+.search:not(.dsearch) > :nth-child(3) .input.seg { margin-left: -1px !important; width: calc(100% + 1px) !important; border-radius: 0 var(--r-sm) var(--r-sm) 0 !important }
+.dsearch > :nth-child(2) .input.seg { border-radius: 0 var(--r-sm) var(--r-sm) 0 !important }
+.search .input.seg:hover { background: #fff }
+.search .input.seg:focus, .search .dbtn.seg.on, .search .guests[open] summary.seg { position: relative; z-index: 2; background: #fff; border-color: var(--ink) !important; box-shadow: none }
+.search .dbtn.unset, .search .seg::placeholder { color: #8A9199 }
+.search .btn { height: 48px; min-height: 48px; margin: 0 0 0 12px; border-radius: var(--r-sm); font-size: 16px; font-weight: 500; padding-inline: 16px }
+.dsearch { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 200px !important }
+@media (max-width: 860px) {
+  .search, .search.compact, .search:not(.dsearch), .dsearch { grid-template-columns: 1fr !important; padding: 0 }
+  .search > * .input.seg, .search:not(.dsearch) > * .input.seg { margin: -1px 0 0 !important; width: 100% !important; border-radius: 0 !important }
+  .search > :nth-child(1) .input.seg { margin-top: 0 !important; border-radius: var(--r-sm) var(--r-sm) 0 0 !important }
+  .search:not(.dsearch) > :nth-child(3) .input.seg, .dsearch > :nth-child(2) .input.seg { border-radius: 0 0 var(--r-sm) var(--r-sm) !important }
+  .search .btn { margin: 12px 0 0; width: 100% }
+}
+
+/* главная: фото во всю ширину, белый лист со скруглением */
+main.home { background: var(--gray); padding-bottom: 0 }
+.home .hero, .home .hero:not(.img) { width: 100%; max-width: none; margin: 0; border-radius: 0; padding: 72px 0 128px; overflow: visible; position: relative; z-index: 5 }
+.home .hero::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 13px; background: #fff; border-radius: 12px 12px 0 0; z-index: 0 }
+.home .hero .hero-art { clip-path: none }
+.home .hero.img::before { border-radius: 0; background: rgba(0, 0, 0, .12) }
+.home .hero .wrap { gap: 32px; max-width: 1170px; position: relative; z-index: 1 }
+.home .hero h1 { font-size: 30px; font-weight: 600; line-height: 36px; letter-spacing: 0; max-width: none }
+.home .hero .search { max-width: none }
+.sheet-top { margin-top: 0; background: #fff; border-radius: 0 }
+.sheet-top .hsec:first-child { padding-top: 12px }
+.sheet-top .hsec:last-child { padding-bottom: 40px }
+.hsec { padding-block: 20px }
+.hsec .h2 { margin-bottom: 20px }
+
+.feats { gap: 24px }
+.feat, .home .feat { flex-direction: row-reverse; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 24px; background: #FAFAFB; border: 0; border-radius: 12px }
+.feat-i { width: auto; height: auto; background: transparent; border-radius: 0; flex: none }
+.feat-i svg { width: 44px; height: 44px; stroke-width: 1.4 }
+.feat:nth-child(1) .feat-i { color: #3579DE }
+.feat:nth-child(2) .feat-i { color: var(--accent) }
+.feat:nth-child(3) .feat-i { color: #44A049 }
+.feat b { font-size: 16px; font-weight: 600; line-height: 1.2; margin-bottom: 8px }
+.feat p { font-size: 14px; color: var(--ink-2); line-height: 1.45 }
+
+.owners, .owners.img { border-radius: 12px; padding: 24px; min-height: 200px; display: grid; grid-template-rows: auto auto 1fr; gap: 8px; align-content: stretch; color: #fff; background-color: #2B3540 }
+.owners.img::before { background: linear-gradient(90deg, rgba(0, 0, 0, .55), rgba(0, 0, 0, .15)) }
+.owners h2 { font-size: 26px; font-weight: 600; letter-spacing: 0 }
+.owners p, .owners.img p { color: #fff; font-size: 16px; margin: 0 }
+.owners .btn { align-self: end; min-width: 260px; min-height: 48px; border-radius: 8px; padding-inline: 24px }
+
+.rtiles { gap: 20px 30px }
+.rtile { height: 180px; border-radius: 12px; padding: 16px }
+.rtile b { font-size: 20px; font-weight: 600; letter-spacing: 0 }
+.rtile span { font-size: 14px; opacity: 1 }
+.rtile:hover > .art { transform: none }
+
+/* карточка в сетке */
+.cards { gap: 24px 30px }
+.lcard .ph { aspect-ratio: 263 / 200; border-radius: 12px }
+.lcard .t { padding-top: 12px; gap: 2px }
+.lcard .ttl { font-size: 16px; font-weight: 600; color: var(--ink) }
+.lcard .addr { font-size: 14px; color: var(--ink-2) }
+.pr { margin-top: 8px }
+.pr b { font-size: 20px; font-weight: 600 }
+.pr span { font-size: 14px; color: var(--ink-3) }
+.fav { width: 32px; height: 32px; background: rgba(255, 255, 255, .85) }
+
+/* статьи */
+.arts { gap: 30px }
+.art { border: 0; border-radius: 12px; box-shadow: 0 1px 6px rgba(0, 0, 0, .08) }
+.art .atx { padding: 20px 24px 24px; gap: 12px }
+.art b { font-size: 18px; font-weight: 600; line-height: 1.25 }
+.art p { font-size: 14px; color: var(--ink-2); line-height: 1.5 }
+
+/* все курорты и текст — на белом */
+.home > .hsec:has(.utabs), .home > .hsec:has(.prose.seo) { background: #fff }
+.home > .hsec:has(.utabs) { margin-top: 24px; border-radius: 12px 12px 0 0; padding-top: 32px }
+.home > .hsec:has(.prose.seo) { border-radius: 0 0 12px 12px; padding-bottom: 40px }
+.home .utabs, .home .prose.seo { background: transparent; border-radius: 0; padding: 0 }
+.utabs-h { gap: 48px; border-bottom: 1px solid var(--line); margin-bottom: 32px }
+.utabs-h button, .utabs-h button:hover { padding: 6px 0 16px; font-size: 18px; font-weight: 400; text-transform: uppercase; border: 0; border-bottom: 3px solid transparent; border-radius: 0; margin: 0 0 -1px; background: transparent; color: var(--ink) }
+.utabs-h button.on { background: transparent; color: var(--ink); border-bottom-color: var(--accent) }
+.allres { columns: 4 230px; column-gap: 30px }
+.allres h3 { font-size: 18px; font-weight: 600; margin-bottom: 12px }
+.allres ul { gap: 10px }
+.allres a { font-size: 14px }
+.allres .n { font-size: 11px; color: #8A9199 }
+.prose.seo { font-size: 16px; line-height: 1.6 }
+.prose.seo h2 { font-size: 20px; font-weight: 600; margin: 28px 0 12px }
+.prose.seo h2:first-child { margin-top: 0 }
+
+/* подвал как у донора */
+footer.foot { background: var(--gray); border: 0; margin-top: 0; padding-block: 32px 24px; font-size: 14px }
+main.gray + footer.foot, main.home + footer.foot { margin-top: 0 }
+footer.foot .wrap { display: grid; grid-template-columns: minmax(0, 1fr) 264px; gap: 24px 40px }
+.foot-l { display: grid; gap: 4px; align-content: start; justify-items: start }
+.foot-l .logo { font-size: 22px }
+.foot-tag { font-size: 12px; color: var(--ink) }
+.foot-h { margin-top: 20px; font-size: 14px; font-weight: 600 }
+.socials { gap: 8px; margin-top: 8px }
+.socials a { width: 48px; height: 48px; border-radius: 8px; background: #fff; color: var(--ink); font-weight: 700 }
+.foot-r { display: grid; gap: 10px; align-content: start }
+.foot-r .btn { min-height: 40px; font-size: 14px }
+.foot-r ul { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 10px }
+.foot-r a:not(.btn), footer.foot a:not(.btn) { color: var(--ink) !important; font-size: 13px }
+.foot-r a:not(.btn):hover { color: var(--accent) !important }
+.foot-b { grid-column: 1 / -1; border: 0; padding-top: 24px; font-size: 12px; line-height: 1.5; color: var(--ink) }
+@media (max-width: 700px) { footer.foot .wrap { grid-template-columns: 1fr } }
+
+/* выдача курорта */
+.rtop { background: #fff; padding-block: 0 20px }
+.rtop .h2, .rtop h1 { font-size: 20px; font-weight: 600; letter-spacing: 0; margin-bottom: 16px }
+.lrow { padding: 0; gap: 0 24px; grid-template-columns: 224px minmax(0, 1fr) 180px; border-radius: 12px; min-height: 200px; background: #fff; border: 0 }
+.lrow .ph { border-radius: 12px; min-height: 200px }
+.lrow .mid { padding: 16px 0 }
+.lrow .pside { padding: 16px 16px 16px 0 }
+.lrow .ttl { font-size: 16px; font-weight: 600; letter-spacing: 0 }
+.lrow .addr { font-size: 14px; color: var(--ink-2) }
+.lrow .pside .btn { border-radius: var(--r-sm); background: var(--gray); color: var(--ink); min-height: 40px; font-size: 14px; font-weight: 400 }
+.lrow .pside .btn:hover { background: var(--gray-2) }
+.panel { border-radius: 12px; padding: 24px; border: 0 }
+.colls2 h2 { font-size: 18px; font-weight: 600 }
+@media (max-width: 760px) {
+  .lrow { grid-template-columns: 1fr; padding: 0 }
+  .lrow .ph { aspect-ratio: 16 / 10; min-height: 0 }
+  .lrow .mid { padding: 12px 16px 0 }
+  .lrow .pside { padding: 8px 16px 16px }
+}
+
+/* страница объявления */
+.ohead .h1 { font-size: 28px; font-weight: 600; letter-spacing: 0 }
+.fav.big, .cmpbtn.big, .share > .btn, .oacts .btn { border: 1px solid #131416; border-radius: var(--r-sm); height: 32px; min-height: 32px; padding-inline: 12px; font-size: 14px; font-weight: 400 }
+.fav.big:hover, .cmpbtn.big:hover { border-color: var(--accent); color: var(--accent) }
+.gal-grid, .gallery { border-radius: 12px }
+.ph2 { font-size: 20px; font-weight: 600; letter-spacing: 0 }
+.ptable > div { border-radius: var(--r-sm) }
+.room { border-radius: 12px }
+.ow-av { background: #E3EEFB; color: #3579DE }
+
+/* телефоны */
+@media (max-width: 767px) {
+  .top .wrap { min-height: 60px }
+  .rpick-btn, .rpick-btn:hover { background: var(--gray); width: auto; padding: 0 10px }
+  body:has(main.home) .top .rpick-btn { background: transparent }
+  .top nav .obtn { width: 36px; padding: 0; justify-content: center }
+}
+@media (max-width: 600px) {
+  .home .hero, .home .hero:not(.img) { width: 100%; margin: 0; border-radius: 0; padding: 76px 0 48px }
+  .home .hero .wrap { gap: 20px; padding-inline: 15px }
+  .home .hero h1 { font-size: 24px; line-height: 30px }
+  .feat, .home .feat { flex-direction: row-reverse; padding: 20px }
+  .owners, .owners.img { padding: 20px 20px 24px; min-height: 220px }
+  .owners .btn { min-width: 0; width: 100% }
+  .rtile { height: 140px; border-radius: 12px }
+  .rtile b { font-size: 18px }
+  .utabs-h { gap: 24px; margin-inline: -15px; padding-inline: 15px }
+  .utabs-h button { font-size: 15px }
+  .home > .hsec:has(.utabs) { border-radius: 12px 12px 0 0 }
+}

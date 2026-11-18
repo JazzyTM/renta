@@ -3,7 +3,7 @@ import { HouseArt } from "./Art";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { LISTING_TYPES } from "@/lib/labels";
-import { rub, plural, parseDate } from "@/lib/format";
+import { rub, plural, parseDate, score10 } from "@/lib/format";
 import { quote } from "@/lib/pricing";
 import { thumb } from "@/lib/img";
 import type { CardData } from "@/lib/card";
@@ -82,7 +82,7 @@ export function ListingRow({ l, ci, co, guests = 2, onHover }: { l: CardData; ci
         <b className="ttl">{l.title}</b>
         <span className="addr">{place(l)}</span>
         <span className="meta">
-          {l.ratingCount > 0 && <><span className="score num">{l.ratingAvg.toFixed(1)}</span><span>{l.ratingCount} {plural(l.ratingCount, ["отзыв", "отзыва", "отзывов"])}</span></>}
+          {l.ratingCount > 0 && <><span className="score num">{score10(l.ratingAvg)}</span><span>{l.ratingCount} {plural(l.ratingCount, ["отзыв", "отзыва", "отзывов"])}</span></>}
           {l.verified && <span className="vtag">Проверен</span>}
           {l.fast && <span className="fast">Отвечает быстро</span>}
         </span>

@@ -9,6 +9,7 @@ import { ListingCard } from "@/components/ListingCard";
 import { RichText } from "@/components/RichText";
 import { ShowMore, Tabs } from "@/components/ShowMore";
 import { HeroArt, SceneArt, OwnersArt } from "@/components/Art";
+import { regionLabel } from "@/lib/regions";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ const ICONS = [
 ];
 
 // Группы для вкладок «Все курорты»
-const tabOf = (name: string) => /крым/i.test(name) ? "Курорты Крыма" : /абхаз/i.test(name) ? "Курорты Абхазии" : "Краснодарский край и Азов";
+const tabOf = (name: string) => /крым/i.test(name) ? "Курорты Крыма" : /абхаз/i.test(name) ? "Курорты Абхазии" : "Краснодарский край";
 
 export default async function Home() {
   const [s, resorts, where] = await Promise.all([getSettings(), resortOptions(), visibleWhere()]);
@@ -34,7 +35,7 @@ export default async function Home() {
   const counts = new Map(resorts.map(r => [r.slug, r.count ?? 0]));
   const features = [1, 2, 3].map(i => ({ title: s[`feature${i}Title`], text: String(s[`feature${i}Text`] ?? "").replace("{count}", total.toLocaleString("ru-RU")) })).filter(f => f.title);
   const tabs = [...new Set(regions.map(r => tabOf(r.name)))].map(title => ({
-    title, body: <div className="allres">{regions.filter(r => tabOf(r.name) === title).map(r => <section key={r.id}><h3>{r.name}</h3><ul>{r.resorts.map(x => <li key={x.id}><Link href={`/kurort/${x.slug}`}>{x.name}</Link> <span className="n">{counts.get(x.slug) ?? 0}</span></li>)}</ul></section>)}</div>,
+    title, body: <div className="allres">{regions.filter(r => tabOf(r.name) === title).map(r => <section key={r.id}><h3>{regionLabel(r.name)}</h3><ul>{r.resorts.map(x => <li key={x.id}><Link href={`/kurort/${x.slug}`}>{x.name}</Link> <span className="n">{counts.get(x.slug) ?? 0}</span></li>)}</ul></section>)}</div>,
   }));
 
   return (
@@ -49,7 +50,7 @@ export default async function Home() {
       <div className="sheet-top">
         {banners.map(b => <div key={b.id} className="wrap" style={{ paddingTop: 20 }}><div className="notice"><b>{b.title}</b> {b.text} {b.link && <Link href={b.link}>Подробнее</Link>}</div></div>)}
         {s.featuresShow && features.length > 0 && <section className="hsec"><div className="wrap">
-          <h2 className="h2">Почему ищут жильё у нас</h2>
+          <h2 className="h2">Почему выбирают «{s.siteName}» для поиска и бронирования жилья?</h2>
           <div className="feats">{features.map((f, i) => <div key={i} className="feat">
             <span className="feat-i"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d={ICONS[i]} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
             <div><b>{f.title}</b><p>{f.text}</p></div></div>)}</div>
@@ -64,7 +65,7 @@ export default async function Home() {
           <h2 className="h2">Популярные курорты</h2>
           <ShowMore className="rtiles" limit={6}>{popular.map(r => (
             <Link key={r.id} href={`/kurort/${r.slug}`} className={`rtile ${r.coverUrl ? "" : "noimg"}`} style={r.coverUrl ? { backgroundImage: `url(${r.coverUrl})` } : undefined}>
-              {!r.coverUrl && <SceneArt seed={r.slug} />}<b>{r.name}</b><span>{r.region.name}</span>
+              {!r.coverUrl && <SceneArt seed={r.slug} />}<b>{r.name}</b><span>{regionLabel(r.region.name)}</span>
             </Link>))}</ShowMore>
         </div></section>}
       </div>
@@ -73,7 +74,7 @@ export default async function Home() {
         <div className="cards strip">{latest.map(l => <ListingCard key={l.id} l={toCard(l)} />)}</div>
       </div></section>}
       {articles.length > 0 && <section className="hsec"><div className="wrap">
-        <h2 className="h2">Статьи об отдыхе</h2>
+        <h2 className="h2">Последние добавленные статьи</h2>
         <div className="arts">{articles.map(a => <Link key={a.id} href={`/articles/${a.slug}`} className="art">
           <div className="aph">{a.coverUrl ? <img src={a.coverUrl} alt="" loading="lazy" /> : <SceneArt seed={a.slug} />}</div>
           <div className="atx"><b>{a.title}</b>{a.excerpt && <p>{a.excerpt}</p>}<span className="small muted">{fmtDate(a.publishedAt ?? a.createdAt)}</span></div>

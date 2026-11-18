@@ -6,7 +6,7 @@ import { getUser, isStaff } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { LISTING_TYPES, BEACH_TYPES, PREPAY, CRIT } from "@/lib/labels";
 import { replyLabel } from "@/lib/alerts";
-import { walkMinutes, fmtDate, rub, plural } from "@/lib/format";
+import { walkMinutes, fmtDate, rub, plural, score10 } from "@/lib/format";
 import { prepOf } from "@/lib/collections";
 import { BookingProvider, DatesPanel, OwnerCard, RequestButton } from "@/components/Booking";
 import { FavButton } from "@/components/Fav";
@@ -111,7 +111,7 @@ export async function ListingView({ number, sp }: { number: string | number; sp:
         <div className="ohead">
           <div><h1 className="h1">{en && l.titleEn ? l.titleEn : l.title}</h1>
             <div className="osub">{l.lat && l.lng ? <a href="#map">{where}</a> : <span>{where}</span>}
-              {l.ratingCount > 0 && <span className="meta"><span className="score num">{l.ratingAvg.toFixed(1)}</span><a href="#reviews">{l.ratingCount} {plural(l.ratingCount, ["отзыв", "отзыва", "отзывов"])}</a></span>}
+              {l.ratingCount > 0 && <span className="meta"><span className="score num">{score10(l.ratingAvg)}</span><a href="#reviews">{l.ratingCount} {plural(l.ratingCount, ["отзыв", "отзыва", "отзывов"])}</a></span>}
               {l.verified && <span className="vtag">Хозяин проверен</span>}
               {l.owner.idStatus === "APPROVED" && <span className="vtag">Личность подтверждена</span>}
               {reply && <span className="fast">{reply}</span>}</div></div>
@@ -147,10 +147,10 @@ export async function ListingView({ number, sp }: { number: string | number; sp:
               {l.lat && l.lng && <section className="panel" id="map"><h2 className="ph2">На карте</h2><p className="small muted">{where}</p>
                 <a className="mapbox" href={`https://yandex.ru/maps/?pt=${l.lng},${l.lat}&z=16&l=map`} target="_blank" rel="noopener"><span className="btn ghost sm">Показать на карте</span></a></section>}
               <section className="panel" id="reviews"><h2 className="ph2">Отзывы гостей</h2>
-                {l.ratingCount > 0 && <p className="meta" style={{ marginBottom: 12 }}><span className="score num">{l.ratingAvg.toFixed(1)}</span> {l.ratingCount} {plural(l.ratingCount, ["отзыв", "отзыва", "отзывов"])}</p>}
+                {l.ratingCount > 0 && <p className="meta" style={{ marginBottom: 12 }}><span className="score num">{score10(l.ratingAvg)}</span> {l.ratingCount} {plural(l.ratingCount, ["отзыв", "отзыва", "отзывов"])}</p>}
                 {crit._count.cleanliness >= 3 && <div className="crit">{CRIT.map(([k, t]) => { const v = crit._avg[k]; return v ? <div key={k}><span>{t}</span><b className="num">{v.toFixed(1)}</b><i style={{ "--w": `${v / 5 * 100}%` } as React.CSSProperties} /></div> : null; })}</div>}
                 {l.reviews.length ? <div className="revs">{l.reviews.map(r => <div key={r.id} className="rev">
-                  <div className="rv-h"><span className="ow-av sm">{r.authorName.trim()[0]?.toUpperCase()}</span><div><b>{r.authorName}</b><span className="small muted">{fmtDate(r.createdAt)}</span></div><span className="score num">{r.rating}</span></div>
+                  <div className="rv-h"><span className="ow-av sm">{r.authorName.trim()[0]?.toUpperCase()}</span><div><b>{r.authorName}</b><span className="small muted">{fmtDate(r.createdAt)}</span></div><span className="score num">{r.rating * 2}</span></div>
                   <p>{r.text}</p>{r.ownerReply && <div className="reply"><b className="small">Ответ хозяина</b><p>{r.ownerReply}</p></div>}</div>)}</div>
                   : <p className="muted">Отзывов пока нет. Оставить отзыв можно после поездки по ссылке из письма.</p>}
               </section>

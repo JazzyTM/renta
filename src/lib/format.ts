@@ -29,3 +29,9 @@ export const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 export const parseDate = (s: string) => new Date(s + "T00:00:00Z");
 export const nightsBetween = (a: Date, b: Date) => Math.max(0, Math.round((b.getTime() - a.getTime()) / 86400000));
 export const walkMinutes = (m: number) => Math.max(1, Math.round(m / 75));
+
+// Оценка для показа: в базе 1–5, на сайте по 10-балльной шкале («9.7», «10»)
+export function score10(avg: number) {
+  const v = Math.round(avg * 20) / 10;
+  return v >= 10 ? "10" : v.toFixed(1);
+}

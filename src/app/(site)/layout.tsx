@@ -27,20 +27,22 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <footer className="foot"><div className="wrap">
         <div className="foot-l">
           <Link href="/" className="logo">{s.siteName}</Link>
-          {s.footerTagline && <span className="small">{s.footerTagline}</span>}
-          {socials.length > 0 && <span className="socials">{socials.map(([k, t, ic]) => <a key={k} href={s[k]} target="_blank" rel="noopener" aria-label={t} title={t}>{ic}</a>)}</span>}
+          {s.footerTagline && <span className="foot-tag">{s.footerTagline}</span>}
+          {socials.length > 0 && <><b className="foot-h">Следите за нами в соцсетях</b>
+            <span className="socials">{socials.map(([k, t, ic]) => <a key={k} href={s[k]} target="_blank" rel="noopener" aria-label={t} title={t}>{ic}</a>)}</span></>}
           {(s.contactEmail || s.contactPhone) && <span className="small muted">{[s.contactPhone, s.contactEmail].filter(Boolean).join(" · ")}</span>}
         </div>
-        <div className="foot-c"><b>Гостям</b><ul>
-          <li><Link href="/favorites">Избранное</Link></li><li><Link href="/compare">Сравнение</Link></li>
-          <li><Link href="/my">Мои поездки</Link></li><li><Link href="/articles">Статьи</Link></li>
-        </ul></div>
-        {pages.length > 0 && <div className="foot-c"><b>Информация</b><ul>{pages.map(p => <li key={p.slug}><Link href={`/p/${p.slug}`}>{p.title}</Link></li>)}</ul></div>}
-        <div className="foot-c foot-r"><b>Хозяевам</b>
-          <Link className="btn wide" href="/cabinet/new">Добавить объявление</Link>
+        <div className="foot-r">
+          <Link className="btn dark wide" href="/cabinet/new">Добавить объявление</Link>
           <Link className="btn ghost wide" href="/cabinet">Личный кабинет</Link>
+          <ul>
+            <li><Link href="/articles">Полезные статьи</Link></li>
+            <li><Link href="/favorites">Избранное</Link></li>
+            <li><Link href="/my">Мои поездки</Link></li>
+            {pages.map(p => <li key={p.slug}><Link href={`/p/${p.slug}`}>{p.title}</Link></li>)}
+          </ul>
         </div>
-        <div className="foot-b small muted">© {new Date().getFullYear()} {s.siteName}{s.footerText ? `. ${s.footerText}` : ""}</div>
+        <div className="foot-b">© {new Date().getFullYear()} «{s.siteName}». Все права защищены.{s.footerText ? <><br />{s.footerText}</> : <><br />Гостиницы и частный сектор курортов Чёрного и Азовского моря. Отдыхайте на море вместе с нами!</>}</div>
       </div></footer>
       {s.metrikaId && <Script id="ym" strategy="afterInteractive">{`(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,"script","https://mc.yandex.ru/metrika/tag.js","ym");ym(${Number(s.metrikaId)},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,webvisor:true});`}</Script>}
     </>

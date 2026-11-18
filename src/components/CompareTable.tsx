@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { CardData } from "@/lib/card";
 import { LISTING_TYPES } from "@/lib/labels";
-import { rub } from "@/lib/format";
+import { rub, score10 } from "@/lib/format";
 import { thumb } from "@/lib/img";
 import { useCmp, removeCmp, readCmp } from "./Compare";
 
@@ -27,7 +27,7 @@ export function CompareTable() {
     ["Тип", l => LISTING_TYPES[l.type]],
     ["Курорт", l => l.resort],
     ["До моря", l => l.seaDistance != null ? <span className={l.seaDistance === near ? "good" : ""}>{l.seaDistance} м</span> : "—"],
-    ["Рейтинг", l => l.ratingCount ? `${l.ratingAvg.toFixed(1)} (${l.ratingCount})` : "нет отзывов"],
+    ["Рейтинг", l => l.ratingCount ? `${score10(l.ratingAvg)} (${l.ratingCount})` : "нет отзывов"],
     ["Хозяин проверен", l => l.verified ? "да" : "нет"],
     ...amen.map(([code, name]) => [name, (l: CardData) => l.amen.some(a => a.code === code) ? "✓" : "—"] as [string, (l: CardData) => React.ReactNode]),
   ];
