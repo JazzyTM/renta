@@ -124,8 +124,9 @@ async function demo() {
   for (const [i, [resortSlug, title, type, sea, price, beach, codes, street]] of DEMO.entries()) {
     const resort = await db.resort.findUnique({ where: { slug: resortSlug } });
     if (!resort) continue;
-    const photos = [DEMO_EXTERIOR[i % DEMO_EXTERIOR.length], DEMO_ROOMS[i % DEMO_ROOMS.length], DEMO_ROOMS[(i + 3) % DEMO_ROOMS.length], DEMO_VIEWS[i % DEMO_VIEWS.length], DEMO_ROOMS[(i + 6) % DEMO_ROOMS.length]]
-      .map((id, sort) => ({ url: unsplash(id, 1600), sort }));
+    const ext = DEMO_EXTERIOR[i % DEMO_EXTERIOR.length], r1 = DEMO_ROOMS[i % DEMO_ROOMS.length], r2 = DEMO_ROOMS[(i + 3) % DEMO_ROOMS.length], r3 = DEMO_ROOMS[(i + 6) % DEMO_ROOMS.length], view = DEMO_VIEWS[i % DEMO_VIEWS.length];
+    // у квартиры обложка — интерьер, у домов и отелей — фасад или двор
+    const photos = (type === "APARTMENT" ? [r1, view, r2, r3] : [ext, r1, r2, view, r3]).map((id, sort) => ({ url: unsplash(id, 1600), sort }));
     const existing = await db.listing.findFirst({ where: { title, ownerId: owner.id }, include: { _count: { select: { photos: true } } } });
     if (existing) {
       if (!existing._count.photos) await db.listingPhoto.createMany({ data: photos.map(p => ({ ...p, listingId: existing.id })) });
