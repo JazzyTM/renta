@@ -8,7 +8,7 @@ import { getSettings } from "@/lib/settings";
 import { quote } from "@/lib/pricing";
 import { parseDate, fmtRange } from "@/lib/format";
 import { sign } from "@/lib/sign";
-import { notifyEmail } from "@/lib/notify";
+import { notifyEmail, notifyAdmin } from "@/lib/notify";
 import { limit, isBot, TOO_MANY } from "@/lib/guard";
 
 const today = () => new Date(new Date().toISOString().slice(0, 10) + "T00:00:00Z");
@@ -77,5 +77,6 @@ export async function complain(_: unknown, fd: FormData): Promise<FormState> {
   if (isBot(fd)) return { ok: "sent" };
   if (!(await limit("complaint", 5, 3600))) return { error: TOO_MANY };
   await db.complaint.create({ data: { listingId: String(fd.get("listingId")), authorId: u?.id, email: u?.email ?? (String(fd.get("email") || "") || null), reason, text } });
+  await notifyAdmin("Новая жалоба", `${reason}${text ? `\n${text.slice(0, 500)}` : ""}`, "/admin/complaints");
   return { ok: "sent" };
 }

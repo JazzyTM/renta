@@ -40,6 +40,8 @@ model User {
   idStatus      String? // проверка паспорта: PENDING | APPROVED | REJECTED
   idDocPath     String? // путь к фото паспорта в закрытой папке, удаляется после проверки
   idNote        String?
+  telegramChatId String?  @unique // чат с ботом для уведомлений
+  telegramName  String?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 

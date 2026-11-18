@@ -174,6 +174,7 @@ export async function publish(id: string): Promise<FormState> {
     moderation: l.moderation === "APPROVED" && !hit ? "APPROVED" : "PENDING", moderationNote: hit ? `Стоп-слово: ${hit.word}` : l.moderationNote,
   }});
   await audit(u.id, "publish", "Listing", id);
+  if (!(l.moderation === "APPROVED" && !hit)) await (await import("./notify")).notifyAdmin("Объявление на проверке", `«${l.title}»${hit ? `\nСтоп-слово: ${hit.word}` : ""}`, `/admin/listings/${id}`).catch(() => {});
   if (!l.publishedAt) await (await import("./referral")).rewardReferrer(l.ownerId).catch(() => {});
   paths(id);
   return { ok: s.postModeration ? "Опубликовано. Модератор проверит объявление в ближайшее время" : "Отправлено на проверку. После проверки объявление появится в поиске" };

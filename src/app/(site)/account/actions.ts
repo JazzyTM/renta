@@ -24,3 +24,9 @@ export async function changePassword(_: unknown, fd: FormData): Promise<FormStat
   await revokeOtherSessions(u.id);
   return { ok: "Пароль изменён. На других устройствах нужно войти заново" };
 }
+
+export async function telegramUnlink() {
+  const u = await requireUser();
+  await db.user.update({ where: { id: u.id }, data: { telegramChatId: null, telegramName: null } });
+  revalidatePath("/account"); revalidatePath("/cabinet/notifications");
+}

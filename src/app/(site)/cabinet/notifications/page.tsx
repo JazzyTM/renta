@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { fmtDateTime } from "@/lib/format";
 import { readNotifications } from "../actions";
+import { TelegramConnect } from "@/components/TelegramConnect";
 
 export default async function Notifications() {
   const u = await requireUser("/cabinet/notifications");
@@ -11,6 +12,7 @@ export default async function Notifications() {
     <>
       <div className="row between"><h1 className="h1">Уведомления</h1>
         {list.some(n => !n.readAt) && <form action={readNotifications}><button className="btn ghost sm">Отметить прочитанными</button></form>}</div>
+      <TelegramConnect user={u} title="Получать заявки в Telegram" />
       {!list.length && <p className="muted">Пусто.</p>}
       <div className="stack">{list.map(n => (
         <div key={n.id} className="card-box row between" style={{ padding: 12, fontWeight: n.readAt ? 400 : 700 }}>

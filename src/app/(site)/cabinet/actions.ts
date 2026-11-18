@@ -2,7 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireUser, isStaff } from "@/lib/auth";
-import { sendTemplate } from "@/lib/mail";
+import { notifyGuest, notifyAdmin } from "@/lib/notify";
 import { sign } from "@/lib/sign";
 import { fmtRange, rub } from "@/lib/format";
 import { audit } from "@/lib/audit";
@@ -31,7 +31,7 @@ export async function acceptBooking(number: number, _: unknown, fd: FormData): P
     status: "ACCEPTED", prepayAmount: prepay, respondedAt: new Date(),
     messages: { create: [{ isSystem: true, text: `Хозяин подтвердил даты. Предоплата: ${prepay ? rub(prepay) : "не нужна"}` }, ...(text ? [{ text, fromOwner: true, authorId: u.id }] : [])] },
   }});
-  await sendTemplate(b.guestEmail, "booking_accepted_guest", { listing: b.listing.title, dates: fmtRange(b.checkIn, b.checkOut), prepay: prepay ? rub(prepay) : "не нужна", link: guestLink(number) });
+  await notifyGuest(b, "booking_accepted_guest", { listing: b.listing.title, dates: fmtRange(b.checkIn, b.checkOut), prepay: prepay ? rub(prepay) : "не нужна", link: guestLink(number) }, `/b/${number}?k=${sign(number)}`);
   await audit(u.id, "accept", "Booking", b.id);
   refresh(number);
   return { ok: "Гостю отправлено письмо" };
@@ -45,7 +45,7 @@ export async function declineBooking(number: number, _: unknown, fd: FormData): 
     status: "DECLINED", respondedAt: new Date(),
     messages: { create: [{ isSystem: true, text: "Хозяин отклонил заявку" }, ...(text ? [{ text, fromOwner: true, authorId: u.id }] : [])] },
   }});
-  await sendTemplate(b.guestEmail, "booking_declined_guest", { listing: b.listing.title, dates: fmtRange(b.checkIn, b.checkOut), link: `${process.env.APP_URL || ""}/kurort/${b.listing.resort.slug}` });
+  await notifyGuest(b, "booking_declined_guest", { listing: b.listing.title, dates: fmtRange(b.checkIn, b.checkOut), link: `${process.env.APP_URL || ""}/kurort/${b.listing.resort.slug}` }, `/kurort/${b.listing.resort.slug}`);
   await audit(u.id, "decline", "Booking", b.id);
   refresh(number);
   return { ok: "Заявка отклонена" };
@@ -57,7 +57,7 @@ export async function setBookingStatus(number: number, status: "PREPAID" | "COMP
   await db.booking.update({ where: { id: b.id }, data: { status, messages: { create: { isSystem: true, text } } } });
   if (status === "PREPAID") await markBookingBusy(b.listingId, b.checkIn, b.checkOut, true);
   if (status === "CANCELLED") await markBookingBusy(b.listingId, b.checkIn, b.checkOut, false);
-  await sendTemplate(b.guestEmail, "booking_message", { number, text, link: guestLink(number) });
+  await notifyGuest(b, "booking_message", { number, text, link: guestLink(number) }, `/b/${number}?k=${sign(number)}`);
   await audit(u.id, "status:" + status, "Booking", b.id);
   refresh(number);
 }
@@ -102,6 +102,7 @@ async function checkout(userId: string, data: { kind: string; tariffId?: string;
   let p;
   try { p = await applyPromoCode(code, data.amount); } catch (e) { return { error: (e as Error).message }; }
   const order = await db.order.create({ data: { userId, ...data, promoType: data.promoType as any, days: data.days + p.freeDays, amount: p.amount, promoCode: p.code } });
+  if (order.amount > 0) await notifyAdmin(`Новый заказ №${order.number}`, `${data.kind === "tariff" ? "Тариф" : "Продвижение"} на ${rub(order.amount)}`, "/admin/orders");
   if (order.amount === 0) {
     await markOrderPaid(order.id, userId);
     revalidatePath("/cabinet/tariff"); revalidatePath("/cabinet");
@@ -165,6 +166,7 @@ export async function uploadIdDoc(_: unknown, fd: FormData): Promise<FormState> 
   await removeIdDoc(u.idDocPath);
   await db.user.update({ where: { id: u.id }, data: { idStatus: "PENDING", idDocPath: name, idNote: null } });
   await audit(u.id, "id_upload", "User", u.id);
+  await notifyAdmin("Проверка личности", `${u.name || u.email} загрузил фото документа`, "/admin/idcheck");
   revalidatePath("/cabinet/verify");
   return { ok: "Фото отправлено. Проверим и удалим его, обычно в течение дня" };
 }

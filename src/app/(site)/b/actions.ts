@@ -2,8 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { bookingAccess } from "@/lib/booking";
-import { notifyEmail } from "@/lib/notify";
-import { sendTemplate } from "@/lib/mail";
+import { notifyEmail, notifyGuest } from "@/lib/notify";
 import { sign } from "@/lib/sign";
 import { getSettings } from "@/lib/settings";
 import { recomputeRating } from "@/lib/reviews";
@@ -20,7 +19,7 @@ export async function postMessage(number: number, k: string | null, fd: FormData
   if (a.role === "owner" && !a.b.respondedAt) await db.booking.update({ where: { id: a.b.id }, data: { respondedAt: new Date() } });
   const base = process.env.APP_URL || "";
   if (a.role === "guest") await notifyEmail(a.b.listing.ownerId, "booking_message", { number, text, link: `${base}/cabinet/bookings/${number}` }, `Сообщение по заявке №${number}`, `/cabinet/bookings/${number}`);
-  else await sendTemplate(a.b.guestEmail, "booking_message", { number, text, link: `${base}/b/${number}?k=${sign(number)}` });
+  else await notifyGuest(a.b, "booking_message", { number, text, link: `${base}/b/${number}?k=${sign(number)}` }, `/b/${number}?k=${sign(number)}`);
   revalidatePath(`/b/${number}`); revalidatePath(`/cabinet/bookings/${number}`);
 }
 

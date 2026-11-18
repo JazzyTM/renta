@@ -85,6 +85,12 @@ export const SETTINGS: Section[] = [
     { key: "yandexClientId", label: "Яндекс ID: ClientID", type: "text", def: "" },
     { key: "yandexClientSecret", label: "Яндекс ID: Client secret", type: "password", def: "" },
   ]},
+  { id: "telegram", title: "Telegram", fields: [
+    { key: "telegramOn", label: "Уведомления в Telegram включены", type: "bool", def: true },
+    { key: "telegramBotToken", label: "Токен бота", type: "password", def: "", hint: "Создайте бота у @BotFather (команда /newbot) и вставьте токен. Сервер сам забирает сообщения боту, вебхук не нужен" },
+    { key: "telegramBotUsername", label: "Имя бота (без @)", type: "text", def: "", hint: "Можно не заполнять: определится по токену" },
+    { key: "telegramAdminChat", label: "Чат администрации", type: "text", def: "", hint: "Напишите боту любое сообщение (или добавьте бота в группу) — он пришлёт номер чата. Сюда приходят модерация, жалобы, заказы, новые хозяева" },
+  ]},
   { id: "mail", title: "Почта", fields: [
     { key: "smtpHost", label: "SMTP сервер", type: "text", def: "", hint: "Пусто: письма не отправляются, а пишутся в журнал писем" },
     { key: "smtpPort", label: "SMTP порт", type: "number", def: 465 },

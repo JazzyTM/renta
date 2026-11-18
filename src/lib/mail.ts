@@ -21,12 +21,18 @@ export function fill(tpl: string, vars: Record<string, string | number>) {
   return tpl.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
 }
 
-export async function sendTemplate(to: string, key: string, vars: Record<string, string | number>) {
+// Текст письма по шаблону (он же уходит в Telegram)
+export async function renderTemplate(key: string, vars: Record<string, string | number>) {
   const s = await getSettings();
   const row = await db.emailTemplate.findUnique({ where: { key } });
   const tpl = row ?? EMAIL_DEFAULTS[key];
   const all = { site: s.siteName, ...vars };
-  return sendMail(to, fill(tpl.subject, all), fill(tpl.body, all));
+  return { subject: fill(tpl.subject, all), body: fill(tpl.body, all) };
+}
+
+export async function sendTemplate(to: string, key: string, vars: Record<string, string | number>) {
+  const t = await renderTemplate(key, vars);
+  return sendMail(to, t.subject, t.body);
 }
 
 export async function sendMail(to: string, subject: string, text: string) {

@@ -2,6 +2,7 @@ import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { ActionForm } from "@/components/Forms";
 import { saveProfile, changePassword } from "./actions";
+import { TelegramConnect } from "@/components/TelegramConnect";
 
 export const metadata = { title: "Профиль" };
 
@@ -16,6 +17,7 @@ export default async function Account() {
         <div className="field"><label>Почта</label><input className="input" value={u.email ?? "не указана"} disabled /></div>
         <div className="field"><label htmlFor="a-p">Телефон</label><input className="input" id="a-p" name="phone" defaultValue={u.phone ?? ""} /></div>
       </ActionForm>
+      <TelegramConnect user={u} />
       <section className="stack"><h2 className="h2">Пароль</h2>
         <ActionForm action={changePassword} submit="Сменить пароль">
           {u.passwordHash && <div className="field"><label htmlFor="c-c">Текущий пароль</label><input className="input" id="c-c" name="current" type="password" /></div>}
