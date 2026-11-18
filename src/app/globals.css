@@ -1726,3 +1726,12 @@ footer.foot .wrap { display: grid; grid-template-columns: minmax(0, 1fr) 264px; 
   .utabs-h button { font-size: 15px }
   .home > .hsec:has(.utabs) { border-radius: 12px 12px 0 0 }
 }
+
+/* v6, правка после сверки */
+header.top { border-bottom: 0 !important }
+.sheet-top { border-radius: 0 0 12px 12px }
+.utabs-h { scrollbar-width: none; overflow-y: hidden }
+.utabs-h::-webkit-scrollbar { display: none }
+footer.foot a.logo, footer.foot .foot-l .logo { color: var(--accent) !important; font-size: 22px }
+.rtop .wrap { row-gap: 16px }
+.rtop h1, .rtop .h2 { margin: 0 }
