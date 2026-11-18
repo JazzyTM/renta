@@ -1,4 +1,5 @@
 import { db } from "./db";
+import { STOCK, unsplash } from "./stock";
 
 type Field = { key: string; label: string; type: "text" | "textarea" | "number" | "bool" | "password" | "select" | "image"; def: unknown; hint?: string; options?: [string, string][] };
 type Section = { id: string; title: string; fields: Field[] };
@@ -6,7 +7,7 @@ type Section = { id: string; title: string; fields: Field[] };
 // Все настройки сайта. Админка строит формы по этому описанию.
 export const SETTINGS: Section[] = [
   { id: "general", title: "Общие", fields: [
-    { key: "siteName", label: "Название сайта", type: "text", def: "Берег" },
+    { key: "siteName", label: "Название сайта", type: "text", def: "Наберегу" },
     { key: "tagline", label: "Заголовок на главной", type: "text", def: "Жильё у моря без посредников" },
     { key: "subTagline", label: "Подзаголовок на главной", type: "text", def: "Черноморское и Азовское побережье, Крым, Абхазия" },
     { key: "contactEmail", label: "Почта для связи", type: "text", def: "" },
@@ -20,7 +21,7 @@ export const SETTINGS: Section[] = [
     { key: "maintenanceText", label: "Текст на время обслуживания", type: "text", def: "Сайт обновляется, зайдите через несколько минут." },
   ]},
   { id: "home", title: "Главная", fields: [
-    { key: "heroImage", label: "Фото в шапке главной", type: "image", def: "", hint: "Море или берег, горизонтальное, от 1920 px. Без фото шапка будет однотонной" },
+    { key: "heroImage", label: "Фото в шапке главной", type: "image", def: unsplash(STOCK.hero, 1920), hint: "Море или берег, горизонтальное, от 1920 px. Без фото шапка будет однотонной" },
     { key: "featuresShow", label: "Показывать блок «Почему мы»", type: "bool", def: true },
     { key: "feature1Title", label: "Почему мы, пункт 1", type: "text", def: "Проверенные объявления" },
     { key: "feature1Text", label: "Текст пункта 1", type: "textarea", def: "Проверяем объявления и хозяев. Жалобы разбираем в течение дня." },
@@ -29,7 +30,7 @@ export const SETTINGS: Section[] = [
     { key: "feature3Title", label: "Пункт 3", type: "text", def: "Большой выбор" },
     { key: "feature3Text", label: "Текст пункта 3", type: "textarea", def: "Гостевые дома, квартиры и мини-отели на курортах Чёрного и Азовского моря. Сейчас вариантов: {count}." },
     { key: "bannerShow", label: "Показывать баннер для хозяев", type: "bool", def: true },
-    { key: "bannerImage", label: "Фото баннера для хозяев", type: "image", def: "" },
+    { key: "bannerImage", label: "Фото баннера для хозяев", type: "image", def: unsplash(STOCK.owners, 1400) },
     { key: "bannerTitle", label: "Заголовок баннера", type: "text", def: "Сдаёте жильё у моря?" },
     { key: "bannerText", label: "Текст баннера", type: "text", def: "Разместите объявление, гости будут звонить вам напрямую." },
     { key: "homeSeoText", label: "Текст внизу главной", type: "textarea", def: "", hint: "Можно разметку: ## заголовок, **жирный**, [ссылка](/адрес)" },
@@ -89,7 +90,7 @@ export const SETTINGS: Section[] = [
     { key: "smtpPort", label: "SMTP порт", type: "number", def: 465 },
     { key: "smtpUser", label: "SMTP логин", type: "text", def: "" },
     { key: "smtpPass", label: "SMTP пароль", type: "password", def: "" },
-    { key: "smtpFrom", label: "Отправитель", type: "text", def: "Берег <no-reply@example.ru>" },
+    { key: "smtpFrom", label: "Отправитель", type: "text", def: "Наберегу <no-reply@naberegu.su>" },
     { key: "adminNotifyEmail", label: "Куда слать уведомления администрации", type: "text", def: "" },
   ]},
   { id: "payments", title: "Оплата и монетизация", fields: [

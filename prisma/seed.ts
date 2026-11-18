@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { AMENITY_GROUPS } from "./data/amenities";
+import { RESORT_COVERS, DEMO_EXTERIOR, DEMO_ROOMS, DEMO_VIEWS, unsplash } from "../src/lib/stock";
 
 const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
 
@@ -35,6 +36,10 @@ async function main() {
     for (const [name, slug] of list)
       await db.resort.upsert({ where: { slug }, update: {}, create: { name, slug, regionId: region.id, sort: sort++, isPopular: POPULAR.includes(slug) } });
   }
+
+  // Обложки курортов: ставим только туда, где фото ещё нет (своё фото из админки не трогаем)
+  for (const [slug, id] of Object.entries(RESORT_COVERS))
+    await db.resort.updateMany({ where: { slug, coverUrl: null }, data: { coverUrl: unsplash(id, 1200, 800) } });
 
   let aSort = 0;
   for (const [group, list] of Object.entries(AMENITY_GROUPS))
@@ -72,36 +77,88 @@ async function main() {
   console.log(`Готово. Админ: ${email} / ${password}`);
 }
 
+// Демо-объявления: хозяин owner@example.ru. Удалить все разом — удалить этого пользователя в админке.
+type Demo = [resort: string, title: string, type: "GUESTHOUSE" | "APARTMENT" | "HOTEL" | "HOUSE" | "ROOM", sea: number, price: number, beach: "PEBBLE" | "SAND", amen: string[], street: string];
+const DEMO: Demo[] = [
+  ["kabardinka", "Гостевой дом «Лаванда»", "GUESTHOUSE", 180, 8100, "PEBBLE", ["ac", "wifi", "kitchen", "parking", "pool", "kids", "bbq"], "ул. Мира, 12"],
+  ["gelendzhik", "Апартаменты «Тонкий мыс»", "APARTMENT", 350, 7400, "SAND", ["ac", "wifi", "kitchen", "washer", "balcony", "sea_view"], "ул. Луначарского, 98"],
+  ["divnomorsk", "Мини-отель «Корабельная роща»", "HOTEL", 90, 9900, "PEBBLE", ["ac", "wifi", "pool", "breakfast", "parking", "kids", "first_line"], "ул. Короленко, 3"],
+  ["dzhanhot", "Дом «Сосновый»", "HOUSE", 600, 14500, "PEBBLE", ["wifi", "kitchen", "parking", "pets", "bbq", "garden"], "ул. Лесная, 7"],
+  ["arkhipo-osipovka", "Гостевой дом «Бриз»", "GUESTHOUSE", 250, 4300, "SAND", ["ac", "wifi", "pool", "kids", "shared_kitchen", "parking"], "ул. Школьная, 41"],
+  ["lazarevskoe", "Гостевой дом «Магнолия»", "GUESTHOUSE", 300, 5200, "PEBBLE", ["ac", "wifi", "kitchen", "kids", "parking", "playground"], "ул. Победы, 115"],
+  ["anapa", "Квартира у Высокого берега", "APARTMENT", 400, 4600, "SAND", ["ac", "wifi", "kitchen", "balcony"], "ул. Набережная, 3"],
+  ["adler", "Отель «Имеретинский бриз»", "HOTEL", 150, 8800, "PEBBLE", ["ac", "wifi", "breakfast", "pool", "parking", "first_line"], "ул. Ленина, 219"],
+  ["lazarevskoe", "Гостевой дом «У моря»", "GUESTHOUSE", 120, 4800, "PEBBLE", ["ac", "wifi", "shared_kitchen", "first_line", "kids"], "ул. Калараша, 64"],
+  ["lazarevskoe", "Квартира с видом на море", "APARTMENT", 450, 5600, "PEBBLE", ["ac", "wifi", "kitchen", "sea_view", "balcony", "washer"], "ул. Тормахова, 2"],
+  ["adler", "Гостевой дом «Елена»", "GUESTHOUSE", 500, 4200, "PEBBLE", ["ac", "wifi", "shared_kitchen", "parking", "kids"], "ул. Ульянова, 22"],
+  ["adler", "Апартаменты в Сириусе", "APARTMENT", 700, 6900, "PEBBLE", ["ac", "wifi", "kitchen", "pool", "parking", "washer"], "ул. Олимпийская, 15"],
+  ["gelendzhik", "Гостевой дом «Аквамарин»", "GUESTHOUSE", 450, 5100, "SAND", ["ac", "wifi", "shared_kitchen", "parking", "bbq"], "ул. Тельмана, 65"],
+  ["gelendzhik", "Мини-отель «Золотая бухта»", "HOTEL", 200, 7800, "SAND", ["ac", "wifi", "breakfast", "pool", "kids", "playground"], "ул. Десантная, 1"],
+  ["kabardinka", "Апартаменты «Одиссея»", "APARTMENT", 150, 9200, "PEBBLE", ["ac", "wifi", "kitchen", "sea_view", "first_line", "parking"], "ул. Мира, 15"],
+  ["anapa", "Гостевой дом «Солнечный»", "GUESTHOUSE", 600, 3800, "SAND", ["ac", "wifi", "pool", "kids", "shared_kitchen", "playground"], "ул. Новороссийская, 76"],
+  ["vityazevo", "Гостевой дом «Ракушка»", "GUESTHOUSE", 350, 3900, "SAND", ["ac", "wifi", "pool", "kids", "breakfast", "parking"], "Паралия, 14"],
+  ["vityazevo", "Мини-отель «Паралия»", "HOTEL", 250, 6200, "SAND", ["ac", "wifi", "pool", "breakfast", "kids", "animators"], "ул. Черноморская, 9"],
+  ["golubickaja", "Дом с бассейном «Хорошее место»", "HOUSE", 800, 11000, "SAND", ["wifi", "kitchen", "pool", "parking", "bbq", "kids"], "ул. Васильковая, 18"],
+  ["golubickaja", "Домики «На море и точка»", "GUESTHOUSE", 700, 3000, "SAND", ["ac", "wifi", "pool", "shared_kitchen", "kids"], "ул. Васильковая, 8"],
+  ["arkhipo-osipovka", "Отель «Золотая подкова»", "HOTEL", 300, 6400, "SAND", ["ac", "wifi", "breakfast", "pool", "parking"], "ул. Школьная, 97"],
+  ["yalta", "Апартаменты на Набережной", "APARTMENT", 200, 8500, "PEBBLE", ["ac", "wifi", "kitchen", "sea_view", "balcony"], "ул. Пушкинская, 4"],
+  ["evpatoriya", "Гостевой дом «Ковыль»", "GUESTHOUSE", 300, 3600, "SAND", ["ac", "wifi", "shared_kitchen", "kids", "parking"], "ул. Фрунзе, 28"],
+  ["sochi", "Квартира у Морского вокзала", "APARTMENT", 400, 7900, "PEBBLE", ["ac", "wifi", "kitchen", "washer", "sea_view"], "ул. Войкова, 1"],
+];
+const NAMES = ["Ирина", "Сергей", "Анна", "Дмитрий", "Ольга", "Павел", "Наталья", "Алексей"];
+const REVIEWS = [
+  "Отличное место, до моря действительно несколько минут пешком. Номер чистый, хозяева приветливые. Приедем ещё!",
+  "Всё соответствует фото. Удобная кухня, тихий двор, рядом магазины и кафе.",
+  "Отдыхали семьёй с двумя детьми — очень понравилось. Бассейн чистый, есть детская площадка.",
+  "Хорошее соотношение цены и качества. Встретили, всё показали, помогли с экскурсиями.",
+  "Уютно и спокойно. Немного шумно вечером от кафе неподалёку, но в целом всё отлично.",
+];
+
 async function demo() {
   const owner = await db.user.upsert({
     where: { email: "owner@example.ru" }, update: {},
     create: { email: "owner@example.ru", name: "Ирина", role: "OWNER", emailVerified: new Date(), phone: "+7 918 000-00-00", passwordHash: await bcrypt.hash("owner12345", 10) },
   });
-  const items: [string, string, "GUESTHOUSE" | "APARTMENT" | "HOTEL" | "HOUSE" | "ROOM", number, number, "PEBBLE" | "SAND", string[]][] = [
-    ["kabardinka", "Гостевой дом «Лаванда»", "GUESTHOUSE", 180, 8100, "PEBBLE", ["ac", "wifi", "kitchen", "parking", "pool", "kids"]],
-    ["gelendzhik", "Апартаменты «Тонкий мыс»", "APARTMENT", 350, 7400, "SAND", ["ac", "wifi", "kitchen", "washer"]],
-    ["divnomorsk", "Мини-отель «Корабельная роща»", "HOTEL", 90, 9900, "PEBBLE", ["ac", "wifi", "pool", "breakfast", "parking", "kids"]],
-    ["dzhanhot", "Дом «Сосновый»", "HOUSE", 600, 14500, "PEBBLE", ["wifi", "kitchen", "parking", "pets", "bbq"]],
-    ["arkhipo-osipovka", "Гостевой дом «Бриз»", "GUESTHOUSE", 250, 4300, "SAND", ["ac", "wifi", "pool", "kids", "shared_kitchen"]],
-    ["lazarevskoe", "Гостевой дом «Магнолия»", "GUESTHOUSE", 300, 5200, "PEBBLE", ["ac", "wifi", "kitchen", "kids", "parking"]],
-    ["anapa", "Квартира у Высокого берега", "APARTMENT", 400, 4600, "SAND", ["ac", "wifi", "kitchen"]],
-    ["adler", "Отель «Имеретинский бриз»", "HOTEL", 150, 8800, "PEBBLE", ["ac", "wifi", "breakfast", "pool", "parking"]],
-  ];
   const amen = await db.amenity.findMany();
-  for (const [resortSlug, title, type, sea, price, beach, codes] of items) {
+  let n = 0;
+  for (const [i, [resortSlug, title, type, sea, price, beach, codes, street]] of DEMO.entries()) {
     const resort = await db.resort.findUnique({ where: { slug: resortSlug } });
     if (!resort) continue;
-    const slug = resortSlug + "-" + Math.random().toString(36).slice(2, 7);
-    if (await db.listing.findFirst({ where: { title } })) continue;
+    const photos = [DEMO_EXTERIOR[i % DEMO_EXTERIOR.length], DEMO_ROOMS[i % DEMO_ROOMS.length], DEMO_ROOMS[(i + 3) % DEMO_ROOMS.length], DEMO_VIEWS[i % DEMO_VIEWS.length], DEMO_ROOMS[(i + 6) % DEMO_ROOMS.length]]
+      .map((id, sort) => ({ url: unsplash(id, 1600), sort }));
+    const existing = await db.listing.findFirst({ where: { title, ownerId: owner.id }, include: { _count: { select: { photos: true } } } });
+    if (existing) {
+      if (!existing._count.photos) await db.listingPhoto.createMany({ data: photos.map(p => ({ ...p, listingId: existing.id })) });
+      continue;
+    }
+    const rooms = type === "HOUSE" || type === "APARTMENT" ? [] : [
+      { name: "Двухместный номер", guests: 2, count: 4, price: Math.round(price * 0.5 / 100) * 100 },
+      { name: "Семейный номер", guests: 4, count: 2, price: Math.round(price * 0.75 / 100) * 100 },
+    ];
+    const reviews = Array.from({ length: i % 4 }, (_, k) => ({
+      authorName: NAMES[(i + k) % NAMES.length], rating: k % 3 === 2 ? 4 : 5, text: REVIEWS[(i + k) % REVIEWS.length], status: "PUBLISHED" as const,
+      cleanliness: 5, location: 5 - (k % 2), value: 5, service: 5,
+    }));
+    const avg = reviews.length ? reviews.reduce((a, r) => a + r.rating, 0) / reviews.length : 0;
+    // точка рядом с центром курорта, чтобы метки на карте не совпадали
+    const jitter = (k: number) => ((((i + 1) * 9301 + k * 49297) % 233280) / 233280 - 0.5) * 0.02;
     await db.listing.create({ data: {
-      ownerId: owner.id, resortId: resort.id, type, title, slug, seaDistance: sea, beachType: beach, priceFrom: Math.round(price * 0.5),
-      description: "Уютное жильё недалеко от моря. Чисто, тихо, удобно добираться до пляжа и магазинов. Хозяева живут рядом и помогут с любыми вопросами.",
-      address: `${resort.name}, ул. Морская, 1`, contactPhone: "+7 918 000-00-00", contactName: "Ирина", maxGuests: 4, baseGuests: 2, extraGuestPrice: 800,
-      status: "PUBLISHED", moderation: "APPROVED", verified: true, publishedAt: new Date(),
-      prices: { create: [[6, 0.75], [7, 1], [8, 1.05], [9, 0.7], [5, 0.5], [10, 0.5]].map(([m, f]) => ({ month: m, price: Math.round(price * f / 100) * 100 })) },
+      ownerId: owner.id, resortId: resort.id, type, title, slug: resortSlug + "-" + Math.random().toString(36).slice(2, 7), seaDistance: sea, beachType: beach,
+      priceFrom: Math.round(price * 0.5 / 100) * 100,
+      description: `${title} — жильё для отдыха у моря. ${sea <= 200 ? "До пляжа пара минут пешком. " : ""}Чистые номера со всеми удобствами, зелёный двор, рядом магазины, кафе и остановка. Хозяева живут рядом и помогут с любыми вопросами: подскажут, где вкусно поесть и куда съездить на экскурсию.\n\nЭто демонстрационное объявление: так будет выглядеть карточка на сайте.`,
+      address: street, contactPhone: "+7 918 000-00-00", contactName: NAMES[i % NAMES.length], maxGuests: type === "HOUSE" ? 8 : 4, baseGuests: 2, extraGuestPrice: 800,
+      status: "PUBLISHED", moderation: "APPROVED", verified: i % 3 !== 1, publishedAt: new Date(Date.now() - i * 3600000),
+      lat: resort.lat != null ? resort.lat + jitter(1) : null, lng: resort.lng != null ? resort.lng + jitter(2) : null,
+      ratingAvg: avg, ratingCount: reviews.length,
+      prices: { create: [[5, 0.5], [6, 0.75], [7, 1], [8, 1.05], [9, 0.7], [10, 0.5]].map(([m, f]) => ({ month: m, price: Math.round(price * f / 100) * 100 })) },
       amenities: { create: amen.filter(a => codes.includes(a.code)).map(a => ({ amenityId: a.id })) },
+      photos: { create: photos },
+      rooms: { create: rooms },
+      reviews: { create: reviews },
     }});
+    n++;
   }
+  console.log(`Демо-объявлений добавлено: ${n}`);
 }
 
 main().finally(() => db.$disconnect());

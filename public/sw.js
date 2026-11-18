@@ -1,5 +1,5 @@
 // Офлайн-страница и кэш статики. Страницы и данные всегда берутся из сети.
-const V = "bereg-1";
+const V = "naberegu-1";
 const OFFLINE = "/offline";
 self.addEventListener("install", e => { e.waitUntil(caches.open(V).then(c => c.addAll([OFFLINE, "/icon-192.png"]))); self.skipWaiting(); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
