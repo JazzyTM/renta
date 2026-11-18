@@ -49,7 +49,7 @@ function Price({ l, ci, co, guests }: { l: CardData; ci?: string; co?: string; g
 export function ListingCard({ l, ci, co, guests = 2, onHover }: { l: CardData; ci?: string; co?: string; guests?: number; onHover?: (id: string | null) => void }) {
   const qs = ci && co ? `?ci=${ci}&co=${co}` : "";
   return (
-    <Link href={`/obj/${l.number}${qs}`} className={`lcard ${l.highlighted ? "hl" : ""}`} onMouseEnter={() => onHover?.(l.id)} onMouseLeave={() => onHover?.(null)}>
+    <Link href={`${l.href}${qs}`} className={`lcard ${l.highlighted ? "hl" : ""}`} onMouseEnter={() => onHover?.(l.id)} onMouseLeave={() => onHover?.(null)}>
       <div className="ph">
         <Photos photos={l.photos} title={l.title} />
         <FavButton id={l.id} />
@@ -73,7 +73,7 @@ const amenIcon = (code: string) => AMEN_ICON[code] ?? AMEN_ICON[Object.keys(AMEN
 export function ListingRow({ l, ci, co, guests = 2, onHover }: { l: CardData; ci?: string; co?: string; guests?: number; onHover?: (id: string | null) => void }) {
   const qs = ci && co ? `?ci=${ci}&co=${co}` : "";
   return (
-    <Link href={`/obj/${l.number}${qs}`} className={`lrow ${l.highlighted ? "hl" : ""}`} onMouseEnter={() => onHover?.(l.id)} onMouseLeave={() => onHover?.(null)}>
+    <Link href={`${l.href}${qs}`} className={`lrow ${l.highlighted ? "hl" : ""}`} onMouseEnter={() => onHover?.(l.id)} onMouseLeave={() => onHover?.(null)}>
       <div className="ph">
         <Photos photos={l.photos} title={l.title} />
         <FavButton id={l.id} />

@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { AMENITY_GROUPS } from "./data/amenities";
+import { RESORT_GEO } from "./data/coords";
 import { RESORT_COVERS, DEMO_EXTERIOR, DEMO_ROOMS, DEMO_VIEWS, unsplash } from "../src/lib/stock";
 
 const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
@@ -35,6 +36,12 @@ async function main() {
     let sort = 0;
     for (const [name, slug] of list)
       await db.resort.upsert({ where: { slug }, update: {}, create: { name, slug, regionId: region.id, sort: sort++, isPopular: POPULAR.includes(slug) } });
+  }
+
+  // Координаты (погода, карты) и «где» для заголовков — только если поле ещё пустое
+  for (const [name, [lat, lng, prep]] of Object.entries(RESORT_GEO)) {
+    await db.resort.updateMany({ where: { name, lat: null }, data: { lat, lng } });
+    await db.resort.updateMany({ where: { name, namePrep: null }, data: { namePrep: prep } });
   }
 
   // Обложки курортов: ставим только туда, где фото ещё нет (своё фото из админки не трогаем)
@@ -127,9 +134,12 @@ async function demo() {
     const ext = DEMO_EXTERIOR[i % DEMO_EXTERIOR.length], r1 = DEMO_ROOMS[i % DEMO_ROOMS.length], r2 = DEMO_ROOMS[(i + 3) % DEMO_ROOMS.length], r3 = DEMO_ROOMS[(i + 6) % DEMO_ROOMS.length], view = DEMO_VIEWS[i % DEMO_VIEWS.length];
     // у квартиры обложка — интерьер, у домов и отелей — фасад или двор
     const photos = (type === "APARTMENT" ? [r1, view, r2, r3] : [ext, r1, r2, view, r3]).map((id, sort) => ({ url: unsplash(id, 1600), sort }));
+    // точка рядом с центром курорта, чтобы метки на карте не совпадали
+    const jitter = (k: number) => ((((i + 1) * 9301 + k * 49297) % 233280) / 233280 - 0.5) * 0.02;
     const existing = await db.listing.findFirst({ where: { title, ownerId: owner.id }, include: { _count: { select: { photos: true } } } });
     if (existing) {
       if (!existing._count.photos) await db.listingPhoto.createMany({ data: photos.map(p => ({ ...p, listingId: existing.id })) });
+      if (existing.lat == null && resort.lat != null) await db.listing.update({ where: { id: existing.id }, data: { lat: resort.lat + jitter(1), lng: resort.lng! + jitter(2) } });
       continue;
     }
     const rooms = type === "HOUSE" || type === "APARTMENT" ? [] : [
@@ -141,8 +151,6 @@ async function demo() {
       cleanliness: 5, location: 5 - (k % 2), value: 5, service: 5,
     }));
     const avg = reviews.length ? reviews.reduce((a, r) => a + r.rating, 0) / reviews.length : 0;
-    // точка рядом с центром курорта, чтобы метки на карте не совпадали
-    const jitter = (k: number) => ((((i + 1) * 9301 + k * 49297) % 233280) / 233280 - 0.5) * 0.02;
     await db.listing.create({ data: {
       ownerId: owner.id, resortId: resort.id, type, title, slug: resortSlug + "-" + Math.random().toString(36).slice(2, 7), seaDistance: sea, beachType: beach,
       priceFrom: Math.round(price * 0.5 / 100) * 100,

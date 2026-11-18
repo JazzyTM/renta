@@ -3,6 +3,7 @@ import { db } from "./db";
 import { parseFilters, scopeWhere, searchListings } from "./queries";
 import { sendTemplate } from "./mail";
 import { rub } from "./format";
+import { listingPath } from "./paths";
 
 // Адрес поиска (/kurort/anapa/s-basseynom?sea=500) → выдача и фильтры
 export async function alertQuery(path: string) {
@@ -27,7 +28,7 @@ export async function sendAlerts() {
     const { items } = await searchListings({ AND: [q.base, { publishedAt: { gt: a.lastSentAt } }] }, { ...q.f, sort: "new", page: 1 });
     await db.searchAlert.update({ where: { id: a.id }, data: { lastSentAt: new Date() } });
     if (!items.length) continue;
-    const lines = items.slice(0, 10).map(l => `${l.title}, ${l.resort.name}${l.priceFrom ? `, от ${rub(l.priceFrom)}` : ""}\n${app}/obj/${l.number}`).join("\n\n");
+    const lines = items.slice(0, 10).map(l => `${l.title}, ${l.resort.name}${l.priceFrom ? `, от ${rub(l.priceFrom)}` : ""}\n${app}${listingPath({ number: l.number, title: l.title, resortSlug: l.resort.slug })}`).join("\n\n");
     await sendTemplate(a.email, "search_alert", { title: a.title, items: lines, link: app + q.url, unsubscribe: `${app}/alerts/off/${a.token}` });
     sent++;
   }

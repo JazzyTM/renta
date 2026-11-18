@@ -1,4 +1,5 @@
 import { fmtRange, rub } from "@/lib/format";
+import { listingPath } from "@/lib/paths";
 import { BOOKING_STATUS } from "@/lib/labels";
 import { postMessage } from "@/app/(site)/b/actions";
 
@@ -10,7 +11,7 @@ export function BookingSummary({ b }: { b: B }) {
     <div className="card-box stack">
       <div className="row between"><b>Заявка №{b.number}</b><span className={`tag ${tone}`}>{st}</span></div>
       <dl className="kv">
-        <dt>Объект</dt><dd><a href={`/obj/${b.listing.number}`}>{b.listing.title}</a>, {b.listing.resort.name}</dd>
+        <dt>Объект</dt><dd><a href={listingPath({ number: b.listing.number, title: b.listing.title, resortSlug: b.listing.resort.slug })}>{b.listing.title}</a>, {b.listing.resort.name}</dd>
         <dt>Даты</dt><dd>{fmtRange(b.checkIn, b.checkOut)}</dd>
         <dt>Гости</dt><dd>{b.adults} взр.{b.children ? `, ${b.children} дет.` : ""}</dd>
         <dt>Стоимость</dt><dd className="num">≈ {rub(b.totalEstimate)}{b.prepayAmount ? `, предоплата ${rub(b.prepayAmount)}` : ""}</dd>

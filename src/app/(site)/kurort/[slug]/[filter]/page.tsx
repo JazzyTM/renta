@@ -5,6 +5,9 @@ import { getSettings } from "@/lib/settings";
 import { collectionBySlug, prepOf } from "@/lib/collections";
 import { collectionCounts, minForIndex, seoText } from "@/lib/collections-server";
 import { ResultsPage } from "@/components/ResultsPage";
+import { notFound as nf, permanentRedirect } from "next/navigation";
+import { listingNumber } from "@/lib/paths";
+import { ListingView, listingMetadata, listingRoute } from "../../../obj/[number]/view";
 
 type P = { params: Promise<{ slug: string; filter: string }>; searchParams: Promise<Record<string, any>> };
 
@@ -22,6 +25,7 @@ async function load(slug: string, filter: string) {
 
 export async function generateMetadata({ params }: P): Promise<Metadata> {
   const { slug, filter } = await params;
+  if (!collectionBySlug(filter) && listingNumber(filter)) return listingMetadata(listingNumber(filter)!);
   const d = await load(slug, filter);
   if (!d) return {};
   const s = await getSettings();
@@ -35,6 +39,15 @@ export async function generateMetadata({ params }: P): Promise<Metadata> {
 
 export default async function CollectionPage({ params, searchParams }: P) {
   const { slug, filter } = await params;
+  const num = !collectionBySlug(filter) ? listingNumber(filter) : null;
+  if (num) {
+    const path = await listingRoute(num);
+    if (!path) nf();
+    const sp = await searchParams;
+    // название или курорт поменялись — ведём на актуальный адрес
+    if (path !== `/kurort/${slug}/${filter}`) { const q = new URLSearchParams(sp).toString(); permanentRedirect(q ? `${path}?${q}` : path); }
+    return <ListingView number={num} sp={sp} />;
+  }
   const d = await load(slug, filter);
   if (!d) notFound();
   return <ResultsPage title={d.h1} intro={d.seo?.text ? d.fill(d.seo.text) : null} scope={{ resort: slug, filter }} action={`/kurort/${slug}/${filter}`} sp={await searchParams} collections={d.counts} active={filter} />;

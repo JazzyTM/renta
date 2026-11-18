@@ -34,7 +34,7 @@ export function CompareTable() {
   return (
     <div className="panel cmpwrap"><table className="cmpt">
       <thead><tr><th />{list.map(l => <th key={l.id}>
-        <Link href={`/obj/${l.number}`} className="cmph">{l.photos[0] ? <img src={thumb(l.photos[0])} alt="" /> : <span className="noimg" />}<b>{l.title}</b></Link>
+        <Link href={l.href} className="cmph">{l.photos[0] ? <img src={thumb(l.photos[0])} alt="" /> : <span className="noimg" />}<b>{l.title}</b></Link>
         <button type="button" className="link small" onClick={() => removeCmp(l.id)}>Убрать</button></th>)}</tr></thead>
       <tbody>{rows.map(([t, f]) => <tr key={t}><td>{t}</td>{list.map(l => <td key={l.id}>{f(l)}</td>)}</tr>)}</tbody>
     </table></div>
