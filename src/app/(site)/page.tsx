@@ -3,7 +3,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { resortOptions, visibleWhere, cardInclude } from "@/lib/queries";
-import { fmtDate } from "@/lib/format";
+import { fmtDate, plural } from "@/lib/format";
 import { SearchForm } from "@/components/SearchForm";
 import { ListingCard } from "@/components/ListingCard";
 import { RichText } from "@/components/RichText";
@@ -35,7 +35,14 @@ export default async function Home() {
   const counts = new Map(resorts.map(r => [r.slug, r.count ?? 0]));
   const features = [1, 2, 3].map(i => ({ title: s[`feature${i}Title`], text: String(s[`feature${i}Text`] ?? "").replace("{count}", total.toLocaleString("ru-RU")) })).filter(f => f.title);
   const tabs = [...new Set(regions.map(r => tabOf(r.name)))].map(title => ({
-    title, body: <div className="allres">{regions.filter(r => tabOf(r.name) === title).map(r => <section key={r.id}><h3>{regionLabel(r.name)}</h3><ul>{r.resorts.map(x => <li key={x.id}><Link href={`/kurort/${x.slug}`}>{x.name}</Link> <span className="n">{counts.get(x.slug) ?? 0}</span></li>)}</ul></section>)}</div>,
+    title, body: <div className="allres2">{regions.filter(r => tabOf(r.name) === title).map(r => {
+      const sum = r.resorts.reduce((a, x) => a + (counts.get(x.slug) ?? 0), 0);
+      return <section key={r.id}>
+        <div className="ar-h"><span className="ar-i" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M2 15c2 0 2-1.5 4-1.5S8 15 10 15s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5M2 19c2 0 2-1.5 4-1.5S8 19 10 19s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5M8 10a4 4 0 018 0" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg></span>
+          <div><h3>{regionLabel(r.name)}</h3><span>{r.resorts.length} {plural(r.resorts.length, ["курорт", "курорта", "курортов"])}{sum > 0 ? ` · ${sum} ${plural(sum, ["объявление", "объявления", "объявлений"])}` : ""}</span></div></div>
+        <ul>{r.resorts.map(x => { const n = counts.get(x.slug) ?? 0; return <li key={x.id}><Link href={`/kurort/${x.slug}`}>{x.name}{n > 0 && <span className="n">{n}</span>}</Link></li>; })}</ul>
+      </section>;
+    })}</div>,
   }));
 
   return (
@@ -81,7 +88,7 @@ export default async function Home() {
         </Link>)}</div>
         <Link className="btn gray wide more" href="/articles">Читать больше статей</Link>
       </div></section>}
-      <section className="hsec"><div className="wrap">
+      <section className="hsec allsec"><div className="wrap">
         <h2 className="h2">Все курорты Чёрного и Азовского моря</h2>
         {tabs.length > 1 ? <Tabs tabs={tabs} /> : tabs[0]?.body}
       </div></section>

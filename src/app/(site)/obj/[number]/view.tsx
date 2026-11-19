@@ -142,7 +142,7 @@ export async function ListingView({ number, sp }: { number: string | number; sp:
                 <div className="ofacts">
                   <div><span className="of-i"><Ic d={I.home} /></span><span><b>{LISTING_TYPES[l.type]}</b><small>тип жилья</small></span></div>
                   {l.seaDistance != null && <div><span className="of-i"><Ic d={I.sea} /></span><span><b className="num">{l.seaDistance} м до моря</b><small>{walkMinutes(l.seaDistance)} мин пешком</small></span></div>}
-                  {l.beachType && <div><span className="of-i"><Ic d={I.beach} /></span><span><b>{BEACH_TYPES[l.beachType]}</b><small>пляж</small></span></div>}
+                  {l.beachType && <div><span className="of-i"><Ic d={I.beach} /></span><span><b>{BEACH_TYPES[l.beachType][0].toUpperCase() + BEACH_TYPES[l.beachType].slice(1)}</b><small>пляж</small></span></div>}
                   <div><span className="of-i"><Ic d={I.guests} /></span><span><b>до {l.maxGuests} {plural(l.maxGuests, ["гостя", "гостей", "гостей"])}</b><small>от {l.minNights} {plural(l.minNights, ["ночи", "ночей", "ночей"])}</small></span></div>
                 </div>
                 <p className="desc" lang={en ? "en" : undefined}>{en ? l.descriptionEn : l.description}</p></section>

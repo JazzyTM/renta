@@ -2022,7 +2022,7 @@ footer.ft a { color: var(--ink-2); text-decoration: none }
 footer.ft a:hover { color: var(--accent) }
 .ft-top { display: grid; grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr)); gap: 32px }
 .ft-brand { display: grid; gap: 10px; align-content: start; justify-items: start; max-width: 320px }
-.ft-brand .logo { font-size: 22px; color: var(--ink) !important }
+.ft-brand .logo { order: 0; margin: 0; font-size: 22px; color: var(--ink) !important }
 .ft-brand p { margin: 0; color: var(--ink-2); line-height: 1.45 }
 .ft-contacts { display: grid; gap: 4px }
 footer.ft .ft-add { margin-top: 6px; min-height: 44px; padding: 0 20px; color: #fff !important }
@@ -2045,7 +2045,7 @@ footer.ft .ft-docs a { color: var(--muted) }
 }
 
 /* объявление: главные факты плашками с иконками */
-.ofacts { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; margin: 2px 0 18px }
+.ofacts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin: 2px 0 18px }
 .ofacts > div { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-sm); background: #fff }
 .of-i { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--accent-soft, #FDECE8); color: var(--accent) }
 .ofacts b { display: block; font-size: 15px; font-weight: 600; line-height: 1.25 }
@@ -2053,3 +2053,22 @@ footer.ft .ft-docs a { color: var(--muted) }
 .rules2 > div { align-items: center }
 .rules2 svg { box-sizing: content-box; padding: 9px; border-radius: 50%; background: var(--gray); color: var(--ink); margin-top: 0 }
 @media (max-width: 560px) { .ofacts { grid-template-columns: 1fr 1fr; gap: 8px } .ofacts > div { padding: 10px; gap: 10px } .of-i { width: 34px; height: 34px } .of-i svg { width: 19px; height: 19px } .ofacts b { font-size: 14px } }
+
+/* главная: все курорты — регионы карточками */
+.allsec .utabs-h { display: flex; gap: 8px; overflow-x: auto; border: 0; margin: 4px 0 20px; padding: 0; scrollbar-width: none }
+.allsec .utabs-h::-webkit-scrollbar { display: none }
+.allsec .utabs-h button { flex: none; height: 40px; padding: 0 18px; border: 1px solid var(--line-2); border-radius: 999px; background: #fff; color: var(--ink); font-size: 15px; text-transform: none; letter-spacing: 0; box-shadow: none }
+.allsec .utabs-h button::after { display: none }
+.allsec .utabs-h button:hover { border-color: var(--ink) }
+.allsec .utabs-h button.on { background: var(--ink); border-color: var(--ink); color: #fff }
+.allres2 { columns: 3 320px; column-gap: 16px }
+.allres2 section { break-inside: avoid; margin-bottom: 16px; padding: 20px; border-radius: var(--r); background: var(--gray) }
+.ar-h { display: flex; align-items: center; gap: 12px; margin-bottom: 14px }
+.ar-i { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #fff; color: var(--accent) }
+.ar-h h3 { font-size: 18px; font-weight: 700; margin: 0; line-height: 1.2 }
+.ar-h span:not(.ar-i) { font-size: 13px; color: var(--muted) }
+.allres2 ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 12px }
+.allres2 a { display: flex; align-items: center; gap: 6px; padding: 6px 0; color: var(--ink); font-size: 15px; line-height: 1.25 }
+.allres2 a:hover { color: var(--accent) }
+.allres2 .n { flex: none; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: #fff; color: var(--accent); font-size: 12px; font-weight: 600; display: inline-grid; place-items: center }
+@media (max-width: 560px) { .allres2 section { padding: 16px } .allres2 a { padding: 8px 0; font-size: 14.5px } }
