@@ -2134,3 +2134,6 @@ footer.ft .ft-docs a { color: var(--muted) }
 .mv-p { font-size: 14px } .mv-p b { font-size: 16px }
 .mv-x { position: absolute; top: 6px; right: 8px; width: 26px; height: 26px; border: 0; background: none; font-size: 22px; line-height: 1; color: var(--muted); cursor: pointer }
 .mv-p b { display: inline }
+
+/* шапка и баннер на телефоне: облегчённая версия фото */
+@media (max-width: 768px) { .hero.img, .owners.img { background-image: var(--bgm) !important } }

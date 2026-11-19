@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { resortOptions, visibleWhere, cardInclude } from "@/lib/queries";
 import { fmtDate, plural } from "@/lib/format";
+import { thumb } from "@/lib/img";
 import { SearchForm } from "@/components/SearchForm";
 import { ListingCard } from "@/components/ListingCard";
 import { RichText } from "@/components/RichText";
@@ -46,7 +47,7 @@ export default async function Home() {
 
   return (
     <main className="home">
-      <section className={`hero ${s.heroImage ? "img" : ""}`} style={s.heroImage ? { backgroundImage: `url(${s.heroImage})` } : undefined}>
+      <section className={`hero ${s.heroImage ? "img" : ""}`} style={s.heroImage ? { backgroundImage: `url(${s.heroImage})`, ["--bgm" as string]: `url(${thumb(String(s.heroImage))})` } : undefined}>
         {!s.heroImage && <HeroArt />}
         <div className="wrap">
           <h1>{s.tagline}</h1>
@@ -62,7 +63,7 @@ export default async function Home() {
             <div><b>{f.title}</b><p>{f.text}</p></div></div>)}</div>
         </div></section>}
         {s.bannerShow && <section className="hsec"><div className="wrap">
-          <div className={`owners ${s.bannerImage ? "img" : ""}`} style={s.bannerImage ? { backgroundImage: `url(${s.bannerImage})` } : undefined}>
+          <div className={`owners ${s.bannerImage ? "img" : ""}`} style={s.bannerImage ? { backgroundImage: `url(${s.bannerImage})`, ["--bgm" as string]: `url(${thumb(String(s.bannerImage))})` } : undefined}>
             {!s.bannerImage && <OwnersArt />}
             <h2>{s.bannerTitle}</h2><p>{s.bannerText}</p><Link className="btn" href="/razmestit">Добавить объект</Link>
           </div>
@@ -70,7 +71,7 @@ export default async function Home() {
         {popular.length > 0 && <section className="hsec"><div className="wrap">
           <h2 className="h2">Популярные курорты</h2>
           <ShowMore className="rtiles" limit={6}>{popular.map(r => (
-            <Link key={r.id} href={`/kurort/${r.slug}`} className={`rtile ${r.coverUrl ? "" : "noimg"}`} style={r.coverUrl ? { backgroundImage: `url(${r.coverUrl})` } : undefined}>
+            <Link key={r.id} href={`/kurort/${r.slug}`} className={`rtile ${r.coverUrl ? "" : "noimg"}`} style={r.coverUrl ? { backgroundImage: `url(${thumb(r.coverUrl)})` } : undefined}>
               {!r.coverUrl && <SceneArt seed={r.slug} />}<b>{r.name}</b><span>{regionLabel(r.region.name)}</span>
             </Link>))}</ShowMore>
         </div></section>}
@@ -82,7 +83,7 @@ export default async function Home() {
       {articles.length > 0 && <section className="hsec"><div className="wrap">
         <h2 className="h2">Последние добавленные статьи</h2>
         <div className="arts">{articles.map(a => <Link key={a.id} href={`/articles/${a.slug}`} className="art">
-          <div className="aph">{a.coverUrl ? <img src={a.coverUrl} alt="" loading="lazy" /> : <SceneArt seed={a.slug} />}</div>
+          <div className="aph">{a.coverUrl ? <img src={thumb(a.coverUrl)} alt="" loading="lazy" /> : <SceneArt seed={a.slug} />}</div>
           <div className="atx"><b>{a.title}</b>{a.excerpt && <p>{a.excerpt}</p>}<span className="small muted">{fmtDate(a.publishedAt ?? a.createdAt)}</span></div>
         </Link>)}</div>
         <Link className="btn gray wide more" href="/articles">Читать больше статей</Link>
