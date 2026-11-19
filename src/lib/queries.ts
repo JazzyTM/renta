@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { db } from "./db";
 import { getSettings } from "./settings";
+import { listingPath } from "./paths";
 import type { Prisma } from "@/generated/prisma/client";
 
 export const resortOptions = cache(async () => {
@@ -37,6 +38,34 @@ export type Filters = { ci?: string; co?: string; type?: string[]; sea?: number;
 
 export async function searchListings(base: Prisma.ListingWhereInput, f: Filters) {
   const s = await getSettings();
+  const where = await searchWhere(base, f);
+  const orderBy: Prisma.ListingOrderByWithRelationInput[] =
+    f.sort === "price" ? [{ priceFrom: "asc" }] :
+    f.sort === "sea" ? [{ seaDistance: { sort: "asc", nulls: "last" } }] :
+    f.sort === "rating" ? [{ ratingAvg: "desc" }] :
+    f.sort === "new" ? [{ publishedAt: "desc" }] :
+    [{ promotedUntil: { sort: "desc", nulls: "last" } }, { boostedAt: { sort: "desc", nulls: "last" } }, { verified: "desc" }, { ratingAvg: "desc" }];
+  const take = Number(s.pageSize) || 20;
+  const page = Math.max(1, f.page ?? 1);
+  const [items, total] = await Promise.all([
+    db.listing.findMany({ where, include: cardInclude, orderBy, take, skip: (page - 1) * take }),
+    db.listing.count({ where }),
+  ]);
+  return { items, total, page, pages: Math.max(1, Math.ceil(total / take)) };
+}
+
+export type MapPoint = { id: string; href: string; title: string; lat: number; lng: number; price: number; rating: number; reviews: number; sea: number | null; photo: string | null; type: string };
+
+/** Точки для карты по тем же фильтрам; bbox — видимая область [юг, запад, север, восток] */
+export async function mapListings(base: Prisma.ListingWhereInput, f: Filters, bbox?: [number, number, number, number]) {
+  const where = await searchWhere(base, f);
+  (where.AND as Prisma.ListingWhereInput[]).push({ lat: bbox ? { gte: bbox[0], lte: bbox[2] } : { not: null }, lng: bbox ? { gte: bbox[1], lte: bbox[3] } : { not: null } });
+  const rows = await db.listing.findMany({ where, take: 500, orderBy: { priceFrom: "asc" },
+    select: { id: true, number: true, title: true, type: true, lat: true, lng: true, priceFrom: true, ratingAvg: true, ratingCount: true, seaDistance: true, resort: { select: { slug: true } }, photos: { take: 1, orderBy: { sort: "asc" }, select: { url: true } } } });
+  return rows.map((l): MapPoint => ({ id: l.id, href: listingPath({ number: l.number, title: l.title, resortSlug: l.resort.slug }), title: l.title, type: l.type, lat: l.lat!, lng: l.lng!, price: l.priceFrom, rating: l.ratingAvg, reviews: l.ratingCount, sea: l.seaDistance, photo: l.photos[0]?.url ?? null }));
+}
+
+async function searchWhere(base: Prisma.ListingWhereInput, f: Filters) {
   const where: Prisma.ListingWhereInput = { AND: [await visibleWhere(), base] };
   const and = where.AND as Prisma.ListingWhereInput[];
   if (f.type?.length) and.push({ type: { in: f.type as any } });
@@ -58,19 +87,7 @@ export async function searchListings(base: Prisma.ListingWhereInput, f: Filters)
     if (b) { const dl = 0.009, dg = 0.009 / Math.cos(b.lat * Math.PI / 180); and.push({ lat: { gte: b.lat - dl, lte: b.lat + dl }, lng: { gte: b.lng - dg, lte: b.lng + dg } }); }
   }
   for (const code of f.amen ?? []) and.push({ amenities: { some: { amenity: { code } } } });
-  const orderBy: Prisma.ListingOrderByWithRelationInput[] =
-    f.sort === "price" ? [{ priceFrom: "asc" }] :
-    f.sort === "sea" ? [{ seaDistance: { sort: "asc", nulls: "last" } }] :
-    f.sort === "rating" ? [{ ratingAvg: "desc" }] :
-    f.sort === "new" ? [{ publishedAt: "desc" }] :
-    [{ promotedUntil: { sort: "desc", nulls: "last" } }, { boostedAt: { sort: "desc", nulls: "last" } }, { verified: "desc" }, { ratingAvg: "desc" }];
-  const take = Number(s.pageSize) || 20;
-  const page = Math.max(1, f.page ?? 1);
-  const [items, total] = await Promise.all([
-    db.listing.findMany({ where, include: cardInclude, orderBy, take, skip: (page - 1) * take }),
-    db.listing.count({ where }),
-  ]);
-  return { items, total, page, pages: Math.max(1, Math.ceil(total / take)) };
+  return where;
 }
 
 export function parseFilters(sp: Record<string, string | string[] | undefined>): Filters & { ci?: string; co?: string; adults: number; children: number } {

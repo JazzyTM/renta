@@ -83,6 +83,9 @@ export const SETTINGS: Section[] = [
     { key: "referralOn", label: "Приглашения хозяев включены", type: "bool", def: true },
     { key: "referralDays", label: "Бонус за приглашённого хозяина, дней тарифа", type: "number", def: 30, hint: "Начисляется, когда приглашённый опубликует первое объявление" },
   ]},
+  { id: "maps", title: "Карты", fields: [
+    { key: "ymapsKey", label: "Яндекс Карты: ключ JavaScript API", type: "text", def: "", hint: "developer.tech.yandex.ru → JavaScript API → ключ. В ограничениях ключа (HTTP Referer) укажите домен сайта. Пусто: кнопки «На карте» нет" },
+  ]},
   { id: "auth", title: "Регистрация и вход", fields: [
     { key: "registrationOpen", label: "Регистрация открыта", type: "bool", def: true },
     { key: "requireEmailVerify", label: "Требовать подтверждение почты", type: "bool", def: false, hint: "Если выключено, после регистрации человек сразу входит в аккаунт" },

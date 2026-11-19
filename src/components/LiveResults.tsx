@@ -6,6 +6,8 @@ import { plural, rub } from "@/lib/format";
 import { ListingRow, RowSkeleton } from "./ListingCard";
 import { PriceRange } from "./PriceRange";
 import { AlertButton } from "./AlertButton";
+import dynamic from "next/dynamic";
+const MapView = dynamic(() => import("./MapView").then(m => m.MapView), { ssr: false });
 
 type Hist = { min: number; max: number; bins: number[] };
 type Res = { items: CardData[]; total: number; page: number; pages: number; hist?: Hist };
@@ -14,9 +16,9 @@ type F = { sea: string; pmin: string; price: string; type: string[]; amen: strin
 const SORTS: [string, string][] = [["rec", "Рекомендуем"], ["price", "Дешевле"], ["sea", "Ближе к морю"], ["rating", "Рейтинг"], ["new", "Новые"]];
 const arr = (v: unknown) => (Array.isArray(v) ? v : v ? [v] : []) as string[];
 
-export function LiveResults({ title, scope, initial, sp, amenities, action, ci, co, guests, children, search, email, beaches = [] }: {
+export function LiveResults({ title, scope, initial, sp, amenities, action, ci, co, guests, children, search, email, beaches = [], mapKey, center }: {
   title: string; scope: { resort?: string; filter?: string }; initial: Res; sp: Record<string, any>; amenities: { code: string; name: string }[];
-  action: string; ci?: string; co?: string; guests: number; children?: React.ReactNode; search?: React.ReactNode; email?: string; beaches?: { id: string; name: string }[];
+  action: string; ci?: string; co?: string; guests: number; children?: React.ReactNode; search?: React.ReactNode; email?: string; beaches?: { id: string; name: string }[]; mapKey?: string; center?: [number, number];
 }) {
   const [f, setF] = useState<F>({ sea: sp.sea ?? "", pmin: sp.pmin ?? "", price: sp.price ?? "", type: arr(sp.type), amen: arr(sp.amen), beach: sp.beach ?? "", near: sp.near ?? "", verified: sp.verified === "1", sort: sp.sort ?? "rec" });
   const [res, setRes] = useState<Res>(initial);
@@ -24,6 +26,7 @@ export function LiveResults({ title, scope, initial, sp, amenities, action, ci, 
   const [loading, setLoading] = useState(false);
   const [more, setMore] = useState(false);
   const [sheet, setSheet] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
   const ctrl = useRef<AbortController | null>(null);
   const first = useRef(true);
   const sentinel = useRef<HTMLDivElement>(null);
@@ -114,6 +117,9 @@ export function LiveResults({ title, scope, initial, sp, amenities, action, ci, 
           {quick.map(([c, t]) => <button type="button" key={c} className={`chip ${f.amen.includes(c) ? "on" : ""}`} onClick={() => toggle("amen", c)}>{t}</button>)}
           <button type="button" className={`chip ${f.verified ? "on" : ""}`} onClick={() => set({ verified: !f.verified })}>Только проверенные</button>
           <AlertButton title={title} email={email} />
+          {mapKey && <button type="button" className="chip ico mapchip" onClick={() => setMapOpen(true)}>
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>
+            На карте</button>}
         </div>
       </div></div>
       {sheet && <div className="modal-bg" onClick={() => setSheet(false)}><div className="modal sheet" onClick={e => e.stopPropagation()}>
@@ -131,8 +137,17 @@ export function LiveResults({ title, scope, initial, sp, amenities, action, ci, 
           <div ref={sentinel} style={{ height: 1 }} />
           {res.page >= res.pages && res.items.length > 6 && <p className="small muted" style={{ textAlign: "center", marginTop: 20 }}>Это все варианты{f.price ? ` до ${rub(Number(f.price))}` : ""}</p>}
         </section>
-        <aside className="rside">{children}</aside>
+        <aside className="rside">
+          {mapKey && <button type="button" className="mapcard" onClick={() => setMapOpen(true)} aria-label="Показать варианты на карте">
+            <svg viewBox="0 0 320 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="320" height="120" fill="#E8EEF2" /><path d="M0 84c40-10 70 6 110-4s70-30 110-20 70 18 100 10v50H0z" fill="#CFE3F1" /><path d="M-10 40l120 20 80-40 140 30M60 0l30 120M200 0l-20 120" stroke="#fff" strokeWidth="6" fill="none" /><g fill="var(--accent)"><rect x="70" y="30" width="46" height="20" rx="6" /><rect x="170" y="52" width="46" height="20" rx="6" /><rect x="236" y="22" width="46" height="20" rx="6" /></g></svg>
+            <span className="btn sm">Показать на карте</span>
+          </button>}
+          {children}
+        </aside>
       </div></div>
+      {mapKey && !mapOpen && res.total > 0 && <button type="button" className="mapfab" onClick={() => setMapOpen(true)}>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>Карта</button>}
+      {mapOpen && mapKey && <MapView apiKey={mapKey} query={(() => { const p = new URLSearchParams(qs); if (scope.resort) p.set("_resort", scope.resort); if (scope.filter) p.set("_filter", scope.filter); return p; })()} title={title} center={center} onClose={() => setMapOpen(false)} />}
     </>
   );
 }
