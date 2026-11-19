@@ -134,6 +134,9 @@ try {
   await O.p.getByRole("tab", { name: /Правила/ }).click();
   await O.p.locator('input[name="contactPhone"]').fill("+7 918 111-22-33");
   await O.p.locator('input[name="contactName"]').fill("Тест");
+  await O.p.locator('input[name="whatsapp"]').check();
+  await O.p.locator('input[name="telegram"]').fill("@naberegu_e2e");
+  await O.p.locator('input[name="max"]').fill("https://max.ru/u/e2e-test");
   await submitForm(O.p, "Правила, предоплата и контакты", "Сохранить и дальше");
 
   await O.p.getByRole("tab", { name: /Публикация/ }).click();
@@ -154,6 +157,15 @@ try {
   await snap(G.p, "listing-guest");
   const priceShown = await bodyHas(G.p, "₽", 3000);
   if (!priceShown) issue("на странице объявления нет цены");
+  const phoneBtn = G.p.locator(".owner .btn.ghost");
+  if (await phoneBtn.count()) {
+    if (!(await G.p.locator(".ow-kinds").count())) issue("нет подсказки про мессенджеры до показа телефона");
+    await phoneBtn.click();
+    await G.p.locator(".ow-msg").waitFor({ timeout: 5000 }).catch(() => {});
+    const links = await G.p.locator(".ow-msg .mlink").evaluateAll(as => as.map(a => a.getAttribute("href")));
+    note(`мессенджеры: ${links.join(", ")}`);
+    if (links.length !== 3) issue(`ожидалось 3 мессенджера, показано ${links.length}`);
+  } else note("кнопка «Показать телефон» выключена в настройках");
   await G.p.getByRole("button", { name: "Отправить заявку" }).first().click();
   await G.p.locator("#b-name").fill(guest.name);
   await G.p.locator("#b-email").fill(guest.email);

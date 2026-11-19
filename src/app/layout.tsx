@@ -5,7 +5,7 @@ import { Toaster } from "@/components/Toaster";
 import { Pwa } from "@/components/Pwa";
 import { TableLabels } from "@/components/TableLabels";
 
-export const viewport: Viewport = { themeColor: "#FF5722", colorScheme: "light" };
+export const viewport: Viewport = { themeColor: "#F2543D", colorScheme: "light" };
 
 export async function generateMetadata(): Promise<Metadata> {
   const s = await getSettings();

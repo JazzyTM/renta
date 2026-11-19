@@ -10,21 +10,22 @@ export default async function Account() {
   const u = await requireUser("/account");
   const accounts = await db.account.findMany({ where: { userId: u.id } });
   return (
-    <main className="wrap" style={{ paddingBlock: 24, display: "grid", gap: 24, maxWidth: 640 }}>
+    <main className="wrap accpage">
       <h1 className="h1">Профиль</h1>
+      <section className="card-box stack"><h2 className="h2">Личные данные</h2>
       <ActionForm action={saveProfile}>
         <div className="field"><label htmlFor="a-n">Имя</label><input className="input" id="a-n" name="name" defaultValue={u.name} /></div>
         <div className="field"><label>Почта</label><input className="input" value={u.email ?? "не указана"} disabled /></div>
         <div className="field"><label htmlFor="a-p">Телефон</label><input className="input" id="a-p" name="phone" defaultValue={u.phone ?? ""} /></div>
-      </ActionForm>
+      </ActionForm></section>
       <TelegramConnect user={u} />
-      <section className="stack"><h2 className="h2">Пароль</h2>
+      <section className="card-box stack"><h2 className="h2">Пароль</h2>
         <ActionForm action={changePassword} submit="Сменить пароль">
           {u.passwordHash && <div className="field"><label htmlFor="c-c">Текущий пароль</label><input className="input" id="c-c" name="current" type="password" /></div>}
           <div className="field"><label htmlFor="c-n">Новый пароль</label><input className="input" id="c-n" name="next" type="password" minLength={8} /></div>
         </ActionForm></section>
-      <p className="small muted">Входы через соцсети: {accounts.length ? accounts.map(a => a.provider === "vk" ? "ВКонтакте" : "Яндекс ID").join(", ") : "не подключены"}</p>
-      <form action="/logout" method="post"><button className="btn ghost">Выйти</button></form>
+      <div className="card-box row between acc-foot"><p className="small muted">Входы через соцсети: {accounts.length ? accounts.map(a => a.provider === "vk" ? "ВКонтакте" : "Яндекс ID").join(", ") : "не подключены"}</p>
+      <form action="/logout" method="post"><button className="btn ghost sm">Выйти</button></form></div>
     </main>
   );
 }

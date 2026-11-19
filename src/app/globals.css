@@ -1740,3 +1740,181 @@ footer.foot a.logo, footer.foot .foot-l .logo { color: var(--accent) !important;
 .tgbox { border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; background: #fff }
 .tgbox .row { gap: 10px; flex-wrap: wrap; align-items: center }
 :root { --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; --f: var(--font) }
+
+/* =========================================================
+   Дизайн v7: свой цвет и логотип «Наберегу», кабинет и админка
+   в стиле сайта, доводка телефонной версии. Последний слой.
+   ========================================================= */
+:root { --accent: #F2543D; --accent-hover: #E0442E; --accent-soft: #FDECE8; --accent-bg: #FFF4F1 }
+@keyframes pulse { 50% { box-shadow: 0 0 0 6px rgba(242, 84, 61, .25) } }
+.btn:not(.ghost):not(.dark):not(.gray):hover { background: var(--accent-hover); border-color: var(--accent-hover); filter: none }
+
+/* логотип: знак + название строчными */
+.logo, .top .logo, footer.foot a.logo, footer.foot .foot-l .logo { display: inline-flex; align-items: center; gap: 10px; color: var(--ink) !important; font-size: 23px; font-weight: 700; letter-spacing: -.01em; text-transform: lowercase; line-height: 1; white-space: nowrap }
+.logo-m { flex: none; display: block }
+.logo:hover { color: var(--ink) !important }
+body:has(main.home) .top .logo { color: #fff !important }
+footer.foot .foot-l .logo { font-size: 26px; gap: 12px }
+.alogo { font-size: 21px }
+@media (max-width: 640px) {
+  .logo, .top .logo { font-size: 20px; gap: 8px }
+  .logo .logo-m { width: 28px; height: 28px }
+}
+@media (max-width: 380px) { .top .logo .logo-t { display: none } }
+
+/* выбор курорта: окно не вылезает за экран */
+@media (min-width: 769px) {
+  .top .wrap { position: relative }
+  .rpick { position: static }
+  .rpick-pop { left: 15px; right: 15px; width: auto; max-width: 1140px; top: calc(100% - 6px) }
+}
+
+/* связь с хозяином: мессенджеры */
+.ow-msg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px }
+.mlink { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid var(--line-2); border-radius: var(--r-sm); color: var(--ink) !important; font-size: 14px; text-decoration: none !important; background: #fff }
+.mlink:hover { border-color: var(--ink) }
+.msg-i { flex: none; display: block }
+.ow-kinds { display: flex; align-items: center; gap: 10px; background: none; border: 0; padding: 0; text-align: left; color: var(--ink-2); cursor: pointer; font: inherit }
+.ow-kinds-i { display: flex; flex: none }
+.ow-kinds-i .msg-i + .msg-i { margin-left: -5px; outline: 2px solid #fff; border-radius: 7px }
+.msgedit { gap: 10px; padding-top: 6px; border-top: 1px solid var(--line) }
+.msgedit .field label { display: inline-flex; align-items: center; gap: 6px }
+.msgedit .check { display: inline-flex; align-items: center; gap: 8px }
+
+/* ---------- кабинет и админка ---------- */
+body:has(.shell) { background: var(--gray) }
+.shell { grid-template-columns: 260px minmax(0, 1fr) !important; gap: 24px; max-width: 1440px; margin: 0 auto; padding: 24px 24px 56px; background: transparent; min-height: 0; align-items: start }
+.side { position: sticky; top: 16px; height: auto; max-height: calc(100vh - 32px); overflow-y: auto; background: #fff; border: 0 !important; border-radius: var(--r); padding: 10px; scrollbar-width: thin }
+.side a { padding: 10px 12px; border-radius: var(--r-sm); font-weight: 400; font-size: 15px; color: var(--ink); justify-content: flex-start }
+.side a:hover { background: var(--gray); color: var(--ink) }
+.side a.on { background: var(--accent-soft); color: var(--accent); font-weight: 500 }
+.side a .side-i { color: var(--ink-3); flex: none }
+.side a.on .side-i { color: var(--accent) }
+.side a .side-n { flex: 1 }
+.side .grp { padding: 16px 12px 6px; font-size: 11px; font-weight: 500; letter-spacing: .08em; color: #8A9199 }
+.side .tag.accent { background: var(--accent); color: #fff; font-size: 12px; min-width: 22px; height: 22px; padding: 0 7px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center }
+.main { padding: 0 !important; gap: 16px }
+.main .h1 { font-size: 28px; font-weight: 700; letter-spacing: 0; line-height: 1.2 }
+.main .h2 { font-size: 20px }
+.shell .card-box, .shell .tablewrap, .shell .stat, .shell .panel { background: #fff; border: 0; border-radius: var(--r); box-shadow: none }
+.shell .notice { background: #fff; border-radius: var(--r); padding: 14px 16px; border-left: 3px solid var(--accent) }
+.shell .notice.ok { border-left-color: #44A049 }
+.shell .notice.bad { border-left-color: #E53935 }
+.shell table.t th { background: #fff; color: var(--ink-3); font-size: 13px; font-weight: 400; padding: 14px 16px; border-bottom: 1px solid var(--line) }
+.shell table.t td { padding: 14px 16px; border-bottom: 1px solid #F0F1F3; vertical-align: middle }
+.shell table.t tr:hover td { background: #FAFAFB }
+.shell .tag { border-radius: 999px; font-weight: 400 }
+.shell .toolbar { background: #fff; border-radius: var(--r); padding: 12px; gap: 8px; align-items: center }
+.shell .toolbar .input { min-height: 42px; border-radius: var(--r-sm) }
+.shell .toolbar .btn { min-height: 42px }
+.alogo-t { background: var(--gray); color: var(--ink-3) }
+@media (max-width: 900px) {
+  .shell { padding: 0; gap: 0; grid-template-columns: minmax(0, 1fr) !important }
+  .side { position: sticky !important; top: 0; z-index: 30; border-radius: 0; max-height: none; padding: 4px 16px !important; border-bottom: 1px solid var(--line) !important }
+  .side.open .side-l { max-height: calc(100dvh - 120px) }
+  .main { padding: 16px 16px 32px !important }
+  .main .h1 { font-size: 24px }
+}
+
+/* мои объекты */
+.olist { display: grid; gap: 8px }
+.oitem { display: grid; grid-template-columns: 112px minmax(0, 1fr) auto auto; gap: 16px; align-items: center; background: #fff; border-radius: var(--r); padding: 12px 16px 12px 12px }
+.oi-ph { display: block; width: 112px; height: 80px; border-radius: var(--r-sm); overflow: hidden; background: var(--gray) }
+.oi-ph img { width: 100%; height: 100%; object-fit: cover; display: block }
+.oi-nophoto { display: grid; place-items: center; height: 100%; font-size: 12px; color: var(--ink-3) }
+.oi-b { display: grid; gap: 4px; min-width: 0 }
+.oi-t { font-size: 16px; font-weight: 500; color: var(--ink) !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.oi-t:hover { color: var(--accent) !important }
+.oi-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px }
+.oi-s { display: grid; grid-template-columns: repeat(4, auto); gap: 4px 24px; margin: 0 }
+.oi-s > div { display: grid; gap: 2px; justify-items: start }
+.oi-s dt { font-size: 12px; color: var(--ink-3) }
+.oi-s dd { margin: 0; font-size: 15px; font-weight: 500 }
+@media (max-width: 1100px) {
+  .oitem { grid-template-columns: 96px minmax(0, 1fr) auto }
+  .oi-ph { width: 96px; height: 72px }
+  .oi-s { grid-column: 2 / -1; grid-row: 2 }
+  .oi-e { grid-column: 3; grid-row: 1 }
+}
+@media (max-width: 640px) {
+  .oitem { grid-template-columns: 84px minmax(0, 1fr); gap: 12px; padding: 12px }
+  .oi-ph { width: 84px; height: 64px; align-self: start }
+  .oi-t { white-space: normal; font-size: 15px; line-height: 1.3 }
+  .oi-s { grid-column: 1 / -1; grid-row: auto; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding-top: 10px; border-top: 1px solid #F0F1F3 }
+  .oi-s dd { font-size: 14px }
+  .oi-e { grid-column: 1 / -1; grid-row: auto; width: 100% }
+}
+
+/* ---------- телефоны: таблицы карточками «подпись — значение» ---------- */
+@media (max-width: 640px) {
+  .shell .toolbar { padding: 10px }
+  .toolbar > *, .toolbar > .input, .toolbar > select, .toolbar > label, .toolbar > .input + select, .toolbar > select:first-child + label { flex: 1 1 calc(50% - 4px) !important; min-width: 0 !important; width: auto !important }
+  .toolbar > .input:first-child, .toolbar > input:first-child { flex-basis: 100% !important }
+  .toolbar > label:has(input[type=checkbox]) { flex: 0 1 auto !important; min-height: 36px }
+  .toolbar > .btn, .toolbar > a.btn, .toolbar > button { flex: 1 1 calc(50% - 4px) !important }
+  .toolbar > .small, .toolbar > span { flex-basis: 100% !important }
+
+  .tablewrap, .shell .tablewrap { overflow: visible; background: transparent; border: 0 }
+  table.t tr { display: flex !important; flex-direction: column; position: relative; gap: 0; padding: 12px 14px; margin-bottom: 8px; border: 0; border-radius: var(--r); background: #fff }
+  table.t td, .shell table.t td { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 7px 0; border: 0; border-top: 1px solid #F0F1F3; font-size: 14px; text-align: right; overflow-wrap: break-word; word-break: normal; min-width: 0; grid-column: auto }
+  table.t td[data-label]:not([data-label=""])::before { content: attr(data-label); flex: none; max-width: 46%; margin: 0; text-align: left; font-size: 13px; color: var(--ink-3) }
+  table.t td > .stack, table.t td > .row, table.t td > div { justify-content: flex-end; justify-items: end; text-align: right }
+  table.t td[data-main], .shell table.t td[data-main] { order: -1; display: block; text-align: left; border-top: 0; padding: 0 0 8px; font-size: 15px; font-weight: 500 }
+  table.t td[data-main] > div, table.t td[data-main] .small { text-align: left; justify-content: flex-start; font-weight: 400 }
+  table.t td[data-main]::before { display: none !important }
+  table.t td[data-label=""], table.t td:not([data-label]) { justify-content: flex-start; text-align: left; flex-wrap: wrap }
+  table.t td[colspan] { display: block; text-align: left }
+  table.t td:empty { display: none }
+  table.t tr:has(td > input[type=checkbox]:only-child) { padding-left: 14px; padding-right: 44px }
+  table.t td:has(> input[type=checkbox]:only-child), .shell table.t td:has(> input[type=checkbox]:only-child) { position: absolute; top: 12px; right: 14px; left: auto; border: 0; padding: 0; display: block }
+  table.t td:has(> img:only-child) { justify-content: flex-start }
+  table.t td a { overflow-wrap: anywhere }
+}
+
+/* ---------- v7: доводка ---------- */
+/* шапка главной читается на светлом фото */
+.home .hero.img::before { background: linear-gradient(180deg, rgba(0, 0, 0, .38) 0, rgba(0, 0, 0, .12) 38%, rgba(0, 0, 0, .06) 100%) }
+/* в кабинете шапка той же ширины, что и рабочая область */
+body:has(.shell) .top .wrap { max-width: 1440px; padding-inline: 24px }
+@media (max-width: 900px) { body:has(.shell) .top .wrap { padding-inline: 15px } }
+/* вход, регистрация: белая панель */
+.authbox { background: #fff; border-radius: var(--r); padding: 28px; margin: 32px auto 48px }
+@media (max-width: 480px) { .authbox { padding: 20px 16px; margin: 16px auto 32px } }
+
+@media (max-width: 420px) {
+  .top .wrap { gap: 6px }
+  .top .logo { font-size: 19px; gap: 7px; margin-right: auto }
+  .top .logo .logo-t { display: inline }
+  .top nav { gap: 2px }
+  .ibtn { width: 38px }
+}
+@media (max-width: 340px) { .top .logo .logo-t { display: none } }
+
+@media (max-width: 640px) {
+  .feats { gap: 8px }
+  .allres { columns: 2; column-gap: 16px }
+  .allres h3 { font-size: 16px; margin-bottom: 8px; break-after: avoid }
+  .allres ul { gap: 6px; margin-bottom: 18px }
+  .allres li { break-inside: avoid }
+  .hsec .h2, .home .h2 { font-size: 20px }
+}
+
+/* пустые таблицы, профиль */
+.tablewrap:has(tbody:empty)::after { content: "Ничего не найдено"; display: block; padding: 20px 16px; color: var(--ink-3); font-size: 14px }
+@media (max-width: 640px) { .tablewrap:has(tbody:empty) { background: #fff; border-radius: var(--r) } .tablewrap:has(tbody:empty) table { display: none } }
+.accpage { max-width: 680px; padding-block: 24px 48px; display: grid; gap: 16px }
+.accpage .card-box { background: #fff; border: 0; border-radius: var(--r); padding: 24px }
+.acc-foot { align-items: center; gap: 12px; flex-wrap: wrap }
+@media (max-width: 480px) { .accpage { padding-block: 16px 32px } .accpage .card-box { padding: 18px 16px } }
+.owner .ow-ph { justify-items: stretch }
+.owner .ow-msg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: 100% }
+.owner .ow-msg .mlink { width: auto; max-width: none; min-width: 0; padding: 0 10px; gap: 7px; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.owner .ow-msg .mlink span { overflow: hidden; text-overflow: ellipsis }
+/* таблицы на планшете: плотнее, числа не переносятся */
+table.t td.num, table.t th { white-space: nowrap }
+.shell .toolbar > select.input { min-width: 150px }
+@media (min-width: 641px) and (max-width: 1100px) {
+  .shell table.t th, .shell table.t td { padding: 10px 10px }
+  .shell table.t td[data-main] { min-width: 180px }
+  .shell .tablewrap { overflow-x: auto }
+}

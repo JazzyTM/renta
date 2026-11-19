@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { channelKinds } from "@/lib/contacts";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
@@ -105,7 +106,7 @@ export async function ListingView({ number, sp }: { number: string | number; sp:
     <main className="gray obj">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="wrap">
-        <nav className="crumbs" aria-label="Навигация"><Link href="/">Главная</Link><span>/</span><span>{l.resort.region.name}</span><span>/</span><Link href={`/kurort/${l.resort.slug}`}>{l.resort.name}</Link><span>/</span><span>{LISTING_TYPES[l.type]}</span></nav>
+        <nav className="crumbs" aria-label="Навигация"><Link href="/">Главная</Link><span>/</span>{l.resort.region.name !== l.resort.name && <><span>{l.resort.region.name}</span><span>/</span></>}<Link href={`/kurort/${l.resort.slug}`}>{l.resort.name}</Link><span>/</span><span>{LISTING_TYPES[l.type]}</span></nav>
         {!visible && <div className="notice" style={{ marginBottom: 12 }}>Объявление не видно в поиске: {l.status === "PUBLISHED" ? "ждёт проверки" : "не опубликовано"}.</div>}
         <span className="oid">ID {l.number}</span>
         <div className="ohead">
@@ -156,7 +157,7 @@ export async function ListingView({ number, sp }: { number: string | number; sp:
               </section>
               <ComplaintForm listingId={l.id} />
             </div>
-            <aside className="oside"><OwnerCard name={l.contactName || l.owner.name} since={l.owner.createdAt.getUTCFullYear()} reply={reply} idOk={l.owner.idStatus === "APPROVED"} siteName={s.siteName} showPhone={!!s.showPhone} /></aside>
+            <aside className="oside"><OwnerCard name={l.contactName || l.owner.name} since={l.owner.createdAt.getUTCFullYear()} reply={reply} idOk={l.owner.idStatus === "APPROVED"} siteName={s.siteName} showPhone={!!s.showPhone} kinds={channelKinds(l)} /></aside>
           </div>
         </BookingProvider>
         {like.length > 0 && <section className="hsec"><h2 className="h2" style={{ marginBottom: 16 }}>Другие объекты {prepOf(l.resort)} и рядом</h2><div className="cards strip">{like.map(c => <ListingCard key={c.id} l={c} />)}</div></section>}

@@ -5,7 +5,7 @@ export const unsplash = (id: string, w = 1600, h?: number) =>
   `https://images.unsplash.com/photo-${id}?w=${w}${h ? `&h=${h}&fit=crop` : ""}&q=75&auto=format`;
 
 export const STOCK = {
-  hero: "1617997816905-ad72b352aa0c", // скалистый берег с соснами
+  hero: "1593339298050-241a2d96a24c", // скала над бирюзовым морем (Новый Свет)
   owners: "1596178067639-5c6e68aea6dc", // бассейн и пальмы у дома
 };
 

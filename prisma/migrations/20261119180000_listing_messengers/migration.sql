@@ -1,0 +1,2 @@
+ALTER TABLE "Listing" ADD COLUMN "max" TEXT;
+ALTER TABLE "Listing" ADD COLUMN "vk" TEXT;

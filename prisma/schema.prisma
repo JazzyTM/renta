@@ -205,6 +205,8 @@ model Listing {
   contactName      String           @default("")
   whatsapp         Boolean          @default(false)
   telegram         String?
+  max              String? // ссылка на профиль в MAX
+  vk               String? // ссылка или короткое имя ВКонтакте
   maxGuests        Int              @default(2)
   baseGuests       Int              @default(2)
   extraGuestPrice  Int              @default(0)

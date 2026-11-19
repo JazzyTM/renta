@@ -8,6 +8,7 @@ import { getSettings } from "@/lib/settings";
 import { quote } from "@/lib/pricing";
 import { parseDate, fmtRange } from "@/lib/format";
 import { sign } from "@/lib/sign";
+import { channels } from "@/lib/contacts";
 import { notifyEmail, notifyAdmin } from "@/lib/notify";
 import { limit, isBot, TOO_MANY } from "@/lib/guard";
 
@@ -19,10 +20,10 @@ export async function revealPhone(listingId: string) {
   if (!s.showPhone) return { error: "Телефон скрыт, отправьте заявку" };
   if (!(await limit("phone", 60, 3600))) return { error: TOO_MANY };
   if (s.phoneNeedsLogin && !u) return { error: "Войдите, чтобы увидеть телефон" };
-  const l = await db.listing.update({ where: { id: listingId }, data: { phoneViews: { increment: 1 } }, select: { contactPhone: true, contactName: true, whatsapp: true, telegram: true } });
+  const l = await db.listing.update({ where: { id: listingId }, data: { phoneViews: { increment: 1 } }, select: { contactPhone: true, contactName: true, whatsapp: true, telegram: true, max: true, vk: true } });
   const d = today();
   await db.listingStatDaily.upsert({ where: { listingId_date: { listingId, date: d } }, create: { listingId, date: d, phoneViews: 1 }, update: { phoneViews: { increment: 1 } } });
-  return { phone: l.contactPhone, name: l.contactName, whatsapp: l.whatsapp, telegram: l.telegram };
+  return { phone: l.contactPhone, name: l.contactName, channels: channels(l) };
 }
 
 const Req = z.object({

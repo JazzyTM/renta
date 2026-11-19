@@ -3,7 +3,7 @@ import { requireStaff } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { SideNav, type NavItem } from "@/components/SideNav";
-import { LogoMark } from "@/components/Logo";
+import { Logo } from "@/components/Logo";
 import { CRUD } from "@/lib/crud";
 
 export const metadata = { title: { default: "Админка", template: "%s · Админка" }, robots: { index: false } };
@@ -58,7 +58,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <>
       <header className="top"><div className="wrap" style={{ maxWidth: "none" }}>
-        <Link href="/admin" className="logo alogo"><LogoMark size={28} /><span>{s.siteName}</span><span className="alogo-t">Админка</span></Link>
+        <Link href="/admin" className="logo alogo"><Logo name={s.siteName} /><span className="alogo-t">Админка</span></Link>
         <nav>
           <Link className="obtn alink" href="/" target="_blank"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5H5V6h5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg><span className="obtn-t">Открыть сайт</span></Link>
           <Link className="auser hide-sm" href="/account"><span className="avatar">{(u.name || u.email || "?").trim()[0]?.toUpperCase()}</span><span>{u.name || u.email}</span></Link>

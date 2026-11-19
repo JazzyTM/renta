@@ -1,4 +1,5 @@
 "use server";
+import { checkChannels } from "./contacts";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -78,12 +79,14 @@ export async function savePrices(id: string, _: unknown, fd: FormData): Promise<
 
 export async function saveRules(id: string, _: unknown, fd: FormData): Promise<FormState> {
   await canEdit(id);
+  const bad = checkChannels({ telegram: str(fd.get("telegram"), 80) || null, max: str(fd.get("max"), 120) || null, vk: str(fd.get("vk"), 120) || null });
+  if (bad) return { error: bad };
   const prepayType = str(fd.get("prepayType")) as any;
   await db.listing.update({ where: { id }, data: {
     prepayType, prepayPercent: Math.min(100, int(fd.get("prepayPercent"))), cancelDays: int(fd.get("cancelDays"), 7),
     checkInTime: str(fd.get("checkInTime"), 5) || "14:00", checkOutTime: str(fd.get("checkOutTime"), 5) || "12:00",
     childrenAllowed: fd.get("childrenAllowed") === "on", petsAllowed: fd.get("petsAllowed") === "on", smokingAllowed: fd.get("smokingAllowed") === "on",
-    contactPhone: str(fd.get("contactPhone"), 30), contactName: str(fd.get("contactName"), 60), whatsapp: fd.get("whatsapp") === "on", telegram: str(fd.get("telegram"), 60) || null,
+    contactPhone: str(fd.get("contactPhone"), 30), contactName: str(fd.get("contactName"), 60), whatsapp: fd.get("whatsapp") === "on", telegram: str(fd.get("telegram"), 80) || null, max: str(fd.get("max"), 120) || null, vk: str(fd.get("vk"), 120) || null,
   }});
   paths(id);
   return { ok: "Сохранено" };

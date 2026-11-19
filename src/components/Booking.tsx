@@ -7,8 +7,10 @@ import { quote, type ListingPricing } from "@/lib/pricing";
 import { rub, plural } from "@/lib/format";
 import { toast } from "./Toaster";
 import { useAB, abGoal } from "./AB";
+import { MsgIcon } from "./Messenger";
+import { CHANNEL_LABEL, type Channel, type ChannelKind } from "@/lib/contacts";
 
-type Phone = { phone: string; name: string; whatsapp: boolean; telegram: string | null };
+type Phone = { phone: string; name: string; channels: Channel[] };
 type Ctx = {
   listingId: string; pricing: ListingPricing; maxGuests: number; cancelDays: number; allowRequests: boolean;
   ci: string; co: string; setDates: (a: string, b: string) => void; adults: number; children: number; setGuests: (a: number, c: number) => void;
@@ -91,7 +93,7 @@ export function RequestButton({ room }: { room?: string }) {
 }
 
 // Карточка хозяина справа
-export function OwnerCard({ name, since, siteName, showPhone, reply, idOk }: { name: string; since: number; siteName: string; showPhone: boolean; reply?: string | null; idOk?: boolean }) {
+export function OwnerCard({ name, since, siteName, showPhone, reply, idOk, kinds = [] }: { name: string; since: number; siteName: string; showPhone: boolean; reply?: string | null; idOk?: boolean; kinds?: ChannelKind[] }) {
   const x = use();
   const p = x.phone;
   const reqLabel = useAB("request_button", "Отправить заявку"), phoneLabel = useAB("phone_button", "Показать телефон");
@@ -103,11 +105,16 @@ export function OwnerCard({ name, since, siteName, showPhone, reply, idOk }: { n
       {p ? <div className="ow-ph">
         {p.name && p.name !== name && <span className="small muted">{p.name}</span>}
         <a className="num" href={`tel:${tel}`}>{p.phone}</a>
-        <span className="ow-links small">
-          {p.whatsapp && <a href={`https://wa.me/${tel.replace("+", "")}`} target="_blank" rel="noopener">WhatsApp</a>}
-          {p.telegram && <a href={`https://t.me/${p.telegram.replace(/^@/, "")}`} target="_blank" rel="noopener">Telegram</a>}
-        </span>
-      </div> : showPhone && <button type="button" className="btn ghost wide" onClick={x.showPhone}>{phoneLabel}</button>}
+        {p.channels.length > 0 && <div className="ow-msg">{p.channels.map(c => (
+          <a key={c.kind} className={`mlink mlink-${c.kind}`} href={c.href} target="_blank" rel="noopener nofollow"><MsgIcon kind={c.kind} size={22} /><span>{c.label}</span></a>
+        ))}</div>}
+      </div> : showPhone && <>
+        <button type="button" className="btn ghost wide" onClick={x.showPhone}>{phoneLabel}</button>
+        {kinds.length > 0 && <button type="button" className="ow-kinds" onClick={x.showPhone} title="Показать контакты">
+          <span className="ow-kinds-i">{kinds.map(k => <MsgIcon key={k} kind={k} size={20} />)}</span>
+          <span className="small">Можно написать в {kinds.map(k => CHANNEL_LABEL[k]).join(", ")}</span>
+        </button>}
+      </>}
       {x.allowRequests && <button type="button" className="btn wide" onClick={() => x.openRequest()}>{reqLabel}</button>}
     </div>
   );

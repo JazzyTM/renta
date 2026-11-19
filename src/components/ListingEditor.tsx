@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { MsgIcon } from "./Messenger";
 import { LISTING_TYPES, BEACH_TYPES, PREPAY, LISTING_STATUS, MODERATION } from "@/lib/labels";
 import { MONTHS } from "@/lib/format";
 import { ActionForm, ConfirmButton } from "./Forms";
@@ -116,9 +117,15 @@ export async function ListingEditor({ id }: { id: string }) {
             <div className="field"><label>Телефон для гостей</label><input className="input" name="contactPhone" defaultValue={l.contactPhone} /></div>
             <div className="field"><label>Имя для гостей</label><input className="input" name="contactName" defaultValue={l.contactName} /></div>
           </div>
-          <div className="grid2">
-            <label className="check"><input type="checkbox" name="whatsapp" defaultChecked={l.whatsapp} /> Есть WhatsApp на этом номере</label>
-            <div className="field"><label>Telegram</label><input className="input" name="telegram" defaultValue={l.telegram ?? ""} placeholder="@username" /></div>
+          <div className="stack msgedit">
+            <b>Мессенджеры</b>
+            <p className="small muted">Гости увидят их вместе с телефоном. Заполните то, чем пользуетесь.</p>
+            <label className="check"><input type="checkbox" name="whatsapp" defaultChecked={l.whatsapp} /> <MsgIcon kind="wa" /> WhatsApp на этом номере</label>
+            <div className="grid2">
+              <div className="field"><label><MsgIcon kind="tg" size={16} /> Telegram</label><input className="input" name="telegram" defaultValue={l.telegram ?? ""} placeholder="@имя, t.me/… или номер" /></div>
+              <div className="field"><label><MsgIcon kind="max" size={16} /> MAX</label><input className="input" name="max" defaultValue={l.max ?? ""} placeholder="max.ru/…" /><span className="small muted">В MAX: Профиль → Поделиться → Скопировать ссылку</span></div>
+              <div className="field"><label><MsgIcon kind="vk" size={16} /> ВКонтакте</label><input className="input" name="vk" defaultValue={l.vk ?? ""} placeholder="vk.com/…" /></div>
+            </div>
           </div>
         </ActionForm></section>
 

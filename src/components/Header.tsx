@@ -1,4 +1,5 @@
 "use client";
+import { Logo } from "./Logo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -41,7 +42,7 @@ export function Header({ user, siteName, social, regions }: { user: U; siteName:
 
   return (
     <header className="top"><div className="wrap">
-      <Link href="/" className="logo">{siteName}</Link>
+      <Link href="/" className="logo" aria-label={siteName}><Logo name={siteName} /></Link>
       <div className="rpick" ref={pref}>
         <button type="button" className="rpick-btn" aria-label="Выбрать курорт" aria-expanded={pick} onClick={() => setPick(p => !p)}>
           <span className="rpick-ico"><Ico size={22} d={PIN} /></span>

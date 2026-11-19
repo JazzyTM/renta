@@ -5,7 +5,7 @@ const hash = (s: string) => { let h = 7; for (const c of s) h = (h * 31 + c.char
 
 const PAL = [
   { sky: "#8EC5DD", sun: "#FFD08A", far: "#6FA3BC", near: "#4C8A6E", sea: "#2F7DA6", acc: "#FF7043" },
-  { sky: "#F4C7A6", sun: "#FF8A65", far: "#C99393", near: "#7E6B8F", sea: "#3D6E99", acc: "#FF5722" },
+  { sky: "#F4C7A6", sun: "#FF8A65", far: "#C99393", near: "#7E6B8F", sea: "#3D6E99", acc: "#F2543D" },
   { sky: "#A9D8E6", sun: "#FFE08A", far: "#7DB8C9", near: "#5C9A7B", sea: "#1F8FB0", acc: "#FF7043" },
   { sky: "#B7D3E9", sun: "#FFC27A", far: "#8DA9C4", near: "#5B7C99", sea: "#2B5F86", acc: "#E64A19" },
 ];
@@ -124,7 +124,7 @@ export function OwnersArt() {
   return (
     <svg className="owners-art" viewBox="0 0 320 220" aria-hidden="true">
       <rect x="40" y="96" width="170" height="110" fill="#3A4049" />
-      <path d="M24 104 L125 30 L226 104Z" fill="#FF5722" />
+      <path d="M24 104 L125 30 L226 104Z" fill="#F2543D" />
       <rect x="108" y="140" width="34" height="66" fill="#FFD08A" />
       <rect x="62" y="122" width="30" height="30" fill="#8EC5DD" /><rect x="160" y="122" width="30" height="30" fill="#8EC5DD" />
       <g transform="rotate(-30 262 150)">

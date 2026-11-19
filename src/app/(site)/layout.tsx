@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/Logo";
 import { ViewTransition } from "react";
 import Script from "next/script";
 import { getUser, isStaff } from "@/lib/auth";
@@ -26,7 +27,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <CompareBar />
       <footer className="foot"><div className="wrap">
         <div className="foot-l">
-          <Link href="/" className="logo">{s.siteName}</Link>
+          <Link href="/" className="logo" aria-label={s.siteName}><Logo name={s.siteName} size={36} /></Link>
           {s.footerTagline && <span className="foot-tag">{s.footerTagline}</span>}
           {socials.length > 0 && <><b className="foot-h">Следите за нами в соцсетях</b>
             <span className="socials">{socials.map(([k, t, ic]) => <a key={k} href={s[k]} target="_blank" rel="noopener" aria-label={t} title={t}>{ic}</a>)}</span></>}
