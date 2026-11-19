@@ -2127,9 +2127,10 @@ footer.ft .ft-docs a { color: var(--muted) }
 .mpin.on { background: var(--accent); color: #fff; z-index: 2 } .mpin.on::after { border-top-color: var(--accent) }
 .mclu { position: absolute; left: -22px; top: -22px; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: #fff; font: 600 14px/1 system-ui, sans-serif; border: 3px solid #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, .25) }
 .mv-here { position: absolute; top: 72px; left: 50%; transform: translateX(-50%); z-index: 5; height: 40px; padding: 0 18px; border: 0; border-radius: 999px; background: #fff; color: var(--ink); font-size: 14px; font-weight: 500; box-shadow: 0 2px 10px rgba(0, 0, 0, .2); cursor: pointer }
-.mv-card { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 5; width: min(440px, calc(100% - 24px)); display: flex; gap: 12px; padding: 10px; border-radius: var(--r); background: #fff; color: var(--ink) !important; text-decoration: none !important; box-shadow: 0 6px 24px rgba(0, 0, 0, .2) }
+.mv-card { position: absolute; left: 50%; bottom: 34px; transform: translateX(-50%); z-index: 5; width: min(440px, calc(100% - 24px)); display: flex; gap: 12px; padding: 10px; border-radius: var(--r); background: #fff; color: var(--ink) !important; text-decoration: none !important; box-shadow: 0 6px 24px rgba(0, 0, 0, .2) }
 .mv-card img, .mv-noph { flex: none; width: 112px; height: 88px; border-radius: 10px; object-fit: cover; background: var(--gray) }
 .mv-t { display: grid; gap: 4px; align-content: start; min-width: 0; padding-right: 22px }
-.mv-t b { font-size: 15px; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden }
+.mv-t > b { font-size: 15px; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden }
 .mv-p { font-size: 14px } .mv-p b { font-size: 16px }
 .mv-x { position: absolute; top: 6px; right: 8px; width: 26px; height: 26px; border: 0; background: none; font-size: 22px; line-height: 1; color: var(--muted); cursor: pointer }
+.mv-p b { display: inline }

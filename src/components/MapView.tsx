@@ -97,7 +97,7 @@ export function MapView({ apiKey, query, title, center, onClose }: { apiKey: str
         {sel.photo ? <img src={thumb(sel.photo)} alt="" /> : <span className="mv-noph" />}
         <span className="mv-t">
           <b>{sel.title}</b>
-          <span className="small muted">{LISTING_TYPES[sel.type]}{sel.sea != null ? ` · ${sel.sea} м до моря` : ""}{sel.reviews ? ` · ★ ${score10(sel.rating)}` : ""}</span>
+          <span className="small muted">{LISTING_TYPES[sel.type]}{sel.sea != null ? ` · ${sel.sea} м до моря` : ""}{sel.reviews ? <>{" · "}<span style={{ whiteSpace: "nowrap" }}>★ {score10(sel.rating)}</span></> : ""}</span>
           <span className="mv-p">от <b>{rub(sel.price)}</b> за ночь</span>
         </span>
         <button type="button" className="mv-x" aria-label="Закрыть" onClick={e => { e.preventDefault(); setSel(null); }}>×</button>
