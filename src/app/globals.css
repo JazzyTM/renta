@@ -2060,15 +2060,16 @@ footer.ft .ft-docs a { color: var(--muted) }
 .allsec .utabs-h button { flex: none; height: 40px; padding: 0 18px; border: 1px solid var(--line-2); border-radius: 999px; background: #fff; color: var(--ink); font-size: 15px; text-transform: none; letter-spacing: 0; box-shadow: none }
 .allsec .utabs-h button::after { display: none }
 .allsec .utabs-h button:hover { border-color: var(--ink) }
-.allsec .utabs-h button.on { background: var(--ink); border-color: var(--ink); color: #fff }
+.allsec .utabs-h button.on { background: var(--accent); border-color: var(--accent); color: #fff }
 .allres2 { columns: 3 320px; column-gap: 16px }
 .allres2 section { break-inside: avoid; margin-bottom: 16px; padding: 20px; border-radius: var(--r); background: var(--gray) }
-.ar-h { display: flex; align-items: center; gap: 12px; margin-bottom: 14px }
+.ar-h { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line-2) }
 .ar-i { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #fff; color: var(--accent) }
-.ar-h h3 { font-size: 18px; font-weight: 700; margin: 0; line-height: 1.2 }
+.ar-h h3 { font-size: 20px; font-weight: 700; margin: 0; line-height: 1.2 }
 .ar-h span:not(.ar-i) { font-size: 13px; color: var(--muted) }
 .allres2 ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 12px }
 .allres2 a { display: flex; align-items: center; gap: 6px; padding: 6px 0; color: var(--ink); font-size: 15px; line-height: 1.25 }
 .allres2 a:hover { color: var(--accent) }
 .allres2 .n { flex: none; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: #fff; color: var(--accent); font-size: 12px; font-weight: 600; display: inline-grid; place-items: center }
 @media (max-width: 560px) { .allres2 section { padding: 16px } .allres2 a { padding: 8px 0; font-size: 14.5px } }
+.ar-h > div { display: grid; gap: 3px }

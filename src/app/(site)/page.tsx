@@ -20,7 +20,7 @@ const ICONS = [
 ];
 
 // Группы для вкладок «Все курорты»
-const tabOf = (name: string) => /крым/i.test(name) ? "Курорты Крыма" : /абхаз/i.test(name) ? "Курорты Абхазии" : "Краснодарский край";
+const tabOf = (name: string) => /крым/i.test(name) ? "Крым" : /абхаз/i.test(name) ? "Абхазия" : "Краснодарский край";
 
 export default async function Home() {
   const [s, resorts, where] = await Promise.all([getSettings(), resortOptions(), visibleWhere()]);
@@ -38,8 +38,7 @@ export default async function Home() {
     title, body: <div className="allres2">{regions.filter(r => tabOf(r.name) === title).map(r => {
       const sum = r.resorts.reduce((a, x) => a + (counts.get(x.slug) ?? 0), 0);
       return <section key={r.id}>
-        <div className="ar-h"><span className="ar-i" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M2 15c2 0 2-1.5 4-1.5S8 15 10 15s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5M2 19c2 0 2-1.5 4-1.5S8 19 10 19s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5M8 10a4 4 0 018 0" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg></span>
-          <div><h3>{regionLabel(r.name)}</h3><span>{r.resorts.length} {plural(r.resorts.length, ["курорт", "курорта", "курортов"])}{sum > 0 ? ` · ${sum} ${plural(sum, ["объявление", "объявления", "объявлений"])}` : ""}</span></div></div>
+        <div className="ar-h"><div><h3>{r.name}</h3><span>{r.resorts.length} {plural(r.resorts.length, ["курорт", "курорта", "курортов"])}{sum > 0 ? ` · ${sum} ${plural(sum, ["объявление", "объявления", "объявлений"])}` : ""}</span></div></div>
         <ul>{r.resorts.map(x => { const n = counts.get(x.slug) ?? 0; return <li key={x.id}><Link href={`/kurort/${x.slug}`}>{x.name}{n > 0 && <span className="n">{n}</span>}</Link></li>; })}</ul>
       </section>;
     })}</div>,
