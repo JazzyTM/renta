@@ -2007,11 +2007,11 @@ table.t td.num, table.t th { white-space: nowrap }
 .rpick-pop .rp-list a:hover, .rpick-pop .rp-list a.on { color: var(--accent) }
 @media (max-width: 768px) {
   .rpick-pop { grid-template-columns: 1fr; grid-template-rows: auto 1fr; max-height: calc(100dvh - 76px) }
-  .rp-tabs { flex-direction: row; overflow-x: auto; overflow-y: hidden; padding: 10px; gap: 6px; scrollbar-width: none }
+  .rp-tabs { flex-direction: row; overflow-x: auto; overflow-y: hidden; padding: 0 16px; gap: 22px; background: #fff; border-bottom: 1px solid var(--line); scrollbar-width: none }
   .rp-tabs::-webkit-scrollbar { display: none }
-  .rp-tabs button { flex: none; min-height: 36px; border-radius: 999px; background: #fff; font-size: 14px }
-  .rp-tabs button.on { background: var(--accent); color: #fff }
-  .rp-tabs button.on span { color: rgba(255, 255, 255, .8) }
+  .rp-tabs button, .rp-tabs button:hover { flex: none; min-height: 46px; padding: 0; margin-bottom: -1px; border-radius: 0; border-bottom: 2px solid transparent; background: none; font-size: 15px; font-weight: 500; color: var(--muted) }
+  .rp-tabs button.on { background: none; color: var(--ink); font-weight: 500; border-bottom-color: var(--accent) }
+  .rp-tabs button span { display: none }
   .rpick-pop .rp-list { columns: 2; padding: 10px 16px 16px }
   .rpick-pop .rp-list a { padding: 9px 0 }
 }
@@ -2055,12 +2055,12 @@ footer.ft .ft-docs a { color: var(--muted) }
 @media (max-width: 560px) { .ofacts { grid-template-columns: 1fr 1fr; gap: 8px } .ofacts > div { padding: 10px; gap: 10px } .of-i { width: 34px; height: 34px } .of-i svg { width: 19px; height: 19px } .ofacts b { font-size: 14px } }
 
 /* главная: все курорты — регионы карточками */
-.allsec .utabs-h { display: flex; gap: 8px; overflow-x: auto; border: 0; margin: 4px 0 20px; padding: 0; scrollbar-width: none }
+.allsec .utabs-h { display: flex; gap: 28px; overflow-x: auto; margin: 0 0 22px; padding: 0; border-bottom: 1px solid var(--line); scrollbar-width: none }
 .allsec .utabs-h::-webkit-scrollbar { display: none }
-.allsec .utabs-h button { flex: none; height: 40px; padding: 0 18px; border: 1px solid var(--line-2); border-radius: 999px; background: #fff; color: var(--ink); font-size: 15px; text-transform: none; letter-spacing: 0; box-shadow: none }
-.allsec .utabs-h button::after { display: none }
-.allsec .utabs-h button:hover { border-color: var(--ink) }
-.allsec .utabs-h button.on { background: var(--accent); border-color: var(--accent); color: #fff }
+.allsec .utabs-h button, .allsec .utabs-h button:hover { flex: none; height: auto; margin: 0 0 -1px; padding: 6px 0 12px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; box-shadow: none; color: var(--muted); font-size: 16px; font-weight: 500; text-transform: none; letter-spacing: 0 }
+.allsec .utabs-h button:hover { color: var(--ink) }
+.allsec .utabs-h button.on { color: var(--ink); border-bottom-color: var(--accent) }
+@media (max-width: 560px) { .allsec .utabs-h { gap: 22px } .allsec .utabs-h button { font-size: 15px } }
 .allres2 { columns: 3 320px; column-gap: 16px }
 .allres2 section { break-inside: avoid; margin-bottom: 16px; padding: 20px; border-radius: var(--r); background: var(--gray) }
 .ar-h { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line-2) }
@@ -2070,6 +2070,6 @@ footer.ft .ft-docs a { color: var(--muted) }
 .allres2 ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 12px }
 .allres2 a { display: flex; align-items: center; gap: 6px; padding: 6px 0; color: var(--ink); font-size: 15px; line-height: 1.25 }
 .allres2 a:hover { color: var(--accent) }
-.allres2 .n { flex: none; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: #fff; color: var(--accent); font-size: 12px; font-weight: 600; display: inline-grid; place-items: center }
+.allres2 .n { flex: none; color: var(--accent); font-size: 13px; font-weight: 600 }
 @media (max-width: 560px) { .allres2 section { padding: 16px } .allres2 a { padding: 8px 0; font-size: 14.5px } }
 .ar-h > div { display: grid; gap: 3px }
