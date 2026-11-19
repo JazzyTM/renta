@@ -17,7 +17,7 @@ const HEART = "M12 20.5s-7.8-4.7-9.5-9.6C1.4 7.6 3.5 4.5 6.8 4.5c2.1 0 3.6 1.2 5
 const PIN = "M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0113 0c0 5.4-6.5 11-6.5 11zM12 12.3a2.3 2.3 0 100-4.6 2.3 2.3 0 000 4.6z";
 const LOGIN = "M10 17l5-5-5-5M15 12H3M14 3h4a3 3 0 013 3v12a3 3 0 01-3 3h-4";
 
-export function Header({ user, siteName, social, regions }: { user: U; siteName: string; social: { vk: boolean; ya: boolean }; regions: Reg[] }) {
+export function Header({ user, siteName, social, regions }: { user: U; siteName: string; social: { vk: boolean; ya: boolean; code: boolean }; regions: Reg[] }) {
   const favs = useFavs();
   const path = usePathname();
   const [menu, setMenu] = useState(false);

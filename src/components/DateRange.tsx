@@ -1,4 +1,5 @@
 "use client";
+import { Chevron } from "./Chevron";
 import { useEffect, useRef, useState } from "react";
 import { plural } from "@/lib/format";
 
@@ -73,9 +74,9 @@ export function DateRange({ ci, co, onChange, alignRight, single, prices, busy }
       ) : <>{btn("ci", "Заезд")}{btn("co", "Выезд")}</>}
       {open && (
         <div className={`dp ${alignRight ? "right" : ""}`} role="dialog" aria-label="Выбор дат">
-          <div className="dphead"><button type="button" onClick={() => shift(-1)} disabled={atStart} aria-label="Назад">‹</button>
+          <div className="dphead"><button type="button" onClick={() => shift(-1)} disabled={atStart} aria-label="Назад"><Chevron dir="left" size={20} /></button>
             <b className="small">{open === "ci" ? "Дата заезда" : "Дата выезда"}</b>
-            <button type="button" onClick={() => shift(1)} aria-label="Вперёд">›</button></div>
+            <button type="button" onClick={() => shift(1)} aria-label="Вперёд"><Chevron dir="right" size={20} /></button></div>
           <div className="dpm"><Month y={month[0]} m={month[1]} /><Month y={y2} m={m2} /></div>
           <div className="dpfoot"><span className="small muted num">{nights ? `${nights} ${plural(nights, ["ночь", "ночи", "ночей"])}` : ""}</span><button type="button" className="btn sm" onClick={() => setOpen(null)}>Готово</button></div>
         </div>

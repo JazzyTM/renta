@@ -2091,3 +2091,17 @@ footer.ft .ft-docs a { color: var(--muted) }
 .sl-steps span:not(.sl-i) { font-size: 14px; color: var(--muted); line-height: 1.45 }
 @media (max-width: 900px) { .startl { grid-template-columns: 1fr } .sl-side { position: static; padding: 18px } .sl-steps { gap: 12px } }
 @media (max-width: 560px) { .startl { padding-block: 12px 32px } .sl-two { grid-template-columns: 1fr } .sl-form .btn { width: 100% } .sl-side .h2 { font-size: 18px } }
+
+/* календарь внутри окна заявки: один месяц на ширину окна, не вылезает за края */
+@media (min-width: 641px) {
+  .modal .dp, .modal .dp.right { left: 0; right: 0; width: auto; max-width: none }
+  .modal .dpm { grid-template-columns: 1fr; gap: 0 }
+  .modal .dpm > :nth-child(2) { display: none }
+  .modal .dpm h3 { text-align: center }
+}
+
+/* стрелки листания: рисунок строго по центру кнопки */
+.lb-nav, .dphead button { display: inline-grid; place-items: center; padding: 0; line-height: 0; font-size: 0 }
+.ph .sl { padding: 0; line-height: 0; font-size: 0 }
+.sl svg { margin: 0 }
+.input.codein { font-size: 22px; letter-spacing: .35em; text-align: center; font-variant-numeric: tabular-nums }

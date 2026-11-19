@@ -6,7 +6,8 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { checkPassword, consumeToken, createSession, createToken, hashPassword, destroySession } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
-import { sendTemplate } from "@/lib/mail";
+import { sendTemplate, mailEnabled } from "@/lib/mail";
+import { createHash, randomInt } from "crypto";
 import { audit } from "@/lib/audit";
 import { limit, isBot, TOO_MANY } from "@/lib/guard";
 
@@ -107,3 +108,52 @@ export async function logout() {
   await destroySession();
   redirect("/");
 }
+
+// ---------- Вход по коду из письма (без пароля; новая почта — новый аккаунт) ----------
+const CODE_MIN = 15;
+const codeHash = (email: string, code: string) => createHash("sha256").update(`${email}:${code}:${process.env.AUTH_SECRET ?? ""}`).digest("hex");
+const Email = z.string().trim().toLowerCase().email("Проверьте почту");
+
+export async function sendLoginCode(_: unknown, fd: FormData): Promise<FormState> {
+  if (!(await mailEnabled())) return { error: "Вход по коду пока недоступен, войдите по паролю" };
+  if (isBot(fd)) return { ok: "sent" };
+  const p = Email.safeParse(fd.get("email"));
+  if (!p.success) return { error: p.error.issues[0].message };
+  const email = p.data;
+  if (!(await limit("code", 10, 3600)) || !(await limit("code-mail", 5, 3600, email))) return { error: TOO_MANY };
+  const u = await db.user.findUnique({ where: { email } });
+  if (u?.status === "BLOCKED") return { error: "Аккаунт заблокирован" };
+  if (!u && !(await getSettings()).registrationOpen) return { error: "Регистрация временно закрыта" };
+  const code = String(randomInt(100000, 1000000));
+  await db.loginCode.updateMany({ where: { email, usedAt: null }, data: { usedAt: new Date() } });
+  await db.loginCode.create({ data: { email, codeHash: codeHash(email, code), expiresAt: new Date(Date.now() + CODE_MIN * 60000) } });
+  await sendTemplate(email, "login_code", { code });
+  return { ok: "sent" };
+}
+
+export async function verifyLoginCode(_: unknown, fd: FormData): Promise<FormState> {
+  const p = Email.safeParse(fd.get("email"));
+  const code = String(fd.get("code") ?? "").replace(/\D/g, "");
+  if (!p.success || code.length !== 6) return { error: "Введите 6 цифр из письма" };
+  const email = p.data;
+  const row = await db.loginCode.findFirst({ where: { email, usedAt: null, expiresAt: { gt: new Date() } }, orderBy: { createdAt: "desc" } });
+  if (!row) return { error: "Код устарел. Запросите новый" };
+  if (row.attempts >= 5) return { error: "Слишком много попыток. Запросите новый код" };
+  if (row.codeHash !== codeHash(email, code)) {
+    await db.loginCode.update({ where: { id: row.id }, data: { attempts: { increment: 1 } } });
+    return { error: "Неверный код" };
+  }
+  let u = await db.user.findUnique({ where: { email } });
+  if (u?.status === "BLOCKED") return { error: "Аккаунт заблокирован" };
+  if (!u && !hasConsent(fd)) return { error: "Вы у нас впервые: " + NO_CONSENT.toLowerCase() };
+  await db.loginCode.update({ where: { id: row.id }, data: { usedAt: new Date() } });
+  if (!u) {
+    u = await db.user.create({ data: { email, name: email.split("@")[0].slice(0, 60), emailVerified: new Date() } });
+    await audit(u.id, "register_code", "User", u.id);
+    await (await import("@/lib/referral")).attachReferrer(u.id, (await (await import("next/headers")).cookies()).get("ref")?.value);
+  } else if (!u.emailVerified) await db.user.update({ where: { id: u.id }, data: { emailVerified: new Date() } });
+  await createSession(u.id);
+  const next = safeNext(fd.get("next"));
+  redirect(next !== "/" ? next : isStaffRole(u.role) ? "/admin" : u.role === "OWNER" ? "/cabinet" : "/");
+}
+

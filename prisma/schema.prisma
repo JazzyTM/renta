@@ -93,6 +93,19 @@ enum TokenType {
   PASSWORD_RESET
 }
 
+// Одноразовый код для входа по почте (почта может быть ещё не зарегистрирована)
+model LoginCode {
+  id        String    @id @default(cuid())
+  email     String
+  codeHash  String
+  attempts  Int       @default(0)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([email, createdAt])
+}
+
 model Token {
   id        String    @id @default(cuid())
   userId    String

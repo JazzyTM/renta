@@ -6,6 +6,7 @@ import { getSettings } from "./settings";
 // Шаблоны по умолчанию. Админ может переопределить их в разделе «Письма».
 export const EMAIL_DEFAULTS: Record<string, { subject: string; body: string; vars: string }> = {
   verify_email: { subject: "Подтвердите почту", body: "Здравствуйте, {name}!\n\nЧтобы подтвердить почту, перейдите по ссылке:\n{link}\n\nЕсли вы не регистрировались на {site}, просто удалите это письмо.", vars: "{name} {link} {site}" },
+  login_code: { subject: "Код для входа: {code}", body: "Ваш код для входа на {site}: {code}\n\nКод действует 15 минут. Если вы не запрашивали код, просто удалите это письмо.", vars: "{code} {site}" },
   password_reset: { subject: "Восстановление пароля", body: "Здравствуйте!\n\nЧтобы задать новый пароль, перейдите по ссылке:\n{link}\n\nСсылка действует 2 часа.", vars: "{link} {site}" },
   booking_new_owner: { subject: "Новая заявка на {dates}", body: "{guest} хочет приехать в «{listing}» {dates}, гостей: {guests}.\n\nКомментарий: {comment}\n\nОтветьте гостю: {link}", vars: "{guest} {listing} {dates} {guests} {comment} {link}" },
   booking_accepted_guest: { subject: "Хозяин подтвердил даты", body: "Хозяин «{listing}» подтвердил даты {dates}.\n\nПредоплата: {prepay}. Реквизиты хозяин пришлёт в переписке: {link}", vars: "{listing} {dates} {prepay} {link}" },
@@ -16,6 +17,12 @@ export const EMAIL_DEFAULTS: Record<string, { subject: string; body: string; var
   id_checked: { subject: "Проверка личности: {result}", body: "Здравствуйте!\n\n{text}\n\n{link}", vars: "{result} {text} {link}" },
   listing_approved: { subject: "Объявление проверено", body: "Объявление «{listing}» проверено модератором и показывается в поиске.\n\n{link}", vars: "{listing} {link}" },
 };
+
+// Настроена ли отправка писем (без неё вход по коду не показываем)
+export async function mailEnabled() {
+  const s = await getSettings();
+  return !!(s.smtpHost || process.env.SMTP_HOST);
+}
 
 export function fill(tpl: string, vars: Record<string, string | number>) {
   return tpl.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
@@ -44,10 +51,11 @@ export async function sendMail(to: string, subject: string, text: string) {
     return;
   }
   try {
-    const t = nodemailer.createTransport({
-      host, port: Number(s.smtpPort || process.env.SMTP_PORT || 465), secure: Number(s.smtpPort || 465) === 465,
-      auth: { user: s.smtpUser || process.env.SMTP_USER, pass: s.smtpPass || process.env.SMTP_PASS },
-    });
+    // Все параметры берём из одного места: из админки, если там задан сервер, иначе из окружения
+    const fromAdmin = !!s.smtpHost;
+    const port = Number((fromAdmin ? s.smtpPort : process.env.SMTP_PORT) || 465);
+    const user = fromAdmin ? s.smtpUser : process.env.SMTP_USER, pass = fromAdmin ? s.smtpPass : process.env.SMTP_PASS;
+    const t = nodemailer.createTransport({ host, port, secure: port === 465, ...(user ? { auth: { user: String(user), pass: String(pass ?? "") } } : {}) });
     await t.sendMail({ from: s.smtpFrom || process.env.SMTP_FROM, to, subject, text });
     await db.emailLog.create({ data: { to, subject, status: "sent" } });
   } catch (e) {

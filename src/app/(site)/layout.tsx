@@ -5,12 +5,13 @@ import Script from "next/script";
 import { getUser, isStaff } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { db } from "@/lib/db";
+import { mailEnabled } from "@/lib/mail";
 import { Header } from "@/components/Header";
 import { FavSync } from "@/components/Fav";
 import { CompareBar } from "@/components/Compare";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const [s, user] = await Promise.all([getSettings(), getUser()]);
+  const [s, user, codeOn] = await Promise.all([getSettings(), getUser(), mailEnabled()]);
   if (s.maintenance && !isStaff(user?.role))
     return <main className="wrap" style={{ paddingBlock: 80, textAlign: "center" }}><h1 className="h1">{s.siteName}</h1><p className="muted" style={{ marginTop: 12 }}>{s.maintenanceText}</p></main>;
   const favIds = user ? (await db.favorite.findMany({ where: { userId: user.id }, select: { listingId: true } })).map(f => f.listingId) : null;
@@ -28,7 +29,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const socials = [["socialVk", "ВКонтакте", "VK"], ["socialTelegram", "Telegram", "TG"], ["socialYoutube", "YouTube", "▶"]].filter(([k]) => s[k]);
   return (
     <>
-      <Header user={user ? { name: user.name, email: user.email, staff: isStaff(user.role) } : null} siteName={s.siteName} social={{ vk: !!(s.vkEnabled && (s.vkClientId || process.env.VK_CLIENT_ID)), ya: !!(s.yandexEnabled && (s.yandexClientId || process.env.YANDEX_CLIENT_ID)) }} regions={regions} />
+      <Header user={user ? { name: user.name, email: user.email, staff: isStaff(user.role) } : null} siteName={s.siteName} social={{ vk: !!(s.vkEnabled && (s.vkClientId || process.env.VK_CLIENT_ID)), ya: !!(s.yandexEnabled && (s.yandexClientId || process.env.YANDEX_CLIENT_ID)), code: codeOn }} regions={regions} />
       {user && <FavSync server={favIds} />}
       <ViewTransition>{children}</ViewTransition>
       <CompareBar />

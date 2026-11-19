@@ -8,7 +8,7 @@ import { db } from "./db";
 import type { Role, TokenType } from "@/generated/prisma/client";
 
 const COOKIE = "sid";
-const DAYS = 30;
+const DAYS = 180; // долгая сессия: входить заново почти не нужно
 const sha = (s: string) => createHash("sha256").update(s).digest("hex");
 
 export const hashPassword = (p: string) => bcrypt.hash(p, 10);

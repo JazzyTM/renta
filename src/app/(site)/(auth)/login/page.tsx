@@ -1,5 +1,6 @@
 import { LoginForm } from "@/components/AuthForms";
 import { Social } from "@/components/Social";
+import { mailEnabled } from "@/lib/mail";
 
 export const metadata = { title: "Вход" };
 
@@ -8,5 +9,5 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
   const next = sp.next ?? "/";
   return <main className="wrap"><div className="authbox"><h1 className="h1">Вход</h1>
     {sp.error && <div className="notice bad">Не получилось войти через соцсеть. Попробуйте ещё раз или войдите по почте.</div>}
-    <Social next={next} /><LoginForm next={next} /></div></main>;
+    <Social next={next} /><LoginForm next={next} code={await mailEnabled()} /></div></main>;
 }

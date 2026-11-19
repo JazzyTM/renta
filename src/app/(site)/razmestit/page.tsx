@@ -7,6 +7,7 @@ import { ActionForm } from "@/components/Forms";
 import { Consent } from "@/components/Consent";
 import { Honeypot } from "@/components/Honeypot";
 import { startListing } from "@/lib/start-actions";
+import { Social } from "@/components/Social";
 
 export const metadata = { title: "Сдать жильё у моря", description: "Разместите гостевой дом, квартиру или номера: гости звонят и пишут вам напрямую." };
 
@@ -27,6 +28,7 @@ export default async function StartListing() {
       <div className="sl-main panel">
         <h1 className="h1">Сдать жильё</h1>
         <p className="muted">Займёт пару минут. Уже есть аккаунт? <Link href="/login?next=/cabinet/new">Войти</Link></p>
+        <Social next="/cabinet/new" />
         <ActionForm action={startListing} submit="Продолжить" className="stack sl-form">
           <Honeypot />
           <section className="sl-sec">

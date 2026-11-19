@@ -1,4 +1,5 @@
 "use client";
+import { Chevron } from "./Chevron";
 import { HouseArt } from "./Art";
 import Link from "next/link";
 import { useRef, useState } from "react";
@@ -26,8 +27,8 @@ function Photos({ photos, title }: { photos: string[]; title: string }) {
         {photos.map((u, k) => <img key={u} src={thumb(u)} alt={k === 0 ? title : ""} loading={k === 0 ? "lazy" : "lazy"} draggable={false} />)}
       </div>
       {photos.length > 1 && <>
-        {i > 0 && <button type="button" className="sl prev" aria-label="Предыдущее фото" onClick={e => go(e, -1)}>‹</button>}
-        {i < photos.length - 1 && <button type="button" className="sl next" aria-label="Следующее фото" onClick={e => go(e, 1)}>›</button>}
+        {i > 0 && <button type="button" className="sl prev" aria-label="Предыдущее фото" onClick={e => go(e, -1)}><Chevron dir="left" size={18} /></button>}
+        {i < photos.length - 1 && <button type="button" className="sl next" aria-label="Следующее фото" onClick={e => go(e, 1)}><Chevron dir="right" size={18} /></button>}
         <span className="dots">{photos.map((_, k) => <i key={k} className={k === i ? "on" : ""} />)}</span>
       </>}
     </>

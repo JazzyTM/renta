@@ -1,4 +1,5 @@
 "use client";
+import { Chevron } from "./Chevron";
 import { thumb } from "@/lib/img";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -45,9 +46,9 @@ export function Gallery({ photos, title }: { photos: Photo[]; title: string }) {
         <div className="lb" role="dialog" aria-modal="true" aria-label="Фотографии" {...touch}>
           <div className="lb-top"><span className="num">{open + 1} / {n}</span><button type="button" onClick={() => setOpen(null)} aria-label="Закрыть">✕</button></div>
           <div className="lb-main" onClick={e => { if (e.target === e.currentTarget) setOpen(null); }}>
-            {n > 1 && <button type="button" className="lb-nav prev" onClick={() => go(-1)} aria-label="Предыдущее">‹</button>}
+            {n > 1 && <button type="button" className="lb-nav prev" onClick={() => go(-1)} aria-label="Предыдущее"><Chevron dir="left" size={26} /></button>}
             <figure><img src={photos[open].url} alt={photos[open].caption || ""} />{photos[open].caption && <figcaption>{photos[open].caption}</figcaption>}</figure>
-            {n > 1 && <button type="button" className="lb-nav next" onClick={() => go(1)} aria-label="Следующее">›</button>}
+            {n > 1 && <button type="button" className="lb-nav next" onClick={() => go(1)} aria-label="Следующее"><Chevron dir="right" size={26} /></button>}
           </div>
           {n > 1 && <div className="lb-thumbs">{photos.map((p, i) => <button type="button" key={p.url} className={i === open ? "on" : ""} onClick={() => setOpen(i)}><img src={thumb(p.url)} alt="" loading="lazy" /></button>)}</div>}
         </div>
