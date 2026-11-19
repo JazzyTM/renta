@@ -59,7 +59,8 @@ export async function register(_: unknown, fd: FormData): Promise<FormState> {
     return { ok: "Мы отправили письмо со ссылкой для подтверждения почты" };
   }
   await createSession(u.id);
-  redirect(safeNext(fd.get("next")));
+  const next = safeNext(fd.get("next"));
+  redirect(next !== "/" ? next : u.role === "OWNER" ? "/cabinet" : "/");
 }
 
 async function sendVerify(userId: string, email: string, name: string) {

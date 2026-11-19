@@ -52,11 +52,14 @@ async function register(p, u, isOwner) {
   await p.locator("#r-p").fill(u.password);
   if (isOwner) await p.locator('input[name="owner"]').check();
   await p.locator("#r-pd").check();
-  await p.getByRole("button", { name: "Зарегистрироваться" }).click();
-  const ok = await bodyHas(p, "письмо", 10000);
-  note(`регистрация ${isOwner ? "хозяина" : "гостя"}: ${ok ? "показано сообщение о письме" : "НЕТ сообщения"}`);
-  if (!ok) issue(`регистрация ${u.email}: не увидели подтверждения`);
+  await Promise.all([p.waitForURL((url) => !url.pathname.startsWith("/register"), { timeout: 15000 }).catch(() => {}), p.getByRole("button", { name: "Зарегистрироваться" }).click()]);
+  const path = new URL(p.url()).pathname;
+  // Подтверждение почты выключено: после регистрации человек сразу входит
+  if (path.startsWith("/register")) issue(`регистрация ${u.email}: остались на странице регистрации (${(await p.locator(".err, .notice").first().textContent().catch(() => "")) || "без сообщения"})`);
+  else note(`регистрация ${isOwner ? "хозяина" : "гостя"}: сразу вошли → ${path}`);
+  if (isOwner && !path.startsWith("/cabinet")) issue(`хозяин после регистрации попал на ${path}, а не в кабинет`);
   await snap(p, `register-${isOwner ? "owner" : "guest"}`);
+  await p.context().clearCookies();
   const n = sql(`update "User" set "emailVerified"=now() where email='${u.email}' returning id`);
   if (!n) issue(`пользователь ${u.email} не создан в базе`);
 }
