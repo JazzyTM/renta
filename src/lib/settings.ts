@@ -85,7 +85,7 @@ export const SETTINGS: Section[] = [
   ]},
   { id: "auth", title: "Регистрация и вход", fields: [
     { key: "registrationOpen", label: "Регистрация открыта", type: "bool", def: true },
-    { key: "requireEmailVerify", label: "Требовать подтверждение почты", type: "bool", def: true },
+    { key: "requireEmailVerify", label: "Требовать подтверждение почты", type: "bool", def: false, hint: "Если выключено, после регистрации человек сразу входит в аккаунт" },
     { key: "vkEnabled", label: "Вход через ВКонтакте (VK ID)", type: "bool", def: false },
     { key: "vkClientId", label: "VK ID: ID приложения", type: "text", def: "" },
     { key: "vkClientSecret", label: "VK ID: защищённый ключ", type: "password", def: "" },
