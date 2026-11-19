@@ -32,6 +32,7 @@ export function MapView({ apiKey, query, title, center, onClose }: { apiKey: str
   const [moved, setMoved] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [ready, setReady] = useState(false);
 
   const fetchPoints = async (bbox?: number[]) => {
     const p = new URLSearchParams(query); p.set("_map", "1");
@@ -51,9 +52,12 @@ export function MapView({ apiKey, query, title, center, onClose }: { apiKey: str
       if (dead || !box.current) return;
       const m = new ym.Map(box.current, { center: center ?? [44.6, 37.9], zoom: 13, controls: ["zoomControl", "geolocationControl"] }, { suppressMapOpenBlock: true });
       map.current = m;
-      if (pts.length) m.setBounds(ym.util.bounds.fromPoints(pts.map(x => [x.lat, x.lng])), { checkZoomRange: true, zoomMargin: 40 }).then(() => { if (m.getZoom() > 16) m.setZoom(16); });
-      m.events.add("actionend", () => setMoved(true));
+      // «Искать в этой области» — только когда карту сдвинул сам человек
+      const listen = () => { if (!dead) m.events.add("actionend", () => setMoved(true)); };
+      if (pts.length) m.setBounds(ym.util.bounds.fromPoints(pts.map(x => [x.lat, x.lng])), { checkZoomRange: true, zoomMargin: 60 }).then(() => { if (m.getZoom() > 16) m.setZoom(16); setTimeout(listen, 400); });
+      else listen();
       m.events.add("click", () => setSel(null));
+      setReady(true);
     }).catch(() => !dead && setErr("Карта не загрузилась. Проверьте интернет или попробуйте позже."));
     return () => { dead = true; document.body.style.overflow = ""; window.removeEventListener("keydown", esc); map.current?.destroy(); map.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -62,7 +66,7 @@ export function MapView({ apiKey, query, title, center, onClose }: { apiKey: str
   // Метки с ценой; рядом стоящие собираются в кружок с числом
   useEffect(() => {
     const ym = window.ymaps, m = map.current;
-    if (!ym || !m || !points) return;
+    if (!ready || !ym || !m || !points) return;
     if (layer.current) m.geoObjects.remove(layer.current);
     const Pin = ym.templateLayoutFactory.createClass('<div class="mpin{% if properties.on %} on{% endif %}">$[properties.label]</div>');
     const cl = new ym.Clusterer({ clusterIconLayout: ym.templateLayoutFactory.createClass('<div class="mclu">{{ properties.geoObjects.length }}</div>'), clusterIconShape: { type: "Circle", coordinates: [20, 20], radius: 22 }, groupByCoordinates: false, gridSize: 80, clusterDisableClickZoom: false, hasBalloon: false });
@@ -72,7 +76,7 @@ export function MapView({ apiKey, query, title, center, onClose }: { apiKey: str
       return pm;
     }));
     m.geoObjects.add(cl); layer.current = cl;
-  }, [points, sel]);
+  }, [points, sel, ready]);
 
   const searchHere = async () => {
     const b = map.current?.getBounds(); if (!b) return;
