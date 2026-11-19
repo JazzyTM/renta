@@ -54,6 +54,7 @@ deploy() {
   chmod +x "$APP"/deploy/*.sh
   echo "== Зависимости"; as_renta npm ci --no-audit --no-fund
   echo "== Миграции базы"; as_renta npx prisma migrate deploy
+  echo "== Фото со своего сервера"; as_renta npm run -s stock:download || echo "Часть фото не скачалась, остальное работает"
   echo "== Сборка"; as_renta npm run build
   if ! cmp -s "$APP/deploy/systemd/renta.service" /etc/systemd/system/renta.service; then cp "$APP"/deploy/systemd/* /etc/systemd/system/; systemctl daemon-reload; fi
   echo "== Перезапуск"; systemctl restart renta

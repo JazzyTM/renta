@@ -9,6 +9,8 @@ sed "s/__DOMAIN__/$DOMAIN www.$DOMAIN/" "$APP/deploy/nginx.conf" > /etc/nginx/si
 nginx -t && systemctl reload nginx
 MAIL=(--register-unsafely-without-email); [ -n "$EMAIL" ] && MAIL=(-m "$EMAIL")
 certbot --nginx --non-interactive --agree-tos --redirect "${MAIL[@]}" -d "$DOMAIN" -d "www.$DOMAIN" || certbot --nginx --non-interactive --agree-tos --redirect "${MAIL[@]}" -d "$DOMAIN"
+# HTTP/2: страница и десятки файлов идут одним соединением
+sed -i 's/listen 443 ssl;/listen 443 ssl http2;/; s/listen \[::\]:443 ssl;/listen [::]:443 ssl http2;/' /etc/nginx/sites-available/renta && nginx -t && systemctl reload nginx
 sed -i "s|^APP_URL=.*|APP_URL=\"https://$DOMAIN\"|" "$APP/.env"
 systemctl restart renta
 echo "Готово: https://$DOMAIN"

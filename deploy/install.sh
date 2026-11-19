@@ -87,6 +87,7 @@ if [ "$FIRST" = 1 ]; then
   ADMIN_EMAIL="${EMAIL:-admin@example.ru}"
   ADMIN_PASS=$(openssl rand -base64 12 | tr -d '/+=' | cut -c1-12)
   sudo -u renta -H bash -c "cd $APP && SEED_ADMIN_EMAIL='$ADMIN_EMAIL' SEED_ADMIN_PASSWORD='$ADMIN_PASS' npm run db:seed"
+  sudo -u renta -H bash -c "cd $APP && npm run -s stock:download" || echo "Часть фото не скачалась, запустите позже: npm run stock:download"
   printf 'Вход в админку: %s/login\nПочта: %s\nПароль: %s\n' "$(grep APP_URL $APP/.env | cut -d'"' -f2)" "$ADMIN_EMAIL" "$ADMIN_PASS" > /root/renta-admin.txt
   chmod 600 /root/renta-admin.txt
 fi

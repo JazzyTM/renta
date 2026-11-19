@@ -1,8 +1,11 @@
 // Стоковые фото (Unsplash License: бесплатно, в том числе для коммерческого использования, без указания автора).
 // Используются по умолчанию для шапки главной, баннера, обложек курортов и демо-объявлений.
 // Любое фото заменяется в админке на своё.
-export const unsplash = (id: string, w = 1600, h?: number) =>
-  `https://images.unsplash.com/photo-${id}?w=${w}${h ? `&h=${h}&fit=crop` : ""}&q=75&auto=format`;
+// Фото хранятся на своём сервере: из России Unsplash часто грузится медленно или не грузится.
+// Скачивает их `npm run stock:download` (запускается при установке и обновлении). w и h оставлены для совместимости.
+export const stockLocal = (id: string) => `/uploads/stock/${id}.webp`;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const unsplash = (id: string, w = 1600, h?: number) => stockLocal(id);
 
 export const STOCK = {
   hero: "1593339298050-241a2d96a24c", // скала над бирюзовым морем (Новый Свет)
