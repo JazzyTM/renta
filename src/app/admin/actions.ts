@@ -358,3 +358,20 @@ export async function idDecision(userId: string, ok: boolean, _: unknown, fd: Fo
   revalidatePath("/admin/idcheck");
   return { ok: ok ? "Подтверждено, фото удалено" : "Отклонено, фото удалено" };
 }
+
+// ---------- Заявки: массовые действия ----------
+const BULK_BOOKING: Record<string, string> = { DECLINED: "Отклонена администратором", CANCELLED: "Отменена администратором", NO_RESPONSE: "Закрыта: хозяин не ответил", COMPLETED: "Отмечена как завершённая" };
+export async function bulkBookings(fd: FormData) {
+  const u = await requireStaff();
+  const ids = fd.getAll("ids").map(String), op = s(fd, "op");
+  if (!ids.length) return;
+  if (op === "delete") {
+    await requireAdmin();
+    await db.booking.deleteMany({ where: { id: { in: ids } } });
+  } else if (BULK_BOOKING[op]) {
+    for (const id of ids)
+      await db.booking.update({ where: { id }, data: { status: op as never, messages: { create: { isSystem: true, text: BULK_BOOKING[op] } } } });
+  } else return;
+  await audit(u.id, "bulk:" + op, "Booking", null, { ids });
+  revalidatePath("/admin/bookings");
+}

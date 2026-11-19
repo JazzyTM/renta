@@ -51,7 +51,7 @@ async function register(p, u, isOwner) {
   await p.locator("#r-e").fill(u.email);
   await p.locator("#r-p").fill(u.password);
   if (isOwner) await p.locator('input[name="owner"]').check();
-  await p.locator('input[name="agree"]').check();
+  await p.locator("#r-pd").check();
   await p.getByRole("button", { name: "Зарегистрироваться" }).click();
   const ok = await bodyHas(p, "письмо", 10000);
   note(`регистрация ${isOwner ? "хозяина" : "гостя"}: ${ok ? "показано сообщение о письме" : "НЕТ сообщения"}`);
@@ -171,6 +171,7 @@ try {
   await G.p.locator("#b-email").fill(guest.email);
   await G.p.locator("#b-phone").fill("+7 900 555-44-33");
   await G.p.locator("#b-comment").fill("Здравствуйте! Хотим приехать вдвоём, есть ли номер с балконом?");
+  await G.p.locator("#b-pd").check();
   await snap(G.p, "request-modal");
   await Promise.all([G.p.waitForURL(/\/b\/\d+/, { timeout: 15000 }).catch(() => {}), G.p.locator(".modal").getByRole("button", { name: /Отправить заявку/ }).click()]);
   const bm = G.p.url().match(/\/b\/(\d+)\?k=([^&]+)/);

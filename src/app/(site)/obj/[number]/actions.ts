@@ -1,4 +1,5 @@
 "use server";
+import { hasConsent, NO_CONSENT } from "@/components/Consent";
 import type { FormState } from "@/lib/form";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -39,6 +40,7 @@ export async function createBooking(_: unknown, fd: FormData): Promise<FormState
   if (!s.bookingRequests) return { error: "Заявки сейчас не принимаются, позвоните хозяину" };
   if (s.guestNeedsLogin && !u) return { error: "Войдите, чтобы отправить заявку" };
   if (isBot(fd)) return { error: "Не получилось отправить" };
+  if (!hasConsent(fd)) return { error: NO_CONSENT };
   if (!(await limit("booking", 10, 3600))) return { error: TOO_MANY };
   const p = Req.safeParse(Object.fromEntries(fd));
   if (!p.success) return { error: p.error.issues[0].message };

@@ -1,4 +1,5 @@
 "use server";
+import { hasConsent, NO_CONSENT } from "@/components/Consent";
 import type { FormState } from "@/lib/form";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -38,13 +39,13 @@ const Reg = z.object({
   name: z.string().trim().min(2, "Напишите имя").max(60),
   email: z.string().trim().toLowerCase().email("Проверьте почту"),
   password: z.string().min(8, "Пароль не короче 8 символов").max(100),
-  agree: z.literal("on", { message: "Нужно согласие с правилами" }),
 });
 
 export async function register(_: unknown, fd: FormData): Promise<FormState> {
   const s = await getSettings();
   if (!s.registrationOpen) return { error: "Регистрация временно закрыта" };
   if (isBot(fd)) return { ok: "Мы отправили письмо со ссылкой для подтверждения почты" };
+  if (!hasConsent(fd)) return { error: NO_CONSENT };
   if (!(await limit("register", 5, 3600))) return { error: TOO_MANY };
   const p = Reg.safeParse(Object.fromEntries(fd));
   if (!p.success) return { error: p.error.issues[0].message };

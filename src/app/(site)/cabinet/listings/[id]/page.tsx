@@ -5,8 +5,9 @@ import { requireUser, isStaff } from "@/lib/auth";
 import { ListingEditor } from "@/components/ListingEditor";
 import { Promote } from "@/components/Promote";
 
-export default async function EditListing({ params }: { params: Promise<{ id: string }> }) {
+export default async function EditListing({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ imported?: string }> }) {
   const { id } = await params;
+  const imported = (await searchParams).imported;
   const u = await requireUser(`/cabinet/listings/${id}`);
   const l = await db.listing.findUnique({ where: { id }, select: { ownerId: true, title: true, status: true } });
   if (!l || (l.ownerId !== u.id && !isStaff(u.role))) notFound();
@@ -14,6 +15,7 @@ export default async function EditListing({ params }: { params: Promise<{ id: st
     <>
       <div className="small"><Link href="/cabinet">← Мои объекты</Link></div>
       <h1 className="h1">{l.title}</h1>
+      {imported !== undefined && <div className="notice ok">Объявление перенесено: название и описание{Number(imported) > 0 ? `, фото: ${imported}` : ", фото не удалось скачать — добавьте их ниже"}. Проверьте текст, курорт и адрес, затем пройдите остальные шаги.</div>}
       <ListingEditor id={id} />
       {l.status === "PUBLISHED" && <Promote listingId={id} />}
     </>

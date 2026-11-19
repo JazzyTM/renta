@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { legalInfo } from "@/lib/legal";
 import { Chart } from "@/components/Chart";
 import { db } from "@/lib/db";
 import { requireStaff } from "@/lib/auth";
@@ -30,9 +31,11 @@ export default async function Dashboard() {
   const series = Array.from({ length: 30 }, (_, i) => { const d = new Date(from.getTime() + i * 86400000); return { d, n: map.get(isoDate(d)) ?? 0 }; });
   const max = Math.max(1, ...series.map(x => x.n));
   const S = ({ n, t, href }: { n: number | string; t: string; href?: string }) => href ? <Link className="stat" href={href}><b>{n}</b><span>{t}</span></Link> : <div className="stat"><b>{n}</b><span>{t}</span></div>;
+  const legal = await legalInfo();
   return (
     <>
       <h1 className="h1">Сводка</h1>
+      {legal.missing.length > 0 && <div className="notice bad">Не заполнены реквизиты ({legal.missing.join(", ")}). Они подставляются в политику обработки данных, согласие и соглашение. <Link href="/admin/settings/legal">Заполнить</Link></div>}
       <div className="stats">
         <S n={pending} t="ждут модерации" href="/admin/moderation" />
         <S n={newBookings} t="заявок без ответа" href="/admin/bookings?status=NEW" />

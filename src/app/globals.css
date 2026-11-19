@@ -1945,3 +1945,51 @@ table.t td.num, table.t th { white-space: nowrap }
   .dpfoot .small { white-space: nowrap }
   .dpfoot .btn { flex: 1; max-width: 220px; margin-left: auto }
 }
+
+/* текстовые страницы и статьи */
+.textpage { max-width: 860px; padding-block: 20px 48px; display: grid; gap: 20px }
+.textpage.wide { max-width: 1170px }
+.textpage .panel.prose-panel { background: #fff; border: 0; border-radius: var(--r); padding: 32px 40px; margin: 0 }
+.textpage .prose { margin-top: 8px }
+.textpage .prose h2 { font-size: 20px; margin: 24px 0 8px }
+.textpage .prose p, .textpage .prose li { line-height: 1.6 }
+.acover { width: 100%; aspect-ratio: 12 / 7; object-fit: cover; border-radius: var(--r-sm); margin: 16px 0 8px }
+.textpage .arts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px }
+.textpage .art { background: #fff; color: var(--ink) !important; text-decoration: none !important; overflow: hidden; display: grid; align-content: start }
+.textpage .art .aph { aspect-ratio: 16 / 9; overflow: hidden }
+.textpage .art .aph img { width: 100%; height: 100%; object-fit: cover; display: block }
+.textpage .art .atx { display: grid }
+@media (max-width: 900px) { .textpage .arts { grid-template-columns: 1fr 1fr } }
+@media (max-width: 600px) {
+  .textpage { padding-block: 12px 32px; gap: 14px }
+  .textpage .panel.prose-panel { padding: 20px 16px }
+  .textpage .arts { grid-template-columns: 1fr; gap: 12px }
+  .textpage .h1 { font-size: 24px }
+}
+.check.consent { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.4; color: var(--ink-2) }
+.check.consent input { margin-top: 1px; flex: none }
+/* новый объект, советы, AI */
+.nl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start }
+@media (max-width: 1000px) { .nl-grid { grid-template-columns: 1fr } }
+.tips { background: var(--accent-bg); border-radius: var(--r-sm); padding: 12px 16px; font-size: 14px }
+.tips summary { cursor: pointer; font-weight: 500; color: var(--ink) }
+.tips ul { margin: 10px 0 2px; padding-left: 18px; display: grid; gap: 6px; color: var(--ink-2); line-height: 1.45 }
+.aibtn { display: inline-flex; align-items: center; gap: 6px; border: 0; background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 5px 12px; font-size: 13px; font-weight: 500; cursor: pointer }
+.aibtn:hover { background: #FBDDD6 }
+.aibtn[disabled] { opacity: .6; cursor: wait }
+/* поиск в админке */
+.asearch { flex: 1; max-width: 520px; margin: 0 24px; position: relative; display: flex; align-items: center }
+.asearch svg { position: absolute; left: 12px; color: var(--ink-3); pointer-events: none }
+.asearch input { width: 100%; height: 40px; border: 0; border-radius: var(--r-sm); background: var(--gray); padding: 0 12px 0 38px; font: inherit; font-size: 14px; color: var(--ink) }
+.asearch input:focus { outline: 2px solid var(--ink); background: #fff }
+.asearch-m { display: none !important }
+@media (max-width: 900px) { .asearch { display: none } .asearch-m { display: inline-flex !important; width: 36px; justify-content: center; padding: 0 !important } }
+.slist { display: grid }
+.srow { display: grid; gap: 2px; padding: 10px 0; border-top: 1px solid #F0F1F3; color: var(--ink) !important; text-decoration: none !important }
+.srow:first-child { border-top: 0; padding-top: 0 }
+.srow b { font-weight: 500 }
+.srow > span { font-size: 13px; color: var(--ink-3) }
+.srow:hover b { color: var(--accent) }
+.textpage .crumbs { display: flex; flex-wrap: wrap; gap: 8px; font-size: 14px; color: #555 }
+.textpage .crumbs a { color: #555 } .textpage .crumbs a:hover { color: var(--accent) }
+.field > .row > label { font-size: 13px; font-weight: 700; color: var(--ink) }

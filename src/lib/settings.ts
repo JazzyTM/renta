@@ -20,6 +20,14 @@ export const SETTINGS: Section[] = [
     { key: "maintenance", label: "Режим обслуживания (сайт закрыт для посетителей)", type: "bool", def: false },
     { key: "maintenanceText", label: "Текст на время обслуживания", type: "text", def: "Сайт обновляется, зайдите через несколько минут." },
   ]},
+  { id: "legal", title: "Реквизиты", fields: [
+    { key: "legalDomain", label: "Адрес сайта в документах", type: "text", def: "naberegu.su", hint: "Без https://. Подставляется в политику, согласие и соглашение" },
+    { key: "legalName", label: "Оператор персональных данных", type: "text", def: "", hint: "Как в документах: «ИП Иванов Иван Иванович» или «ООО „Наберегу“». Подставляется в политику, согласие и соглашение" },
+    { key: "legalInn", label: "ИНН", type: "text", def: "" },
+    { key: "legalOgrn", label: "ОГРН или ОГРНИП", type: "text", def: "" },
+    { key: "legalAddress", label: "Адрес", type: "text", def: "", hint: "Юридический адрес или адрес регистрации ИП (можно без квартиры)" },
+    { key: "legalEmail", label: "Почта для обращений по персональным данным", type: "text", def: "", hint: "Если пусто — берётся «Почта для связи» из раздела «Общие»" },
+  ]},
   { id: "home", title: "Главная", fields: [
     { key: "heroImage", label: "Фото в шапке главной", type: "image", def: unsplash(STOCK.hero, 1920), hint: "Море или берег, горизонтальное, от 1920 px. Без фото шапка будет однотонной" },
     { key: "featuresShow", label: "Показывать блок «Почему мы»", type: "bool", def: true },
@@ -90,6 +98,14 @@ export const SETTINGS: Section[] = [
     { key: "telegramBotToken", label: "Токен бота", type: "password", def: "", hint: "Создайте бота у @BotFather (команда /newbot) и вставьте токен. Сервер сам забирает сообщения боту, вебхук не нужен" },
     { key: "telegramBotUsername", label: "Имя бота (без @)", type: "text", def: "", hint: "Можно не заполнять: определится по токену" },
     { key: "telegramAdminChat", label: "Чат администрации", type: "text", def: "", hint: "Напишите боту любое сообщение (или добавьте бота в группу) — он пришлёт номер чата. Сюда приходят модерация, жалобы, заказы, новые хозяева" },
+  ]},
+  { id: "ai", title: "AI-помощник", fields: [
+    { key: "aiProvider", label: "Нейросеть", type: "select", def: "none", options: [["none", "Выключено"], ["yandex", "YandexGPT (Yandex Cloud)"], ["openai", "Другой сервис с OpenAI-совместимым API"]], hint: "Пишет черновик описания объявления по данным, которые заполнил хозяин" },
+    { key: "aiKey", label: "API-ключ", type: "password", def: "", hint: "YandexGPT: Yandex Cloud → сервисный аккаунт с ролью ai.languageModels.user → API-ключ" },
+    { key: "aiFolderId", label: "ID каталога Yandex Cloud", type: "text", def: "", hint: "Только для YandexGPT" },
+    { key: "aiModel", label: "Модель", type: "text", def: "", hint: "YandexGPT: yandexgpt-lite/latest (по умолчанию) или yandexgpt/latest. Для другого сервиса — название модели" },
+    { key: "aiBaseUrl", label: "Адрес API (для другого сервиса)", type: "text", def: "", hint: "Например https://api.example.com/v1" },
+    { key: "aiDailyLimit", label: "Сколько описаний в сутки может сделать один хозяин", type: "number", def: 10 },
   ]},
   { id: "mail", title: "Почта", fields: [
     { key: "smtpHost", label: "SMTP сервер", type: "text", def: "", hint: "Пусто: письма не отправляются, а пишутся в журнал писем" },

@@ -6,6 +6,9 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { AMENITY_GROUPS } from "./data/amenities";
 import { RESORT_GEO } from "./data/coords";
+import { PAGES, PAGE_STUBS } from "./data/pages";
+import { ARTICLES } from "./data/articles";
+import { RESORT_TEXTS } from "./data/resort-texts";
 import { RESORT_COVERS, DEMO_EXTERIOR, DEMO_ROOMS, DEMO_VIEWS, unsplash } from "../src/lib/stock";
 
 const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
@@ -67,15 +70,20 @@ async function main() {
       { name: "Премиум", description: "Без ограничений, высокий приоритет, значок «Рекомендуем»", price: 12900, periodDays: 180, maxListings: 100, maxPhotos: 50, priorityBoost: 3, showStats: true, sort: 2 },
     ]});
 
-  const pages: [string, string, string][] = [
-    ["about", "О сервисе", "Сервис помогает найти жильё у моря напрямую у хозяев."],
-    ["rules", "Правила размещения", "1. Объявление должно описывать реальный объект.\n2. Фото должны быть сделаны в этом объекте.\n3. Цены указываются честно, без скрытых доплат."],
-    ["privacy", "Политика обработки персональных данных", "Текст политики в соответствии с 152-ФЗ."],
-    ["offer", "Пользовательское соглашение", "Текст оферты."],
-    ["owners", "Хозяевам", "Как разместить объект и получать заявки."],
-  ];
-  for (const [slug, title, body] of pages)
-    await db.page.upsert({ where: { slug }, update: {}, create: { slug, title, body, showInFooter: true } });
+  // Служебные страницы: создаём, а заглушки прошлых версий заменяем текстом (правки из админки не трогаем)
+  for (const p of PAGES) {
+    const cur = await db.page.findUnique({ where: { slug: p.slug } });
+    if (!cur) await db.page.create({ data: { slug: p.slug, title: p.title, body: p.body, showInFooter: p.footer } });
+    else if (!cur.body.trim() || PAGE_STUBS.includes(cur.body.trim())) await db.page.update({ where: { slug: p.slug }, data: { body: p.body } });
+  }
+  // Стартовые статьи
+  for (const [i, a] of ARTICLES.entries()) {
+    if (await db.article.findUnique({ where: { slug: a.slug } })) continue;
+    await db.article.create({ data: { slug: a.slug, title: a.title, excerpt: a.excerpt, body: a.body, coverUrl: unsplash(a.cover, 1200, 700), isPublished: true, publishedAt: new Date(Date.now() - i * 86400000) } });
+  }
+  // Вводные тексты курортов: только пустые
+  for (const [slug, seoText] of Object.entries(RESORT_TEXTS))
+    await db.resort.updateMany({ where: { slug, OR: [{ seoText: null }, { seoText: "" }] }, data: { seoText } });
 
   for (const word of ["предоплата на карту до заселения 100%", "переведите всю сумму", "whatsapp.com/", "t.me/"])
     await db.stopWord.upsert({ where: { word }, update: {}, create: { word } });

@@ -1,4 +1,5 @@
 "use client";
+import { Consent } from "./Consent";
 import { useActionState, useEffect, useState } from "react";
 import { createAlert } from "@/app/(site)/alerts/actions";
 import { Honeypot } from "./Honeypot";
@@ -22,6 +23,7 @@ export function AlertButton({ title, email }: { title: string; email?: string })
           <input type="hidden" name="path" value={path} /><input type="hidden" name="title" value={title} />
           <div className="field"><label htmlFor="al-email">Почта</label><input className="input" id="al-email" name="email" type="email" defaultValue={email} required /></div>
           {st?.error && <div className="err">{st.error}</div>}
+          <Consent id="al-pd" />
           <button className="btn wide" disabled={pending || !path}>{pending ? "Сохраняем…" : "Подписаться"}</button>
         </form>}
       </div></div>}

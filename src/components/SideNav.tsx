@@ -28,6 +28,8 @@ const I: Record<string, string> = {
   banners: "M4 6h16v9H4zM8 19h8M12 15v4",
   seopages: "M11 18a7 7 0 100-14 7 7 0 000 14zM21 21l-5-5",
   orders: "M3 6h18v12H3zM3 10h18M7 15h4",
+  finance: "M4 20V10M10 20V4M16 20v-7M22 20H2",
+  search: "M11 18a7 7 0 100-14 7 7 0 000 14zM21 21l-5-5",
   tariffs: "M20 12l-8 8-9-9V3h8zM7.5 7.5h.01",
   tariff: "M20 12l-8 8-9-9V3h8zM7.5 7.5h.01",
   promocodes: "M4 8a2 2 0 002-2h12a2 2 0 002 2v8a2 2 0 00-2 2H6a2 2 0 00-2-2zM10 9v6",

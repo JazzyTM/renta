@@ -1,4 +1,5 @@
 "use client";
+import { Consent } from "./Consent";
 import { createContext, useActionState, useContext, useEffect, useRef, useState } from "react";
 import { Honeypot } from "./Honeypot";
 import { DateRange, Guests } from "./DateRange";
@@ -144,6 +145,7 @@ function RequestModal({ room, user, onClose }: { room?: string; user: { name: st
         <div className="field"><label htmlFor="b-email">Почта</label><input className="input" id="b-email" name="email" type="email" defaultValue={user?.email} required /></div>
         <div className="field"><label htmlFor="b-phone">Телефон, если удобно</label><input className="input" id="b-phone" name="phone" inputMode="tel" /></div>
         <div className="field"><label htmlFor="b-comment">Сообщение хозяину</label><textarea className="input" id="b-comment" name="comment" defaultValue={room ? `Интересует: ${room}. ` : ""} placeholder="Например: приедем поздно вечером" /></div>
+        <Consent id="b-pd" />
         {state?.error && <div className="err">{state.error}</div>}
         <button className="btn wide" disabled={pending || !ready}>{!ready ? "Выберите даты" : pending ? "Отправляем…" : "Отправить заявку"}</button>
         <p className="small muted">Ответ хозяина придёт на почту.</p>

@@ -1,4 +1,5 @@
 "use client";
+import { Consent } from "./Consent";
 import { Honeypot } from "./Honeypot";
 import Link from "next/link";
 import { useActionState, useState } from "react";
@@ -32,8 +33,8 @@ export function RegisterForm({ next }: { next: string }) {
       <div className="field"><label htmlFor="r-p">Пароль</label><input className="input" id="r-p" name="password" type="password" autoComplete="new-password" minLength={8} required /></div>
       <label className="check"><input type="checkbox" name="owner" /> Я сдаю жильё</label>
       <Honeypot />
-      <label className="check small"><input type="checkbox" name="agree" required /> <span>Принимаю <Link href="/p/offer">соглашение</Link> и <Link href="/p/privacy">политику обработки данных</Link></span></label>
       {st?.error && <div className="err">{st.error}</div>}
+      <Consent id="r-pd" />
       <button className="btn wide" disabled={pending}>Зарегистрироваться</button>
       <div className="small">Уже есть аккаунт? <Link href="/login">Войти</Link></div>
     </form>

@@ -5,7 +5,7 @@ import { getSettings } from "@/lib/settings";
 import { fmtRange, fmtDateTime, rub } from "@/lib/format";
 import { BOOKING_STATUS } from "@/lib/labels";
 import { Pager } from "@/components/admin/Pager";
-import { bookingRemind } from "../actions";
+import { bookingRemind, bulkBookings } from "../actions";
 import type { Prisma } from "@/generated/prisma/client";
 
 export const metadata = { title: "Заявки" };
@@ -41,8 +41,10 @@ export default async function Bookings({ searchParams }: { searchParams: Promise
         <a className="btn ghost sm" href={`/admin/export/bookings?${new URLSearchParams(Object.entries(sp).filter(([, v]) => v) as [string, string][])}`}>Скачать CSV</a>
       </form>
       <div className="small muted">Найдено: {total}</div>
-      <div className="tablewrap"><table className="t"><thead><tr><th>№</th><th>Гость</th><th>Объект</th><th>Даты</th><th>Сумма</th><th>Статус</th><th>Создана</th></tr></thead><tbody>
+      <form action={bulkBookings} className="stack">
+      <div className="tablewrap"><table className="t"><thead><tr><th></th><th>№</th><th>Гость</th><th>Объект</th><th>Даты</th><th>Сумма</th><th>Статус</th><th>Создана</th></tr></thead><tbody>
         {list.map(b => <tr key={b.id}>
+          <td><input type="checkbox" name="ids" value={b.id} aria-label={`Заявка ${b.number}`} /></td>
           <td><Link href={`/admin/bookings/${b.number}`}>{b.number}</Link></td>
           <td>{b.guestName}<div className="small muted">{b.guestEmail}{b.guestPhone ? `, ${b.guestPhone}` : ""}</div></td>
           <td><Link href={`/admin/listings/${b.listingId}`}>{b.listing.title}</Link><div className="small muted">{b.listing.resort.name}</div></td>
@@ -51,6 +53,10 @@ export default async function Bookings({ searchParams }: { searchParams: Promise
           <td className="small muted">{fmtDateTime(b.createdAt)}</td>
         </tr>)}
       </tbody></table></div>
+      {list.length > 0 && <div className="toolbar"><span className="small muted">С отмеченными:</span>
+        <select className="input" name="op" defaultValue="CANCELLED"><option value="DECLINED">Отклонить</option><option value="CANCELLED">Отменить</option><option value="NO_RESPONSE">Закрыть: хозяин не ответил</option><option value="COMPLETED">Отметить завершёнными</option><option value="delete">Удалить (спам)</option></select>
+        <button className="btn ghost sm">Применить</button></div>}
+      </form>
       <Pager page={page} pages={Math.ceil(total / TAKE)} sp={sp} path="/admin/bookings" />
     </>
   );

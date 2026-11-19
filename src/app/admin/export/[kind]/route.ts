@@ -21,6 +21,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ kind: st
   } else if (kind === "bookings") {
     const list = await db.booking.findMany({ where: sp.get("status") ? { status: sp.get("status") as any } : {}, include: { listing: true }, orderBy: { number: "asc" } });
     rows = [["Номер", "Объект", "Гость", "Почта", "Телефон", "Заезд", "Выезд", "Взрослых", "Детей", "Сумма", "Статус", "Создана"], ...list.map(b => [b.number, b.listing.title, b.guestName, b.guestEmail, b.guestPhone, isoDate(b.checkIn), isoDate(b.checkOut), b.adults, b.children, b.totalEstimate, b.status, b.createdAt])];
+  } else if (kind === "orders") {
+    if (u.role !== "ADMIN") return new Response("forbidden", { status: 403 });
+    const y = Number(sp.get("year")) || new Date().getUTCFullYear();
+    const list = await db.order.findMany({ where: { createdAt: { gte: new Date(Date.UTC(y, 0, 1)), lt: new Date(Date.UTC(y + 1, 0, 1)) } }, include: { user: true }, orderBy: { number: "asc" } });
+    rows = [["Номер", "Хозяин", "Почта", "Услуга", "Дней", "Сумма", "Промокод", "Статус", "Способ оплаты", "Создан", "Оплачен"], ...list.map(o => [o.number, o.user.name, o.user.email, o.kind === "tariff" ? "тариф" : o.promoType, o.days, o.amount, o.promoCode, o.status, o.provider, o.createdAt, o.paidAt])];
   } else return new Response("not found", { status: 404 });
   return new Response(csv(rows), { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="${kind}-${isoDate(new Date())}.csv"` } });
 }

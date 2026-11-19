@@ -1,4 +1,5 @@
 "use server";
+import { hasConsent, NO_CONSENT } from "@/components/Consent";
 import { randomBytes } from "crypto";
 import { db } from "@/lib/db";
 import { getUser } from "@/lib/auth";
@@ -11,6 +12,7 @@ export async function createAlert(_: unknown, fd: FormData): Promise<FormState> 
   if (isBot(fd)) return { ok: "Готово" };
   const email = String(fd.get("email") ?? "").trim().toLowerCase();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: "Проверьте адрес почты" };
+  if (!hasConsent(fd)) return { error: NO_CONSENT };
   if (!(await limit("alert", 10, 3600, email))) return { error: TOO_MANY };
   const u = new URL(String(fd.get("path") ?? "/search"), "http://x");
   for (const k of ["ci", "co", "page", "sort", "adults", "children"]) u.searchParams.delete(k);

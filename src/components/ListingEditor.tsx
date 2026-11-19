@@ -1,4 +1,6 @@
 import { db } from "@/lib/db";
+import { AiDescribe } from "./AiDescribe";
+import { aiEnabled } from "@/lib/ai";
 import { MsgIcon } from "./Messenger";
 import { LISTING_TYPES, BEACH_TYPES, PREPAY, LISTING_STATUS, MODERATION } from "@/lib/labels";
 import { MONTHS } from "@/lib/format";
@@ -24,6 +26,7 @@ export async function ListingEditor({ id }: { id: string }) {
   const [st, stTone] = LISTING_STATUS[l.status], [md, mdTone] = MODERATION[l.moderation];
   const [s, plan] = await Promise.all([getSettings(), ownerPlan(l.ownerId)]);
   const wizard = l.status === "DRAFT";
+  const ai = await aiEnabled();
   const sv = wizard ? "Сохранить и дальше" : "Сохранить";
   const minPh = Number(s.minPhotos) || 0, minDesc = Number(s.minDescription) || 0;
   const checks: [string, boolean, string][] = [
@@ -54,7 +57,7 @@ export async function ListingEditor({ id }: { id: string }) {
             <div className="field"><label>Тип жилья</label><select className="input" name="type" defaultValue={l.type}>{Object.entries(LISTING_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
           </div>
           <div className="field"><label>Курорт</label><select className="input" name="resortId" defaultValue={l.resortId}>{resorts.map(r => <option key={r.id} value={r.id}>{r.region.name}: {r.name}</option>)}</select></div>
-          <div className="field"><label>Описание</label><textarea className="input" name="description" defaultValue={l.description} rows={8} placeholder="Чем хорош объект, как дойти до моря, что рядом" /></div>
+          <div className="field"><div className="row between"><label>Описание</label>{ai && <AiDescribe listingId={id} />}</div><textarea className="input" name="description" defaultValue={l.description} rows={8} placeholder="Чем хорош объект, как дойти до моря, что рядом" /></div>
           <div className="field"><label>Адрес</label><input className="input" name="address" defaultValue={l.address} /></div>
           <div className="grid3">
             <div className="field"><label>Широта</label><input className="input" name="lat" defaultValue={l.lat ?? ""} placeholder="44.56" /></div>
@@ -73,6 +76,16 @@ export async function ListingEditor({ id }: { id: string }) {
         </ActionForm></section>
 
       <section className="card-box stack"><h2 className="h2">Фото</h2>
+        <details className="tips" open={l.photos.length === 0}><summary>Как сделать фото, которые выбирают</summary>
+          <ul>
+            <li>Снимайте днём при естественном свете, откройте шторы и включите свет в комнатах.</li>
+            <li>Держите телефон горизонтально и на уровне груди, снимайте из угла комнаты, чтобы было видно больше.</li>
+            <li>Уберите лишнее: сумки, полотенца на кровати, провода, посуду на столе.</li>
+            <li>Первым поставьте самое выигрышное фото: фасад, бассейн или вид на море.</li>
+            <li>Покажите каждый тип номера, санузел, кухню, двор, парковку и путь до моря.</li>
+            <li>10–20 фото достаточно. Не используйте чужие фото и картинки из интернета.</li>
+          </ul>
+        </details>
         <PhotoManager listingId={id} photos={l.photos.map(p => ({ id: p.id, url: p.url }))} max={plan.maxPhotos} /></section>
 
       <section className="card-box stack"><h2 className="h2">Цены за ночь по месяцам, ₽</h2>

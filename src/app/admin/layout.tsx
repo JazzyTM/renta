@@ -40,6 +40,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     c("pages"), c("articles"), c("banners"), c("seopages"),
     ...(admin ? [
       { group: "Деньги" },
+      { href: "/admin/finance", label: "Отчёт по деньгам" },
       { href: "/admin/orders", label: "Заказы", badge: orders },
       c("tariffs"), c("promocodes"),
       { href: "/admin/promotions", label: "Активные услуги" },
@@ -59,7 +60,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <>
       <header className="top"><div className="wrap" style={{ maxWidth: "none" }}>
         <Link href="/admin" className="logo alogo"><Logo name={s.siteName} /><span className="alogo-t">Админка</span></Link>
+        <form className="asearch" action="/admin/search" role="search">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M11 18a7 7 0 100-14 7 7 0 000 14zM21 21l-5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+          <input name="q" placeholder="Поиск: номер, почта, телефон, название" aria-label="Поиск по админке" />
+        </form>
         <nav>
+          <Link className="obtn alink asearch-m" href="/admin/search" aria-label="Поиск"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M11 18a7 7 0 100-14 7 7 0 000 14zM21 21l-5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></Link>
           <Link className="obtn alink" href="/" target="_blank"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5H5V6h5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg><span className="obtn-t">Открыть сайт</span></Link>
           <Link className="auser hide-sm" href="/account"><span className="avatar">{(u.name || u.email || "?").trim()[0]?.toUpperCase()}</span><span>{u.name || u.email}</span></Link>
         </nav>
