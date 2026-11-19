@@ -6,7 +6,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 
-const BASE = "http://127.0.0.1";
+const BASE = process.env.BASE || "http://127.0.0.1:3000"; // напрямую в Next.js, мимо nginx и HTTPS
 const OUT = "/opt/e2e/out";
 mkdirSync(OUT, { recursive: true });
 const ts = Date.now().toString(36);

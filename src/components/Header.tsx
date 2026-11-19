@@ -38,6 +38,9 @@ export function Header({ user, siteName, social, regions }: { user: U; siteName:
   }, []);
   const slug = path.match(/^\/kurort\/([^/]+)/)?.[1];
   const current = slug ? regions.flatMap(r => r.resorts).find(r => r.slug === slug)?.name : undefined;
+  const curTab = Math.max(0, regions.findIndex(r => r.resorts.some(x => x.slug === slug)));
+  const [tab, setTab] = useState(curTab);
+  useEffect(() => { if (pick) setTab(curTab); }, [pick, curTab]);
   const initial = (user?.name || user?.email || "?").trim()[0]?.toUpperCase();
 
   return (
@@ -48,8 +51,13 @@ export function Header({ user, siteName, social, regions }: { user: U; siteName:
           <span className="rpick-ico"><Ico size={22} d={PIN} /></span>
           <span className="rpick-t">{current ?? "Выберите курорт"}</span><span className="rpick-chev"><Ico size={16} d="M6 9l6 6 6-6" /></span>
         </button>
-        {pick && <div className="rpick-pop">
-          {regions.map(r => <section key={r.name}><h4>{r.name}</h4><ul>{r.resorts.map(x => <li key={x.slug}><Link href={`/kurort/${x.slug}`} className={x.slug === slug ? "on" : ""}>{x.name}</Link></li>)}</ul></section>)}
+        {pick && regions.length > 0 && <div className="rpick-pop">
+          <div className="rp-tabs" role="tablist">
+            {regions.map((r, i) => <button key={r.name} type="button" role="tab" aria-selected={i === tab} className={i === tab ? "on" : ""} onClick={() => setTab(i)} onMouseEnter={() => setTab(i)}>{r.name}<span>{r.resorts.length}</span></button>)}
+          </div>
+          <ul className="rp-list" role="tabpanel">
+            {regions[tab]?.resorts.map(x => <li key={x.slug}><Link href={`/kurort/${x.slug}`} className={x.slug === slug ? "on" : ""}>{x.name}</Link></li>)}
+          </ul>
         </div>}
       </div>
       <nav>
