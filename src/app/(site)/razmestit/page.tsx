@@ -29,17 +29,17 @@ export default async function StartListing() {
         <p className="muted">Займёт пару минут. Уже есть аккаунт? <Link href="/login?next=/cabinet/new">Войти</Link></p>
         <ActionForm action={startListing} submit="Продолжить" className="stack sl-form">
           <Honeypot />
-          <fieldset>
-            <legend>Ваш объект</legend>
+          <section className="sl-sec">
+            <h2>Ваш объект</h2>
             <div className="field"><label htmlFor="s-t">Название</label><input className="input" id="s-t" name="title" placeholder="Гостевой дом «Лаванда»" required minLength={3} maxLength={120} /></div>
             <div className="sl-two">
               <div className="field"><label htmlFor="s-type">Тип жилья</label><select className="input" id="s-type" name="type">{Object.entries(LISTING_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
               <div className="field"><label htmlFor="s-r">Курорт</label><select className="input" id="s-r" name="resort" required defaultValue=""><option value="" disabled>Выберите</option>
                 {[...byRegion].map(([g, list]) => <optgroup key={g} label={g}>{list.map(r => <option key={r.id} value={r.slug}>{r.name}</option>)}</optgroup>)}</select></div>
             </div>
-          </fieldset>
-          <fieldset>
-            <legend>Как с вами связаться</legend>
+          </section>
+          <section className="sl-sec">
+            <h2>Как с вами связаться</h2>
             <div className="sl-two">
               <div className="field"><label htmlFor="s-n">Имя</label><input className="input" id="s-n" name="name" autoComplete="name" placeholder="Ирина" required /></div>
               <div className="field"><label htmlFor="s-p">Телефон для гостей</label><input className="input" id="s-p" name="phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="+7 900 000-00-00" required /></div>
@@ -48,7 +48,7 @@ export default async function StartListing() {
               <div className="field"><label htmlFor="s-e">Почта</label><input className="input" id="s-e" name="email" type="email" autoComplete="email" placeholder="для входа и уведомлений" required /></div>
               <div className="field"><label htmlFor="s-pw">Придумайте пароль</label><input className="input" id="s-pw" name="password" type="password" autoComplete="new-password" minLength={8} placeholder="не короче 8 символов" required /></div>
             </div>
-          </fieldset>
+          </section>
           <Consent id="s-pd" />
         </ActionForm>
       </div>

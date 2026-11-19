@@ -2078,9 +2078,9 @@ footer.ft .ft-docs a { color: var(--muted) }
 .startl { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: start; padding-block: 28px 48px }
 .sl-main { display: grid; gap: 6px }
 .sl-main > .muted { margin-bottom: 10px }
-.sl-form fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 14px }
-.sl-form fieldset + fieldset { padding-top: 20px; border-top: 1px solid var(--line) }
-.sl-form legend { padding: 0; margin-bottom: 14px; font-size: 18px; font-weight: 700 }
+.sl-sec { display: grid; gap: 14px }
+.sl-sec + .sl-sec { padding-top: 22px; border-top: 1px solid var(--line) }
+.sl-sec h2 { margin: 0 0 2px; font-size: 18px; font-weight: 700 }
 .sl-two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px }
 .sl-form .btn { min-width: 220px; min-height: 48px; font-size: 16px }
 .sl-side { position: sticky; top: 20px; display: grid; gap: 16px; padding: 24px; border-radius: var(--r); background: #fff }
