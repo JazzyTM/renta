@@ -2137,3 +2137,16 @@ footer.ft .ft-docs a { color: var(--muted) }
 
 /* шапка и баннер на телефоне: облегчённая версия фото */
 @media (max-width: 768px) { .hero.img, .owners.img { background-image: var(--bgm) !important } }
+
+/* карта на телефоне: видимая высота экрана, жесты только карте */
+.mapview { height: 100vh; height: 100dvh; overscroll-behavior: none; touch-action: none }
+.mv-map { touch-action: none; overscroll-behavior: none }
+html:has(.mapview), body:has(.mapview) { overflow: hidden; overscroll-behavior: none }
+.mpin, .mclu { -webkit-tap-highlight-color: transparent; user-select: none }
+@media (max-width: 768px) {
+  .mv-top { padding: 8px 12px; padding-top: max(8px, env(safe-area-inset-top)) }
+  .mv-top b { font-size: 15px }
+  .mv-here { top: 12px }
+  .mv-card { bottom: calc(14px + env(safe-area-inset-bottom)); width: calc(100% - 20px) }
+  .mv-card img, .mv-noph { width: 96px; height: 80px }
+}

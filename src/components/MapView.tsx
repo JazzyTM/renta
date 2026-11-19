@@ -50,7 +50,9 @@ export function MapView({ apiKey, query, title, center, onClose }: { apiKey: str
     window.addEventListener("keydown", esc);
     Promise.all([loadYmaps(apiKey), fetchPoints()]).then(([ym, pts]) => {
       if (dead || !box.current) return;
-      const m = new ym.Map(box.current, { center: center ?? [44.6, 37.9], zoom: 13, controls: ["zoomControl", "geolocationControl"] }, { suppressMapOpenBlock: true });
+      const m = new ym.Map(box.current, { center: center ?? [44.6, 37.9], zoom: 13, controls: [] }, { suppressMapOpenBlock: true, yandexMapDisablePoiInteractivity: true });
+      m.controls.add("zoomControl", { size: "small", position: { right: 10, top: 90 } });
+      m.controls.add("geolocationControl", { position: { right: 10, top: 40 } });
       map.current = m;
       // «Искать в этой области» — только когда карту сдвинул сам человек
       const listen = () => { if (!dead) m.events.add("actionend", () => setMoved(true)); };
@@ -63,20 +65,31 @@ export function MapView({ apiKey, query, title, center, onClose }: { apiKey: str
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Метки с ценой; рядом стоящие собираются в кружок с числом
+  // Метки с ценой; рядом стоящие собираются в кружок с числом. Пересоздаём только при новых точках.
+  const marks = useRef(new Map<string, any>());
   useEffect(() => {
     const ym = window.ymaps, m = map.current;
     if (!ready || !ym || !m || !points) return;
     if (layer.current) m.geoObjects.remove(layer.current);
+    marks.current.clear();
     const Pin = ym.templateLayoutFactory.createClass('<div class="mpin{% if properties.on %} on{% endif %}">$[properties.label]</div>');
-    const cl = new ym.Clusterer({ clusterIconLayout: ym.templateLayoutFactory.createClass('<div class="mclu">{{ properties.geoObjects.length }}</div>'), clusterIconShape: { type: "Circle", coordinates: [20, 20], radius: 22 }, groupByCoordinates: false, gridSize: 80, clusterDisableClickZoom: false, hasBalloon: false });
+    const cl = new ym.Clusterer({ clusterIconLayout: ym.templateLayoutFactory.createClass('<div class="mclu">{{ properties.geoObjects.length }}</div>'), clusterIconShape: { type: "Circle", coordinates: [0, 0], radius: 24 }, groupByCoordinates: false, gridSize: 72, clusterDisableClickZoom: false, hasBalloon: false, zoomMargin: 60 });
     cl.add(points.map(pt => {
-      const pm = new ym.Placemark([pt.lat, pt.lng], { label: `${short(pt.price)} ₽`, on: sel?.id === pt.id }, { iconLayout: Pin, iconShape: { type: "Rectangle", coordinates: [[-36, -34], [36, 0]] }, hasBalloon: false, hasHint: false });
+      const pm = new ym.Placemark([pt.lat, pt.lng], { label: `${short(pt.price)} ₽`, on: false }, { iconLayout: Pin, iconShape: { type: "Rectangle", coordinates: [[-40, -38], [40, 0]] }, hasBalloon: false, hasHint: false, zIndex: 100 });
       pm.events.add("click", (e: any) => { e.stopPropagation(); setSel(pt); });
+      marks.current.set(pt.id, pm);
       return pm;
     }));
     m.geoObjects.add(cl); layer.current = cl;
-  }, [points, sel, ready]);
+  }, [points, ready]);
+
+  // Выбор метки: меняем только её вид, без перерисовки остальных
+  useEffect(() => {
+    for (const [id, pm] of marks.current) {
+      const on = sel?.id === id;
+      if (pm.properties.get("on") !== on) { pm.properties.set("on", on); pm.options.set("zIndex", on ? 1000 : 100); }
+    }
+  }, [sel, points]);
 
   const searchHere = async () => {
     const b = map.current?.getBounds(); if (!b) return;
