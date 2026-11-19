@@ -84,7 +84,7 @@ export function Header({ user, siteName, social, regions }: { user: U; siteName:
             </div>}
           </div>
         ) : <button type="button" className="ibtn" aria-label="Войти" title="Войти" onClick={() => setAuth(true)}><Ico d={LOGIN} /></button>}
-        <Link className="obtn" href="/cabinet/new" aria-label="Сдать жильё" title="Сдать жильё"><Ico size={20} d="M12 3a9 9 0 100 18 9 9 0 000-18zM12 8v8M8 12h8" /><span className="obtn-t">Сдать жильё</span></Link>
+        <Link className="obtn" href={user ? "/cabinet/new" : "/razmestit"} aria-label="Сдать жильё" title="Сдать жильё"><Ico size={20} d="M12 3a9 9 0 100 18 9 9 0 000-18zM12 8v8M8 12h8" /><span className="obtn-t">Сдать жильё</span></Link>
       </nav>
       {auth && <AuthModal onClose={() => setAuth(false)} social={social} />}
     </div></header>

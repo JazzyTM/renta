@@ -39,7 +39,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
             {s.footerTagline && <p>{s.footerTagline}</p>}
             {(s.contactEmail || s.contactPhone) && <p className="ft-contacts">{s.contactPhone && <a href={`tel:${String(s.contactPhone).replace(/[^\d+]/g, "")}`}>{s.contactPhone}</a>}{s.contactEmail && <a href={`mailto:${s.contactEmail}`}>{s.contactEmail}</a>}</p>}
             {socials.length > 0 && <span className="socials">{socials.map(([k, t, ic]) => <a key={k} href={s[k]} target="_blank" rel="noopener" aria-label={t} title={t}>{ic}</a>)}</span>}
-            <Link className="btn ft-add" href="/cabinet/new">Добавить объявление</Link>
+            <Link className="btn ft-add" href="/razmestit">Добавить объявление</Link>
           </div>
           {popular.length > 0 && <nav className="ft-col" aria-label="Популярные курорты"><b>Курорты</b><ul>{popular.map(r => <li key={r.slug}><Link href={`/kurort/${r.slug}`}>{r.name}</Link></li>)}</ul></nav>}
           <nav className="ft-col" aria-label="Гостям"><b>Гостям</b><ul>
@@ -50,7 +50,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
             {guestPages.map(p => <li key={p.slug}><Link href={`/p/${p.slug}`}>{p.title}</Link></li>)}
           </ul></nav>
           <nav className="ft-col" aria-label="Хозяевам"><b>Хозяевам</b><ul>
-            <li><Link href="/cabinet/new">Разместить объявление</Link></li>
+            <li><Link href="/razmestit">Разместить объявление</Link></li>
             <li><Link href="/cabinet">Личный кабинет</Link></li>
             {ownerPages.map(p => <li key={p.slug}><Link href={`/p/${p.slug}`}>{p.title}</Link></li>)}
           </ul></nav>

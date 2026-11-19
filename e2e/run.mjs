@@ -279,6 +279,30 @@ try {
   if (!(await G.p.getByText(`Тест ${ts}`).count())) issue("объект не виден на свободные даты");
   else note("на свободные даты объект виден");
 
+  step("Новый хозяин: «Сдать жильё» без аккаунта");
+  const N = await ctx("новый хозяин");
+  await N.p.goto(`${BASE}/`);
+  await N.p.locator("a.obtn").first().click();
+  await N.p.waitForURL((u) => u.pathname === "/razmestit", { timeout: 10000 }).catch(() => {});
+  if (new URL(N.p.url()).pathname !== "/razmestit") issue(`«Сдать жильё» ведёт на ${new URL(N.p.url()).pathname}, а не на /razmestit`);
+  await N.p.locator("#s-t").fill(`Старт ${ts}`);
+  await N.p.locator("#s-type").selectOption("GUESTHOUSE").catch(() => {});
+  await N.p.locator("#s-r").selectOption("kabardinka");
+  await N.p.locator("#s-n").fill("Тест Старт");
+  await N.p.locator("#s-p").fill("8 900 123-45-67");
+  await N.p.locator("#s-e").fill(`e2e-start-${ts}@example.test`);
+  await N.p.locator("#s-pw").fill(pass());
+  await N.p.locator("#s-pd").check();
+  await Promise.all([N.p.waitForURL((u) => u.pathname.startsWith("/cabinet/listings/"), { timeout: 15000 }).catch(() => {}), N.p.getByRole("button", { name: "Продолжить" }).click()]);
+  if (!new URL(N.p.url()).pathname.startsWith("/cabinet/listings/")) issue(`быстрый старт: не попали в мастер (${new URL(N.p.url()).pathname}; ${(await N.p.locator(".err").first().textContent().catch(() => "")) || "без ошибки"})`);
+  else {
+    note("быстрый старт: аккаунт создан, открыт мастер");
+    if (!(await bodyHas(N.p, "Аккаунт создан"))) issue("быстрый старт: нет подсказки «Аккаунт создан»");
+    const ph = sql(`select "contactPhone" from "Listing" where title='Старт ${ts}'`);
+    if (!ph.includes("+7 900 123-45-67")) issue(`быстрый старт: телефон в объявлении «${ph}»`);
+  }
+  await snap(N.p, "start-wizard");
+
   writeFileSync(`${OUT}/state.json`, JSON.stringify({ listingId, number, bnum, owner: owner.email, guest: guest.email }));
 } catch (e) {
   issue(`прогон остановился: ${e.message}`);

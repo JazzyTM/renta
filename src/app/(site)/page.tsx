@@ -64,7 +64,7 @@ export default async function Home() {
         {s.bannerShow && <section className="hsec"><div className="wrap">
           <div className={`owners ${s.bannerImage ? "img" : ""}`} style={s.bannerImage ? { backgroundImage: `url(${s.bannerImage})` } : undefined}>
             {!s.bannerImage && <OwnersArt />}
-            <h2>{s.bannerTitle}</h2><p>{s.bannerText}</p><Link className="btn" href="/cabinet/new">Добавить объект</Link>
+            <h2>{s.bannerTitle}</h2><p>{s.bannerText}</p><Link className="btn" href="/razmestit">Добавить объект</Link>
           </div>
         </div></section>}
         {popular.length > 0 && <section className="hsec"><div className="wrap">

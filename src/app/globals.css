@@ -2073,3 +2073,21 @@ footer.ft .ft-docs a { color: var(--muted) }
 .allres2 .n { flex: none; color: var(--accent); font-size: 13px; font-weight: 600 }
 @media (max-width: 560px) { .allres2 section { padding: 16px } .allres2 a { padding: 8px 0; font-size: 14.5px } }
 .ar-h > div { display: grid; gap: 3px }
+
+/* старт хозяина: объект и контакты одной формой */
+.startl { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: start; padding-block: 28px 48px }
+.sl-main { display: grid; gap: 6px }
+.sl-main > .muted { margin-bottom: 10px }
+.sl-form fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 14px }
+.sl-form fieldset + fieldset { padding-top: 20px; border-top: 1px solid var(--line) }
+.sl-form legend { padding: 0; margin-bottom: 14px; font-size: 18px; font-weight: 700 }
+.sl-two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px }
+.sl-form .btn { min-width: 220px; min-height: 48px; font-size: 16px }
+.sl-side { position: sticky; top: 20px; display: grid; gap: 16px; padding: 24px; border-radius: var(--r); background: #fff }
+.sl-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px }
+.sl-steps li { display: flex; gap: 14px; align-items: flex-start }
+.sl-i { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--accent-soft, #FDECE8); color: var(--accent) }
+.sl-steps b { display: block; font-size: 15px; margin-bottom: 3px }
+.sl-steps span:not(.sl-i) { font-size: 14px; color: var(--muted); line-height: 1.45 }
+@media (max-width: 900px) { .startl { grid-template-columns: 1fr } .sl-side { position: static; padding: 18px } .sl-steps { gap: 12px } }
+@media (max-width: 560px) { .startl { padding-block: 12px 32px } .sl-two { grid-template-columns: 1fr } .sl-form .btn { width: 100% } .sl-side .h2 { font-size: 18px } }
