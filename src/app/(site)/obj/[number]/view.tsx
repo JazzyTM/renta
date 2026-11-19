@@ -68,6 +68,9 @@ const I = {
   pay: "M3 6h18v12H3zM3 10h18M7 15h3",
   cancel: "M12 3a9 9 0 100 18 9 9 0 000-18zM9 9l6 6M15 9l-6 6",
   guests: "M9 11a3 3 0 100-6 3 3 0 000 6zM3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M17 11a2.5 2.5 0 100-5M21 20c0-2.8-1.8-5-4-5.6",
+  home: "M3 11l9-7 9 7M5 9.5V20h14V9.5M10 20v-6h4v6",
+  sea: "M2 16c2 0 2-1.5 4-1.5S8 16 10 16s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5M2 20c2 0 2-1.5 4-1.5S8 20 10 20s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5M12 3v8M8.5 7.5L12 11l3.5-3.5",
+  beach: "M12 21V9M4 9a8 8 0 0116 0zM12 3v1M3 21h18",
 };
 const Ic = ({ d }: { d: string }) => <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d={d} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 
@@ -136,9 +139,11 @@ export async function ListingView({ number, sp }: { number: string | number; sp:
               </details>}
               <section className="panel"><div className="row between"><h2 className="ph2">{en ? "Description" : "Описание"}</h2>
                 {l.descriptionEn && <Link className="small" scroll={false} href={en ? path : `${path}?lang=en`} hrefLang={en ? "ru" : "en"}>{en ? "По-русски" : "English"}</Link>}</div>
-                <div className="facts2">
-                  {l.seaDistance != null && <span><b className="num">{l.seaDistance} м</b> до моря, {walkMinutes(l.seaDistance)} мин пешком</span>}
-                  {l.beachType && <span>Пляж: <b>{BEACH_TYPES[l.beachType].toLowerCase()}</b></span>}
+                <div className="ofacts">
+                  <div><span className="of-i"><Ic d={I.home} /></span><span><b>{LISTING_TYPES[l.type]}</b><small>тип жилья</small></span></div>
+                  {l.seaDistance != null && <div><span className="of-i"><Ic d={I.sea} /></span><span><b className="num">{l.seaDistance} м до моря</b><small>{walkMinutes(l.seaDistance)} мин пешком</small></span></div>}
+                  {l.beachType && <div><span className="of-i"><Ic d={I.beach} /></span><span><b>{BEACH_TYPES[l.beachType]}</b><small>пляж</small></span></div>}
+                  <div><span className="of-i"><Ic d={I.guests} /></span><span><b>до {l.maxGuests} {plural(l.maxGuests, ["гостя", "гостей", "гостей"])}</b><small>от {l.minNights} {plural(l.minNights, ["ночи", "ночей", "ночей"])}</small></span></div>
                 </div>
                 <p className="desc" lang={en ? "en" : undefined}>{en ? l.descriptionEn : l.description}</p></section>
               {groups.size > 0 && <section className="panel"><h2 className="ph2">Что у нас есть</h2>

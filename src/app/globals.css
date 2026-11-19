@@ -1996,7 +1996,7 @@ table.t td.num, table.t th { white-space: nowrap }
 
 /* выбор курорта: регионы вкладками, курорты колонками */
 .rpick-pop { display: grid; grid-template-columns: 210px 1fr; gap: 0; padding: 0; max-height: min(460px, calc(100dvh - 90px)); overflow: hidden }
-.rp-tabs { display: flex; flex-direction: column; gap: 2px; padding: 12px; background: var(--gray); overflow-y: auto }
+.rp-tabs { position: relative; display: flex; flex-direction: column; gap: 2px; padding: 12px; background: var(--gray); overflow-y: auto }
 .rp-tabs button { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 40px; padding: 0 12px; border-radius: var(--r-sm); background: transparent; font-size: 15px; color: var(--ink); text-align: left; cursor: pointer }
 .rp-tabs button span { font-size: 12px; color: var(--muted) }
 .rp-tabs button:hover { background: rgba(0, 0, 0, .04) }
@@ -2043,3 +2043,13 @@ footer.ft .ft-docs a { color: var(--muted) }
   .ft-col ul { gap: 12px }
   .ft-b { flex-direction: column; margin-top: 28px }
 }
+
+/* объявление: главные факты плашками с иконками */
+.ofacts { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; margin: 2px 0 18px }
+.ofacts > div { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-sm); background: #fff }
+.of-i { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--accent-soft, #FDECE8); color: var(--accent) }
+.ofacts b { display: block; font-size: 15px; font-weight: 600; line-height: 1.25 }
+.ofacts small { display: block; font-size: 13px; color: var(--muted); margin-top: 2px }
+.rules2 > div { align-items: center }
+.rules2 svg { box-sizing: content-box; padding: 9px; border-radius: 50%; background: var(--gray); color: var(--ink); margin-top: 0 }
+@media (max-width: 560px) { .ofacts { grid-template-columns: 1fr 1fr; gap: 8px } .ofacts > div { padding: 10px; gap: 10px } .of-i { width: 34px; height: 34px } .of-i svg { width: 19px; height: 19px } .ofacts b { font-size: 14px } }

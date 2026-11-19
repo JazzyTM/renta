@@ -40,7 +40,15 @@ export function Header({ user, siteName, social, regions }: { user: U; siteName:
   const current = slug ? regions.flatMap(r => r.resorts).find(r => r.slug === slug)?.name : undefined;
   const curTab = Math.max(0, regions.findIndex(r => r.resorts.some(x => x.slug === slug)));
   const [tab, setTab] = useState(curTab);
-  useEffect(() => { if (pick) setTab(curTab); }, [pick, curTab]);
+  useEffect(() => {
+    if (!pick) return;
+    setTab(curTab);
+    // на телефоне регионы — лента: прокручиваем к выбранному
+    requestAnimationFrame(() => {
+      const el = pref.current?.querySelector<HTMLElement>(".rp-tabs .on"), box = el?.parentElement;
+      if (el && box && box.scrollWidth > box.clientWidth) box.scrollLeft = el.offsetLeft - (box.clientWidth - el.offsetWidth) / 2;
+    });
+  }, [pick, curTab]);
   const initial = (user?.name || user?.email || "?").trim()[0]?.toUpperCase();
 
   return (
