@@ -129,7 +129,7 @@ export async function ListingEditor({ id }: { id: string }) {
       </section>
       </Steps>
 
-      <section className="card-box stack" id="calendar"><h2 className="h2">Календарь занятости</h2>
+      {!wizard && <section className="card-box stack" id="calendar"><h2 className="h2">Календарь занятости</h2>
         <p className="small muted">Если сдаёте и на других сайтах (Авито, Суточно, Островок), вставьте ссылку на их календарь в формате .ics. Занятые даты будут видны гостям и обновляются каждые 3 часа.</p>
         <ActionForm action={A.saveIcal.bind(null, id)} submit="Сохранить и загрузить">
           <div className="field"><label htmlFor="ical">Ссылка на календарь .ics</label><input className="input" id="ical" name="icalUrl" defaultValue={l.icalUrl ?? ""} placeholder="https://…/calendar.ics" /></div>
@@ -138,9 +138,9 @@ export async function ListingEditor({ id }: { id: string }) {
         <div className="field"><label htmlFor="ical-out">Наш календарь для других сайтов</label>
           <input className="input" id="ical-out" readOnly value={`${process.env.APP_URL || ""}/ical/${l.number}-${sign("ical" + l.id)}.ics`} />
           <span className="small muted">Вставьте эту ссылку на другой площадке, чтобы там закрывались даты подтверждённых здесь броней.</span></div>
-      </section>
+      </section>}
 
-      {l.status !== "ARCHIVED" && <form action={A.setStatus.bind(null, id, "ARCHIVED")}><ConfirmButton message="Убрать объявление в архив? Его не будет видно на сайте.">Убрать в архив</ConfirmButton></form>}
+      {!wizard && l.status !== "ARCHIVED" && <form action={A.setStatus.bind(null, id, "ARCHIVED")}><ConfirmButton message="Убрать объявление в архив? Его не будет видно на сайте.">Убрать в архив</ConfirmButton></form>}
     </div>
   );
 }

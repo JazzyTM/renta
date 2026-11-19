@@ -33,7 +33,7 @@ export const cardInclude = {
 
 export type CardListing = Prisma.ListingGetPayload<{ include: typeof cardInclude }>;
 
-export type Filters = { type?: string[]; sea?: number; priceMax?: number; priceMin?: number; amen?: string[]; beach?: string; verified?: boolean; guests?: number; sort?: string; page?: number; near?: string };
+export type Filters = { ci?: string; co?: string; type?: string[]; sea?: number; priceMax?: number; priceMin?: number; amen?: string[]; beach?: string; verified?: boolean; guests?: number; sort?: string; page?: number; near?: string };
 
 export async function searchListings(base: Prisma.ListingWhereInput, f: Filters) {
   const s = await getSettings();
@@ -46,6 +46,12 @@ export async function searchListings(base: Prisma.ListingWhereInput, f: Filters)
   if (f.beach) and.push({ beachType: f.beach as any });
   if (f.verified) and.push({ verified: true });
   if (f.guests) and.push({ maxGuests: { gte: f.guests } });
+  // Даты поездки: прячем объекты, где хоть одна ночь занята, и где минимум ночей больше
+  if (f.ci && f.co && f.co > f.ci) {
+    const ci = new Date(f.ci + "T00:00:00Z"), co = new Date(f.co + "T00:00:00Z");
+    const nights = Math.round((co.getTime() - ci.getTime()) / 86400000);
+    and.push({ busy: { none: { date: { gte: ci, lt: co } } } }, { minNights: { lte: nights } });
+  }
   // «Рядом с пляжем»: объявления в квадрате ~1 км вокруг точки пляжа
   if (f.near) {
     const b = await db.beach.findUnique({ where: { id: f.near }, select: { lat: true, lng: true } });

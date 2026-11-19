@@ -30,7 +30,8 @@ export async function login(_: unknown, fd: FormData): Promise<FormState> {
   const s = await getSettings();
   if (s.requireEmailVerify && !u.emailVerified) return { error: "Подтвердите почту: ссылка в письме после регистрации", resend: email };
   await createSession(u.id);
-  redirect(safeNext(fd.get("next")));
+  const next = safeNext(fd.get("next"));
+  redirect(next !== "/" ? next : isStaffRole(u.role) ? "/admin" : u.role === "OWNER" ? "/cabinet" : "/");
 }
 
 const Reg = z.object({

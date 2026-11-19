@@ -24,7 +24,7 @@ export function Steps({ titles, done, wizard, children }: { titles: string[]; do
       {items.map((c, k) => <div key={k} hidden={k !== i}>{c}</div>)}
       <div className="sfoot">
         {i > 0 ? <button type="button" className="btn ghost" onClick={() => go(i - 1)}>Назад</button> : <span />}
-        {i < items.length - 1 && <button type="button" className="btn ghost" onClick={() => go(i + 1)}>{wizard ? "Пропустить" : "Дальше"}</button>}
+        {i < items.length - 1 && <button type="button" className="btn ghost" onClick={() => go(i + 1)}>{wizard && !done[i] ? "Пропустить" : "Дальше"}</button>}
       </div>
     </div>
   );
