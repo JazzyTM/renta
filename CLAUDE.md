@@ -8,6 +8,7 @@
 - Новая настройка: добавить поле в `SETTINGS` (`src/lib/settings.ts`), форма появится сама.
 - Изменение схемы — через `npx prisma migrate dev --name ...`; на сервере миграции применяет `deploy/update.sh`.
 - Проверка перед коммитом: `npx tsc --noEmit` и `npm run build`.
+- После изменений в заявках, мастере или поиске — сквозной прогон `e2e/run.mjs` на сервере (см. `e2e/README.md`).
 - Платёжный провайдер пока не выбран (не ЮKassa). Модуль `src/lib/payments.ts` провайдер-независимый.
 
 <!-- BEGIN:nextjs-agent-rules -->
