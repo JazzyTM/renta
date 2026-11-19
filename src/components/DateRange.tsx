@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { plural } from "@/lib/format";
 
 const MG = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
 const MN = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
@@ -48,7 +49,7 @@ export function DateRange({ ci, co, onChange, alignRight, single, prices, busy }
       const edge = s === ci || s === co, inr = ci && co && D(s) > D(ci) && D(s) < D(co);
       const isBusy = busySet.has(s), pr = prices ? priceIn(m) : 0;
       cells.push(<button type="button" key={s} className={`day ${edge ? "edge" : inr ? "inr" : ""} ${isBusy ? "busy" : ""} ${prices ? "wp" : ""}`} disabled={D(s) < D(today) || (isBusy && open === "ci")} onClick={() => pick(s)} aria-label={`${label(s)}${isBusy ? ", занято" : pr ? `, ${pr} ₽` : ""}`}>
-        {d}{prices && <small>{isBusy ? "занято" : pr ? kfmt(pr) : "—"}</small>}</button>);
+        {d}{prices && <small>{isBusy ? "занято" : pr ? kfmt(pr) : ""}</small>}</button>);
     }
     return (
       <div><h3 style={{ fontSize: 15, marginBottom: 8 }}>{MN[m]} {y}</h3>
@@ -76,7 +77,7 @@ export function DateRange({ ci, co, onChange, alignRight, single, prices, busy }
             <b className="small">{open === "ci" ? "Дата заезда" : "Дата выезда"}</b>
             <button type="button" onClick={() => shift(1)} aria-label="Вперёд">›</button></div>
           <div className="dpm"><Month y={month[0]} m={month[1]} /><Month y={y2} m={m2} /></div>
-          <div className="dpfoot"><span className="small muted num">{nights ? `${nights} ноч.` : ""}</span><button type="button" className="btn sm" onClick={() => setOpen(null)}>Готово</button></div>
+          <div className="dpfoot"><span className="small muted num">{nights ? `${nights} ${plural(nights, ["ночь", "ночи", "ночей"])}` : ""}</span><button type="button" className="btn sm" onClick={() => setOpen(null)}>Готово</button></div>
         </div>
       )}
     </div>

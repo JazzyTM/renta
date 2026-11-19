@@ -1918,3 +1918,30 @@ table.t td.num, table.t th { white-space: nowrap }
   .shell table.t td[data-main] { min-width: 180px }
   .shell .tablewrap { overflow-x: auto }
 }
+
+/* ---------- календарь на телефоне: компактная шторка снизу, один месяц ---------- */
+@media (max-width: 640px) {
+  .dp, .dp.right, .dp:has(.wp) { position: fixed; left: 0; right: 0; bottom: 0; top: auto; width: auto; max-width: none; margin: 0; z-index: 950; padding: 8px 16px calc(12px + env(safe-area-inset-bottom)); gap: 8px; border: 0; border-radius: 16px 16px 0 0; max-height: 88dvh; overflow-y: auto; overscroll-behavior: contain; box-shadow: 0 0 0 100vmax rgba(19, 20, 22, .5) !important; animation: dpUp .2s ease-out }
+  .dp::before { content: ""; display: block; width: 40px; height: 4px; border-radius: 4px; background: #D5D8DC; margin: 0 auto 2px }
+  .dphead { position: sticky; top: -8px; background: #fff; z-index: 1; padding: 4px 0 }
+  .dphead button { width: 40px; height: 40px; font-size: 26px; border-radius: 10px; background: var(--gray) }
+  .dpm { grid-template-columns: 1fr; gap: 0 }
+  .dpm > :nth-child(2) { display: none }
+  .dpm h3 { font-size: 16px !important; font-weight: 600; text-align: center; margin: 2px 0 10px !important }
+  .dphead b { color: var(--ink-3); font-size: 14px !important; font-weight: 500 !important }
+  .calgrid { gap: 2px 0 }
+  .calgrid .wd { font-size: 12px; font-weight: 500; color: var(--ink-3); padding-bottom: 2px }
+  .day, .day.wp { aspect-ratio: auto; height: 42px; font-size: 15px; font-weight: 500; border-radius: 10px; border: 0 }
+  .day.wp { height: 46px }
+  .day.inr { border-radius: 0; background: var(--accent-soft) }
+  .day.edge { background: var(--accent); color: #fff }
+  .dpfoot { position: sticky; bottom: calc(-12px - env(safe-area-inset-bottom)); background: #fff; padding: 10px 0 0; border-top: 1px solid var(--line); flex-wrap: nowrap }
+  .dpfoot .small { font-size: 14px; color: var(--ink-2) }
+  .dpfoot .btn { min-height: 44px; padding-inline: 28px; font-size: 15px }
+}
+@keyframes dpUp { from { transform: translateY(24px); opacity: .6 } to { transform: none; opacity: 1 } }
+@media (max-width: 640px) {
+  body:has(.dp) .mbar, body:has(.dp) .cmpbar { display: none }
+  .dpfoot .small { white-space: nowrap }
+  .dpfoot .btn { flex: 1; max-width: 220px; margin-left: auto }
+}
