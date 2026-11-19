@@ -54,6 +54,7 @@ export function MapView({ apiKey, query, title, center, onClose }: { apiKey: str
       m.controls.add("zoomControl", { size: "small", position: { right: 10, top: 90 } });
       m.controls.add("geolocationControl", { position: { right: 10, top: 40 } });
       map.current = m;
+      m.options.set("maxZoom", 17); // ближе — уже отдельные дома, объекты не видны
       // «Искать в этой области» — только когда карту сдвинул сам человек
       const listen = () => { if (!dead) m.events.add("actionend", () => setMoved(true)); };
       if (pts.length) m.setBounds(ym.util.bounds.fromPoints(pts.map(x => [x.lat, x.lng])), { checkZoomRange: true, zoomMargin: 60 }).then(() => { if (m.getZoom() > 16) m.setZoom(16); setTimeout(listen, 400); });
