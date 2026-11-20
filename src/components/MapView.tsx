@@ -68,31 +68,52 @@ export function MapView({ apiKey, query, title, center, onClose }: { apiKey: str
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Метки с ценой; рядом стоящие собираются в кружок с числом. Пересоздаём только при новых точках.
+  // Метки с ценой. Близкие на экране (меньше 70 px) собираем в кружок с числом сами:
+  // встроенная группировка Яндекса делит карту на клетки, и соседние метки налезают друг на друга.
   const marks = useRef(new Map<string, any>());
+  const selRef = useRef<MapPoint | null>(null);
+  selRef.current = sel;
   useEffect(() => {
     const ym = window.ymaps, m = map.current;
     if (!ready || !ym || !m || !points) return;
-    if (layer.current) m.geoObjects.remove(layer.current);
-    marks.current.clear();
     const Pin = ym.templateLayoutFactory.createClass('<div class="mpin{% if properties.on %} on{% endif %}">$[properties.label]</div>');
-    const cl = new ym.Clusterer({ clusterIconLayout: ym.templateLayoutFactory.createClass('<div class="mclu">{{ properties.geoObjects.length }}</div>'), clusterIconShape: { type: "Circle", coordinates: [0, 0], radius: 24 }, groupByCoordinates: false, gridSize: 128, clusterDisableClickZoom: true, hasBalloon: false, zoomMargin: 60 });
-    cl.add(points.map(pt => {
-      const pm = new ym.Placemark([pt.lat, pt.lng], { label: `${short(pt.price)} ₽`, on: false }, { iconLayout: Pin, iconShape: { type: "Rectangle", coordinates: [[-40, -38], [40, 0]] }, hasBalloon: false, hasHint: false, zIndex: 100 });
-      pm.properties.set("pid", pt.id);
-      pm.events.add("click", (e: any) => { e.stopPropagation(); setGroup(null); setSel(pt); });
-      marks.current.set(pt.id, pm);
-      return pm;
-    }));
-    const byId = new Map(points.map(pt => [pt.id, pt]));
-    cl.events.add("click", (e: any) => {
-      const objs = e.get("target")?.getGeoObjects?.();
-      if (!objs) return;
-      const pts = objs.map((o: any) => byId.get(o.properties.get("pid"))).filter(Boolean).sort((a: MapPoint, b: MapPoint) => a.price - b.price);
-      setSel(null);
-      setGroup({ pts, bounds: ym.util.bounds.fromPoints(pts.map((x: MapPoint) => [x.lat, x.lng])) });
-    });
-    m.geoObjects.add(cl); layer.current = cl;
+    const Clu = ym.templateLayoutFactory.createClass('<div class="mclu">$[properties.count]</div>');
+    const proj = m.options.get("projection");
+    let lastZoom = -1;
+    const draw = () => {
+      const z = m.getZoom();
+      if (z === lastZoom) return;
+      lastZoom = z;
+      const px = points.map(pt => ({ pt, p: proj.toGlobalPixels([pt.lat, pt.lng], z) as number[] }));
+      const groups: { pts: MapPoint[]; x: number; y: number }[] = [];
+      for (const it of px) {
+        const g = groups.find(g => Math.abs(g.x - it.p[0]) < 70 && Math.abs(g.y - it.p[1]) < 44);
+        if (g) { g.pts.push(it.pt); g.x = (g.x * (g.pts.length - 1) + it.p[0]) / g.pts.length; g.y = (g.y * (g.pts.length - 1) + it.p[1]) / g.pts.length; }
+        else groups.push({ pts: [it.pt], x: it.p[0], y: it.p[1] });
+      }
+      const col = new ym.GeoObjectCollection();
+      marks.current.clear();
+      for (const g of groups) {
+        if (g.pts.length === 1) {
+          const pt = g.pts[0];
+          const on = selRef.current?.id === pt.id;
+          const pm = new ym.Placemark([pt.lat, pt.lng], { label: `${short(pt.price)} ₽`, on }, { iconLayout: Pin, iconShape: { type: "Rectangle", coordinates: [[-40, -38], [40, 0]] }, hasBalloon: false, hasHint: false, zIndex: on ? 1000 : 100 });
+          pm.events.add("click", (e: any) => { e.stopPropagation(); setGroup(null); setSel(pt); });
+          marks.current.set(pt.id, pm);
+          col.add(pm);
+        } else {
+          const pts = [...g.pts].sort((a, b) => a.price - b.price);
+          const pm = new ym.Placemark(proj.fromGlobalPixels([g.x, g.y], z), { count: pts.length }, { iconLayout: Clu, iconShape: { type: "Circle", coordinates: [0, 0], radius: 24 }, hasBalloon: false, hasHint: false, zIndex: 200 });
+          pm.events.add("click", (e: any) => { e.stopPropagation(); setSel(null); setGroup({ pts, bounds: ym.util.bounds.fromPoints(pts.map(x => [x.lat, x.lng])) }); });
+          col.add(pm);
+        }
+      }
+      if (layer.current) m.geoObjects.remove(layer.current);
+      m.geoObjects.add(col); layer.current = col;
+    };
+    draw();
+    m.events.add("boundschange", draw);
+    return () => { m.events.remove("boundschange", draw); };
   }, [points, ready]);
 
   // Выбор метки: меняем только её вид, без перерисовки остальных
