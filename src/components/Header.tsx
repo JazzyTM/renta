@@ -6,9 +6,10 @@ import { useEffect, useRef, useState } from "react";
 import { useFavs } from "./Fav";
 import { AuthModal } from "./AuthModal";
 import { LiveNotify } from "./LiveNotify";
+import { regionAll } from "@/lib/regions";
 
 type U = { name: string; email: string | null; staff: boolean } | null;
-type Reg = { name: string; resorts: { name: string; slug: string }[] };
+type Reg = { name: string; slug: string; resorts: { name: string; slug: string }[] };
 
 const Ico = ({ d, size = 24 }: { d: string; size?: number }) => (
   <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true"><path d={d} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -37,8 +38,10 @@ export function Header({ user, siteName, social, regions }: { user: U; siteName:
     return () => { document.removeEventListener("click", on); document.removeEventListener("keydown", esc); window.removeEventListener("open-login", open); };
   }, []);
   const slug = path.match(/^\/kurort\/([^/]+)/)?.[1];
-  const current = slug ? regions.flatMap(r => r.resorts).find(r => r.slug === slug)?.name : undefined;
-  const curTab = Math.max(0, regions.findIndex(r => r.resorts.some(x => x.slug === slug)));
+  const regSlug = path.match(/^\/kurorty\/([^/]+)/)?.[1];
+  const curReg = regSlug ? regions.find(r => r.slug === regSlug) : undefined;
+  const current = curReg ? regionAll(curReg.name) : slug ? regions.flatMap(r => r.resorts).find(r => r.slug === slug)?.name : undefined;
+  const curTab = Math.max(0, curReg ? regions.indexOf(curReg) : regions.findIndex(r => r.resorts.some(x => x.slug === slug)));
   const [tab, setTab] = useState(curTab);
   useEffect(() => {
     if (!pick) return;
@@ -64,6 +67,7 @@ export function Header({ user, siteName, social, regions }: { user: U; siteName:
             {regions.map((r, i) => <button key={r.name} type="button" role="tab" aria-selected={i === tab} className={i === tab ? "on" : ""} onClick={() => setTab(i)} onMouseEnter={() => setTab(i)}>{r.name}<span>{r.resorts.length}</span></button>)}
           </div>
           <ul className="rp-list" role="tabpanel">
+            {regions[tab] && <li className="rp-all"><Link href={`/kurorty/${regions[tab].slug}`} className={path === `/kurorty/${regions[tab].slug}` ? "on" : ""}>{regionAll(regions[tab].name)} →</Link></li>}
             {regions[tab]?.resorts.map(x => <li key={x.slug}><Link href={`/kurort/${x.slug}`} className={x.slug === slug ? "on" : ""}>{x.name}</Link></li>)}
           </ul>
         </div>}

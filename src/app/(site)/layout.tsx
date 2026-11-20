@@ -9,6 +9,7 @@ import { mailEnabled } from "@/lib/mail";
 import { Header } from "@/components/Header";
 import { FavSync } from "@/components/Fav";
 import { CompareBar } from "@/components/Compare";
+import { ShareRow } from "@/components/Share";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const [s, user, codeOn] = await Promise.all([getSettings(), getUser(), mailEnabled()]);
@@ -17,7 +18,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const favIds = user ? (await db.favorite.findMany({ where: { userId: user.id }, select: { listingId: true } })).map(f => f.listingId) : null;
   const [pages, regions] = await Promise.all([
     db.page.findMany({ where: { isPublished: true, showInFooter: true }, select: { slug: true, title: true } }),
-    db.region.findMany({ where: { isActive: true }, orderBy: { sort: "asc" }, select: { name: true, resorts: { where: { isActive: true }, orderBy: { name: "asc" }, select: { name: true, slug: true } } } }),
+    db.region.findMany({ where: { isActive: true }, orderBy: { sort: "asc" }, select: { name: true, slug: true, resorts: { where: { isActive: true }, orderBy: { name: "asc" }, select: { name: true, slug: true } } } }),
   ]);
   // Подвал: страницы раскладываются по колонкам, юридические — в нижнюю строку
   const OWNER_PAGES = ["owners", "rules"], DOC_PAGES = ["privacy", "offer", "consent"];
@@ -41,6 +42,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
             {(s.contactEmail || s.contactPhone) && <p className="ft-contacts">{s.contactPhone && <a href={`tel:${String(s.contactPhone).replace(/[^\d+]/g, "")}`}>{s.contactPhone}</a>}{s.contactEmail && <a href={`mailto:${s.contactEmail}`}>{s.contactEmail}</a>}</p>}
             {socials.length > 0 && <span className="socials">{socials.map(([k, t, ic]) => <a key={k} href={s[k]} target="_blank" rel="noopener" aria-label={t} title={t}>{ic}</a>)}</span>}
             <Link className="btn ft-add" href="/razmestit">Добавить объявление</Link>
+            <div className="ft-share"><span>Расскажите друзьям</span><ShareRow title={`${s.siteName}: жильё у моря без посредников`} url="/" /></div>
           </div>
           {popular.length > 0 && <nav className="ft-col" aria-label="Популярные курорты"><b>Курорты</b><ul>{popular.map(r => <li key={r.slug}><Link href={`/kurort/${r.slug}`}>{r.name}</Link></li>)}</ul></nav>}
           <nav className="ft-col" aria-label="Гостям"><b>Гостям</b><ul>

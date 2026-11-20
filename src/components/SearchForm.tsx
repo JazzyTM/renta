@@ -1,16 +1,26 @@
 "use client";
+import { regionAll } from "@/lib/regions";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { DateRange, Guests } from "./DateRange";
 import { plural } from "@/lib/format";
 import { useAB, abGoal } from "./AB";
 
-export type ResortOpt = { name: string; slug: string; region: string; count?: number; popular?: boolean };
+export type ResortOpt = { name: string; slug: string; region: string; regionSlug?: string; count?: number; popular?: boolean; all?: boolean };
 
 const norm = (s: string) => s.toLowerCase().replace(/ё/g, "е").replace(/[^a-zа-я0-9]/g, "");
 
-export function SearchForm({ resorts, init, compact }: { resorts: ResortOpt[]; init: { resort?: string; ci?: string; co?: string; adults?: number; children?: number }; compact?: boolean }) {
+export function SearchForm({ resorts: list, init, compact }: { resorts: ResortOpt[]; init: { resort?: string; ci?: string; co?: string; adults?: number; children?: number }; compact?: boolean }) {
   const router = useRouter();
+  // Целые регионы («Весь Крым») идут в подсказках вместе с курортами; slug начинается с «@»
+  const resorts = useMemo(() => {
+    const regs = new Map<string, ResortOpt>();
+    for (const r of list) if (r.regionSlug) {
+      const g = regs.get(r.regionSlug) ?? { name: regionAll(r.region), slug: "@" + r.regionSlug, region: "все курорты", count: 0, all: true };
+      g.count = (g.count ?? 0) + (r.count ?? 0); regs.set(r.regionSlug, g);
+    }
+    return [...regs.values(), ...list];
+  }, [list]);
   const [pending, start] = useTransition();
   const initial = resorts.find(r => r.slug === init.resort);
   const [q, setQ] = useState(initial?.name ?? "");
@@ -26,8 +36,14 @@ export function SearchForm({ resorts, init, compact }: { resorts: ResortOpt[]; i
   const matches = useMemo(() => {
     const v = norm(q.trim());
     if (!v || (slug && initial?.name === q)) return resorts.filter(r => r.popular).sort((a, b) => (b.count ?? 0) - (a.count ?? 0)).slice(0, 8);
-    return resorts.map(r => { const n = norm(r.name); const i = n.indexOf(v); return { r, s: i < 0 ? (norm(r.region).includes(v) ? 3 : -1) : i === 0 ? 0 : 1 }; })
-      .filter(x => x.s >= 0).sort((a, b) => a.s - b.s || (b.r.count ?? 0) - (a.r.count ?? 0)).slice(0, 8).map(x => x.r);
+    // Регион («Весь Крым») — выше всех, если совпало его название; дальше курорты: с начала слова, внутри слова, по региону
+    const score = (r: ResortOpt) => {
+      const i = norm(r.name).indexOf(v);
+      if (r.all) return i >= 0 ? -1 : null;
+      return i === 0 ? 0 : i > 0 ? 1 : norm(r.region).includes(v) ? 3 : null;
+    };
+    return resorts.map(r => ({ r, s: score(r) })).filter((x): x is { r: ResortOpt; s: number } => x.s !== null)
+      .sort((a, b) => a.s - b.s || (b.r.count ?? 0) - (a.r.count ?? 0)).slice(0, 8).map(x => x.r);
   }, [q, resorts, slug, initial]);
 
   // Голосовой поиск (Chrome, Яндекс Браузер, Edge): говорим название курорта
@@ -54,7 +70,7 @@ export function SearchForm({ resorts, init, compact }: { resorts: ResortOpt[]; i
     const p = new URLSearchParams();
     if (ci) p.set("ci", ci); if (co) p.set("co", co);
     if (adults !== 2) p.set("adults", String(adults)); if (children) p.set("children", String(children));
-    const url = r ? `/kurort/${r}${p.size ? "?" + p : ""}` : `/search${p.size ? "?" + p : ""}`;
+    const url = r ? `${r.startsWith("@") ? `/kurorty/${r.slice(1)}` : `/kurort/${r}`}${p.size ? "?" + p : ""}` : `/search${p.size ? "?" + p : ""}`;
     setShow(false); abGoal("search");
     start(() => { if (location.pathname + location.search === url) router.refresh(); else router.push(url); });
   }

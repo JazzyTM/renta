@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ShareButton } from "@/components/Share";
 import { notFound } from "next/navigation";
 import { RichText } from "@/components/RichText";
 import { db } from "@/lib/db";
@@ -20,7 +21,7 @@ export default async function Article({ params }: P) {
       <nav className="crumbs" aria-label="Навигация"><Link href="/">Главная</Link><span>/</span><Link href="/articles">Статьи</Link></nav>
       <article className="panel prose-panel">
         <h1 className="h1">{a.title}</h1>
-        <p className="small muted" style={{ marginTop: 8 }}>{fmtDate(a.publishedAt ?? a.createdAt)}</p>
+        <div className="row between art-meta"><span className="small muted">{fmtDate(a.publishedAt ?? a.createdAt)}</span><ShareButton title={a.title} variant="chip" /></div>
         {a.coverUrl && <img className="acover" src={a.coverUrl} alt="" />}
         <RichText text={a.body} />
       </article>

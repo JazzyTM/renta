@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { ShareButton } from "@/components/Share";
+import { listingPath } from "@/lib/paths";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { ownerPlan } from "@/lib/plan";
@@ -33,7 +35,10 @@ export default async function Cabinet() {
                 <div><dt>Телефон</dt><dd className="num">{l.phoneViews}</dd></div>
                 <div><dt>Заявки</dt><dd>{l._count.bookings ? <Link href="/cabinet/bookings?status=NEW" className="tag warn">{l._count.bookings} новых</Link> : "—"}</dd></div>
               </dl>
-              <Link href={href} className="btn ghost sm oi-e">Изменить</Link>
+              <div className="oi-acts">
+                <Link href={href} className="btn ghost sm oi-e">Изменить</Link>
+                {l.status === "PUBLISHED" && <ShareButton variant="link" label="Поделиться" title={l.title} url={listingPath({ number: l.number, title: l.title, resortSlug: l.resort.slug })} />}
+              </div>
             </div>
           );
         })}</div>

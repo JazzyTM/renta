@@ -10,7 +10,7 @@ import { logSearch } from "@/lib/demand";
 import { getSettings } from "@/lib/settings";
 
 export async function ResultsPage({ title, intro, scope, action, sp, collections, active, aside, after }: {
-  title: string; intro?: string | null; scope: { resort?: string; filter?: string }; action: string; sp: Record<string, any>;
+  title: string; intro?: string | null; scope: { resort?: string; filter?: string; region?: string }; action: string; sp: Record<string, any>;
   collections?: { slug: string; title: string; count: number }[]; active?: string; aside?: React.ReactNode; after?: React.ReactNode;
 }) {
   const f = parseFilters(sp);
@@ -26,7 +26,7 @@ export async function ResultsPage({ title, intro, scope, action, sp, collections
   return (
     <main className="gray">
       <LiveResults title={title} scope={scope} initial={initial} sp={sp} amenities={amenities} action={action} ci={f.ci} co={f.co} guests={f.guests ?? 2} email={user?.email ?? undefined} beaches={beaches} mapKey={String(s.ymapsKey || "") || undefined} center={center}
-        search={<SearchForm resorts={resorts} init={{ resort: scope.resort, ci: f.ci, co: f.co, adults: f.adults, children: f.children }} compact />}>
+        search={<SearchForm resorts={resorts} init={{ resort: scope.resort ?? (scope.region ? "@" + scope.region : undefined), ci: f.ci, co: f.co, adults: f.adults, children: f.children }} compact />}>
         {aside}
         {collections && collections.some(c => c.count > 0) && <nav className="panel colls2" aria-label="Подборки">
           <h2>Подборки</h2>

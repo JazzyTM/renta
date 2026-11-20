@@ -6,6 +6,7 @@ import { plural, rub } from "@/lib/format";
 import { ListingRow, RowSkeleton } from "./ListingCard";
 import { PriceRange } from "./PriceRange";
 import { AlertButton } from "./AlertButton";
+import { ShareButton } from "./Share";
 import dynamic from "next/dynamic";
 const MapView = dynamic(() => import("./MapView").then(m => m.MapView), { ssr: false });
 
@@ -17,7 +18,7 @@ const SORTS: [string, string][] = [["rec", "Рекомендуем"], ["price", 
 const arr = (v: unknown) => (Array.isArray(v) ? v : v ? [v] : []) as string[];
 
 export function LiveResults({ title, scope, initial, sp, amenities, action, ci, co, guests, children, search, email, beaches = [], mapKey, center }: {
-  title: string; scope: { resort?: string; filter?: string }; initial: Res; sp: Record<string, any>; amenities: { code: string; name: string }[];
+  title: string; scope: { resort?: string; filter?: string; region?: string }; initial: Res; sp: Record<string, any>; amenities: { code: string; name: string }[];
   action: string; ci?: string; co?: string; guests: number; children?: React.ReactNode; search?: React.ReactNode; email?: string; beaches?: { id: string; name: string }[]; mapKey?: string; center?: [number, number];
 }) {
   const [f, setF] = useState<F>({ sea: sp.sea ?? "", pmin: sp.pmin ?? "", price: sp.price ?? "", type: arr(sp.type), amen: arr(sp.amen), beach: sp.beach ?? "", near: sp.near ?? "", verified: sp.verified === "1", sort: sp.sort ?? "rec" });
@@ -44,7 +45,7 @@ export function LiveResults({ title, scope, initial, sp, amenities, action, ci, 
   const load = useCallback(async (page: number) => {
     ctrl.current?.abort(); const c = new AbortController(); ctrl.current = c;
     const p = new URLSearchParams(qs); p.set("page", String(page));
-    if (scope.resort) p.set("_resort", scope.resort); if (scope.filter) p.set("_filter", scope.filter);
+    if (scope.resort) p.set("_resort", scope.resort); if (scope.filter) p.set("_filter", scope.filter); if (scope.region) p.set("_region", scope.region);
     const r = await fetch(`/api/search?${p}`, { signal: c.signal }).then(r => r.json());
     return r as Res;
   }, [qs, scope]);
@@ -117,6 +118,7 @@ export function LiveResults({ title, scope, initial, sp, amenities, action, ci, 
           {quick.map(([c, t]) => <button type="button" key={c} className={`chip ${f.amen.includes(c) ? "on" : ""}`} onClick={() => toggle("amen", c)}>{t}</button>)}
           <button type="button" className={`chip ${f.verified ? "on" : ""}`} onClick={() => set({ verified: !f.verified })}>Только проверенные</button>
           <AlertButton title={title} email={email} />
+          <ShareButton title={title} variant="chip" />
           {mapKey && <button type="button" className="chip ico mapchip" onClick={() => setMapOpen(true)}>
             <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>
             На карте</button>}
@@ -147,7 +149,7 @@ export function LiveResults({ title, scope, initial, sp, amenities, action, ci, 
       </div></div>
       {mapKey && !mapOpen && res.total > 0 && <button type="button" className="mapfab" onClick={() => setMapOpen(true)}>
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>Карта</button>}
-      {mapOpen && mapKey && <MapView apiKey={mapKey} query={(() => { const p = new URLSearchParams(qs); if (scope.resort) p.set("_resort", scope.resort); if (scope.filter) p.set("_filter", scope.filter); return p; })()} title={title} center={center} onClose={() => setMapOpen(false)} />}
+      {mapOpen && mapKey && <MapView apiKey={mapKey} query={(() => { const p = new URLSearchParams(qs); if (scope.resort) p.set("_resort", scope.resort); if (scope.filter) p.set("_filter", scope.filter); if (scope.region) p.set("_region", scope.region); return p; })()} title={title} center={center} onClose={() => setMapOpen(false)} />}
     </>
   );
 }

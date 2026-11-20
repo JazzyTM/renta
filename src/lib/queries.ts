@@ -11,7 +11,7 @@ export const resortOptions = cache(async () => {
     db.listing.groupBy({ by: ["resortId"], where: await visibleWhere(), _count: true }),
   ]);
   const c = new Map(counts.map(x => [x.resortId, x._count]));
-  return r.map(x => ({ name: x.name, slug: x.slug, region: x.region.name, count: c.get(x.id) ?? 0, popular: x.isPopular }));
+  return r.map(x => ({ name: x.name, slug: x.slug, region: x.region.name, regionSlug: x.region.slug, count: c.get(x.id) ?? 0, popular: x.isPopular }));
 });
 
 export async function visibleWhere(): Promise<Prisma.ListingWhereInput> {
@@ -102,8 +102,13 @@ export function parseFilters(sp: Record<string, string | string[] | undefined>):
 }
 
 // Как устроена выдача: курорт, подборка или вся база
-export async function scopeWhere(scope: { resort?: string; filter?: string }): Promise<Prisma.ListingWhereInput | null> {
+export async function scopeWhere(scope: { resort?: string; filter?: string; region?: string }): Promise<Prisma.ListingWhereInput | null> {
   const and: Prisma.ListingWhereInput[] = [];
+  if (scope.region) {
+    const g = await db.region.findUnique({ where: { slug: scope.region }, select: { id: true, isActive: true } });
+    if (!g || !g.isActive) return null;
+    and.push({ resort: { regionId: g.id, isActive: true } });
+  }
   if (scope.resort) {
     const r = await db.resort.findUnique({ where: { slug: scope.resort }, select: { id: true, isActive: true } });
     if (!r || !r.isActive) return null;

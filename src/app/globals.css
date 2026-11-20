@@ -1834,7 +1834,7 @@ body:has(.shell) { background: var(--gray) }
   .oitem { grid-template-columns: 96px minmax(0, 1fr) auto }
   .oi-ph { width: 96px; height: 72px }
   .oi-s { grid-column: 2 / -1; grid-row: 2 }
-  .oi-e { grid-column: 3; grid-row: 1 }
+  .oi-acts { grid-column: 3; grid-row: 1 }
 }
 @media (max-width: 640px) {
   .oitem { grid-template-columns: 84px minmax(0, 1fr); gap: 12px; padding: 12px }
@@ -1842,7 +1842,7 @@ body:has(.shell) { background: var(--gray) }
   .oi-t { white-space: normal; font-size: 15px; line-height: 1.3 }
   .oi-s { grid-column: 1 / -1; grid-row: auto; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding-top: 10px; border-top: 1px solid #F0F1F3 }
   .oi-s dd { font-size: 14px }
-  .oi-e { grid-column: 1 / -1; grid-row: auto; width: 100% }
+  .oi-acts { grid-column: 1 / -1; grid-row: auto; grid-template-columns: 1fr auto; align-items: center } .oi-e { width: 100% }
 }
 
 /* ---------- телефоны: таблицы карточками «подпись — значение» ---------- */
@@ -2167,3 +2167,27 @@ html:has(.mapview), body:has(.mapview) { overflow: hidden; overscroll-behavior: 
   .mv-list { left: 0; right: 0; bottom: 0; transform: none; width: auto; max-height: 62dvh; border-radius: 16px 16px 0 0; padding-bottom: env(safe-area-inset-bottom) }
   .mvl-h::before { content: ""; position: absolute; top: 6px; left: 50%; width: 40px; height: 4px; margin-left: -20px; border-radius: 4px; background: #D5D8DC }
 }
+
+/* выбор курорта: строка «Весь регион» */
+.rpick-pop .rp-list .rp-all { column-span: all; margin-bottom: 6px; padding-bottom: 8px; border-bottom: 1px solid var(--line) }
+.rpick-pop .rp-list .rp-all a { font-weight: 600; color: var(--accent) }
+
+/* «Поделиться»: меню со значками соцсетей */
+.share-pop { min-width: 236px; padding: 8px; gap: 2px }
+.share-nets { display: grid; gap: 2px }
+.share-pop a, .share-pop button { display: flex; align-items: center; gap: 10px; padding: 7px 10px; text-decoration: none !important }
+.share-ic { flex: none; display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50% }
+.share-copy { border-top: 1px solid var(--line) !important; margin-top: 4px; padding-top: 10px !important; border-radius: 0 0 6px 6px !important }
+.share-copy svg { width: 32px; color: var(--muted) }
+.share-chip .share-pop, .share-link .share-pop { left: 0; right: auto }
+.qchips .share-chip { display: inline-flex }
+.sharelink { display: inline-flex; align-items: center; gap: 6px; font-size: 14px }
+.oi-acts { display: grid; gap: 8px; justify-items: center; align-content: center }
+.oi-acts .share-pop { left: auto; right: 0 }
+.art-meta { margin: 8px 0 4px; align-items: center }
+.ft-share { display: grid; gap: 8px; margin-top: 8px }
+.ft-share > span { font-size: 13px; color: var(--muted) }
+.share-row { display: flex; flex-wrap: wrap; gap: 8px }
+.share-row .share-ic { width: 36px; height: 36px; transition: transform .15s }
+.share-row .share-ic:hover { transform: translateY(-2px) }
+@media (max-width: 768px) { .oi-acts { justify-items: stretch } }

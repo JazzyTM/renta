@@ -6,4 +6,8 @@ const SPECIAL: Record<string, string> = {
 };
 const GEN: Record<string, string> = { "Сочи": "Сочи", "Анапа": "Анапы", "Геленджик": "Геленджика", "Новороссийск": "Новороссийска", "Туапсе": "Туапсе" };
 
+// «Весь регион» — для выбора всех курортов региона разом
+const ALL: Record<string, string> = { "Крым": "Весь Крым", "Абхазия": "Вся Абхазия", "Азовское море": "Всё Азовское море" };
+export const regionAll = (name: string) => ALL[name] ?? `${name} и окрестности`;
+
 export const regionLabel = (name: string) => SPECIAL[name] ?? (GEN[name] ? `Курорты ${GEN[name]}` : name);
