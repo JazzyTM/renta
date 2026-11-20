@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
+import { ogMeta } from "@/lib/og";
 import { prepOf } from "@/lib/collections";
 import { collectionCounts } from "@/lib/collections-server";
 import { ResultsPage } from "@/components/ResultsPage";
@@ -14,7 +15,9 @@ export async function generateMetadata({ params }: P): Promise<Metadata> {
   const { slug } = await params;
   const [r, s] = await Promise.all([db.resort.findUnique({ where: { slug } }), getSettings()]);
   if (!r) return {};
-  return { title: r.seoTitle || String(s.resortTitleTpl).replace("{in}", prepOf(r)).replace("{resort}", r.name), description: r.seoDescription || undefined, alternates: { canonical: `/kurort/${slug}` } };
+  const title = r.seoTitle || String(s.resortTitleTpl).replace("{in}", prepOf(r)).replace("{resort}", r.name);
+  return { title, description: r.seoDescription || undefined, alternates: { canonical: `/kurort/${slug}` },
+    ...ogMeta({ title: `Жильё ${prepOf(r)} у моря`, description: r.seoDescription || `Гостевые дома, квартиры и номера ${prepOf(r)}: фото, цены по месяцам, отзывы. Звоните хозяевам напрямую, без комиссии.`, path: `/kurort/${slug}`, image: `/og/r/${slug}`, siteName: String(s.siteName) }) };
 }
 
 export default async function ResortPage({ params, searchParams }: P) {

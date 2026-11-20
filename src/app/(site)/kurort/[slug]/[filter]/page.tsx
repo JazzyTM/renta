@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
+import { ogMeta } from "@/lib/og";
 import { collectionBySlug, prepOf } from "@/lib/collections";
 import { collectionCounts, minForIndex, seoText } from "@/lib/collections-server";
 import { ResultsPage } from "@/components/ResultsPage";
@@ -34,6 +35,7 @@ export async function generateMetadata({ params }: P): Promise<Metadata> {
     description: d.seo?.seoDescription ? d.fill(d.seo.seoDescription) : `${d.h1}. Объявления от хозяев с фото и ценами по месяцам. Звоните напрямую, без комиссии.`,
     alternates: { canonical: `/kurort/${slug}/${filter}` },
     robots: d.index ? undefined : { index: false, follow: true },
+    ...ogMeta({ title: d.h1, description: `${d.h1}. Объявления от хозяев с фото и ценами по месяцам. Звоните напрямую, без комиссии.`, path: `/kurort/${slug}/${filter}`, image: `/og/r/${slug}`, siteName: String(s.siteName) }),
   };
 }
 

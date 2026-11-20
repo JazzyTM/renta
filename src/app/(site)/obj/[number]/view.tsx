@@ -21,6 +21,7 @@ import { ListingCard } from "@/components/ListingCard";
 import { cardInclude, visibleWhere } from "@/lib/queries";
 import { toCard } from "@/lib/card";
 import { listingPath } from "@/lib/paths";
+import { ogMeta } from "@/lib/og";
 
 // Похожие: тот же курорт, затем регион; ближе по цене выше
 async function similar(l: { id: string; resortId: string; priceFrom: number; resort: { regionId: string } }) {
@@ -48,7 +49,10 @@ async function load(number: string) {
 export async function listingMetadata(number: string | number): Promise<Metadata> {
   const l = await load(String(number));
   if (!l) return {};
-  return { title: l.seoTitle || `${l.title}, ${l.resort.name}`, description: l.seoDescription || l.description.slice(0, 160), openGraph: { images: l.photos[0]?.url ? [l.photos[0].url] : [] }, alternates: { canonical: listingPath({ number: l.number, title: l.title, resortSlug: l.resort.slug }) } };
+  const s = await getSettings();
+  const path = listingPath({ number: l.number, title: l.title, resortSlug: l.resort.slug });
+  const title = l.seoTitle || `${l.title}, ${l.resort.name}`, description = l.seoDescription || l.description.slice(0, 160);
+  return { title, description, alternates: { canonical: path }, ...ogMeta({ title: `${l.title} — ${l.resort.name}`, description: `${l.priceFrom ? `От ${l.priceFrom.toLocaleString("ru-RU")} ₽ за ночь. ` : ""}${description}`, path, image: `/og/l/${l.number}`, siteName: String(s.siteName) }) };
 }
 
 // Для ЧПУ и перенаправлений со старых адресов

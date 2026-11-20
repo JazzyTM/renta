@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { ogMeta } from "@/lib/og";
+import { getSettings } from "@/lib/settings";
 import { ShareButton } from "@/components/Share";
 import { notFound } from "next/navigation";
 import { RichText } from "@/components/RichText";
@@ -9,7 +11,9 @@ import { thumb } from "@/lib/img";
 type P = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: P) {
   const a = await db.article.findUnique({ where: { slug: (await params).slug } });
-  return a ? { title: a.seoTitle || a.title, description: a.seoDescription || a.excerpt, openGraph: a.coverUrl ? { images: [a.coverUrl] } : undefined } : {};
+  if (!a) return {};
+  const s = await getSettings();
+  return { title: a.seoTitle || a.title, description: a.seoDescription || a.excerpt, ...ogMeta({ title: a.title, description: a.seoDescription || a.excerpt, path: `/articles/${a.slug}`, image: `/og/a/${a.slug}`, siteName: String(s.siteName), type: "article" }) };
 }
 
 export default async function Article({ params }: P) {

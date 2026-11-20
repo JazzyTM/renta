@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { ogMeta } from "@/lib/og";
+import { getSettings } from "@/lib/settings";
 import { RichText } from "@/components/RichText";
 import { db } from "@/lib/db";
 import { fillLegal } from "@/lib/legal";
@@ -6,7 +8,9 @@ import { fillLegal } from "@/lib/legal";
 type P = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: P) {
   const p = await db.page.findUnique({ where: { slug: (await params).slug } });
-  return p ? { title: p.seoTitle || p.title, description: p.seoDescription ?? undefined } : {};
+  if (!p) return {};
+  const s = await getSettings();
+  return { title: p.seoTitle || p.title, description: p.seoDescription ?? undefined, ...ogMeta({ title: p.title, description: p.seoDescription, path: `/p/${p.slug}`, image: "/og/home", siteName: String(s.siteName) }) };
 }
 export default async function Page({ params }: P) {
   const p = await db.page.findUnique({ where: { slug: (await params).slug } });
