@@ -76,7 +76,7 @@ export function MapView({ apiKey, query, title, center, onClose }: { apiKey: str
     if (layer.current) m.geoObjects.remove(layer.current);
     marks.current.clear();
     const Pin = ym.templateLayoutFactory.createClass('<div class="mpin{% if properties.on %} on{% endif %}">$[properties.label]</div>');
-    const cl = new ym.Clusterer({ clusterIconLayout: ym.templateLayoutFactory.createClass('<div class="mclu">{{ properties.geoObjects.length }}</div>'), clusterIconShape: { type: "Circle", coordinates: [0, 0], radius: 24 }, groupByCoordinates: false, gridSize: 72, clusterDisableClickZoom: true, hasBalloon: false, zoomMargin: 60 });
+    const cl = new ym.Clusterer({ clusterIconLayout: ym.templateLayoutFactory.createClass('<div class="mclu">{{ properties.geoObjects.length }}</div>'), clusterIconShape: { type: "Circle", coordinates: [0, 0], radius: 24 }, groupByCoordinates: false, gridSize: 128, clusterDisableClickZoom: true, hasBalloon: false, zoomMargin: 60 });
     cl.add(points.map(pt => {
       const pm = new ym.Placemark([pt.lat, pt.lng], { label: `${short(pt.price)} ₽`, on: false }, { iconLayout: Pin, iconShape: { type: "Rectangle", coordinates: [[-40, -38], [40, 0]] }, hasBalloon: false, hasHint: false, zIndex: 100 });
       pm.properties.set("pid", pt.id);
