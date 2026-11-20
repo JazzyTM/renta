@@ -2,14 +2,15 @@
 // /og/home · /og/l/{номер} · /og/r/{курорт} · /og/g/{регион} · /og/a/{статья}
 import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
+import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import sharp from "sharp";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { visibleWhere } from "@/lib/queries";
 import { prepOf } from "@/lib/collections";
-import { regionAll } from "@/lib/regions";
+import { regionAll, regionLabel } from "@/lib/regions";
 import { LISTING_TYPES } from "@/lib/labels";
 import { plural } from "@/lib/format";
 import { UPLOAD_DIR } from "@/lib/upload";
@@ -45,7 +46,7 @@ async function data(kind: string, id: string): Promise<Card | null> {
     const r = await db.resort.findUnique({ where: { slug: id }, include: { region: true } });
     if (!r) return null;
     const n = await db.listing.count({ where: { AND: [await visibleWhere(), { resortId: r.id }] } });
-    return { img: await photo(r.coverUrl ?? s.heroImage), badge: r.region.name, title: `Жильё ${prepOf(r)}`, sub: n ? `${n} ${plural(n, ["вариант", "варианта", "вариантов"])} у моря, без посредников` : "Жильё у моря без посредников" };
+    return { img: await photo(r.coverUrl ?? s.heroImage), badge: r.region.name !== r.name ? regionLabel(r.region.name) : undefined, title: `Жильё ${prepOf(r)}`, sub: n ? `${n} ${plural(n, ["вариант", "варианта", "вариантов"])} у моря, без посредников` : "Жильё у моря без посредников" };
   }
   if (kind === "g") {
     const g = await db.region.findUnique({ where: { slug: id }, include: { resorts: { where: { isActive: true }, select: { id: true, coverUrl: true } } } });
@@ -61,8 +62,22 @@ async function data(kind: string, id: string): Promise<Card | null> {
   return { img: await photo(String(s.heroImage || "")), title: "Жильё у моря без посредников", sub: "Гостевые дома, квартиры и номера на Чёрном и Азовском море. Звоните и пишите хозяевам напрямую" };
 }
 
+// Готовые картинки храним 6 часов: соцсети запрашивают превью много раз
+const CACHE = join(process.env.STATE_DIR || "/tmp", "og-cache");
+const HEADERS = { "Content-Type": "image/jpeg", "Cache-Control": "public, max-age=21600, stale-while-revalidate=604800" };
+
 export async function GET(_: Request, { params }: { params: Promise<{ p: string[] }> }) {
   const [kind = "home", id = ""] = (await params).p;
+  const file = join(CACHE, `${kind}-${id.replace(/[^\w-]/g, "_").slice(0, 120)}.jpg`);
+  try { if (Date.now() - statSync(file).mtimeMs < 6 * 3600_000) return new Response(new Uint8Array(await readFile(file)), { headers: HEADERS }); } catch {}
+  const png = await render(kind, id);
+  // JPEG ~150 КБ вместо PNG ~1,5 МБ: WhatsApp не показывает тяжёлые превью
+  const jpg = await sharp(Buffer.from(await png.arrayBuffer())).jpeg({ quality: 84, mozjpeg: true }).toBuffer();
+  mkdir(CACHE, { recursive: true }).then(() => writeFile(file, jpg)).catch(() => {});
+  return new Response(new Uint8Array(jpg), { headers: HEADERS });
+}
+
+async function render(kind: string, id: string) {
   const c = await data(kind, decodeURIComponent(id)) ?? await data("home", "");
   const s = await getSettings();
   const [bold, regular] = await fontsP;
@@ -86,6 +101,6 @@ export async function GET(_: Request, { params }: { params: Promise<{ p: string[
         </div>
       </div>
     </div>,
-    { width: W, height: H, fonts, headers: { "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800" } },
+    { width: W, height: H, fonts },
   );
 }
