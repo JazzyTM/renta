@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const https = (process.env.APP_URL ?? "").startsWith("https:");
 
 const nextConfig: NextConfig = {
+  // Обновление собирает в отдельную папку (NEXT_DIST_DIR=.next-new) и подменяет рабочую только после успешной сборки
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   serverExternalPackages: ["@prisma/client", "pg"],
   experimental: { serverActions: { bodySizeLimit: "20mb" } },
   poweredByHeader: false,

@@ -3,6 +3,12 @@
 # Откат на прошлую версию: sudo /opt/renta/deploy/update.sh --rollback
 # Кнопка в админке создаёт файл-запрос, а служба renta-update.path запускает этот скрипт.
 set -Eeuo pipefail
+# git reset в ходе обновления перезаписывает этот файл, а bash читает скрипт по ходу выполнения.
+# Поэтому работаем с копией во временной папке.
+if [ -z "${RENTA_UPDATE_COPY:-}" ]; then
+  tmp=$(mktemp /tmp/renta-update.XXXXXX.sh); cp "$0" "$tmp"
+  RENTA_UPDATE_COPY=1 exec bash "$tmp" "$@"
+fi
 APP=/opt/renta; STATE=/var/lib/renta; LOG=$STATE/update.log
 MODE="${1:-}"
 
@@ -50,14 +56,18 @@ echo "== Копия базы перед обновлением"
 "$APP/deploy/backup.sh" --db-only || echo "Не удалось сделать копию, продолжаю"
 
 deploy() {
-  as_renta git reset -q --hard "$1"
+  # Внутри «if deploy» bash не останавливается на ошибках сам, поэтому каждый шаг проверяем явно.
+  # Сборка идёт в .next-new: работающий сайт не трогаем, пока новая версия не собрана.
+  as_renta git reset -q --hard "$1" || return 1
   chmod +x "$APP"/deploy/*.sh
-  echo "== Зависимости"; as_renta npm ci --no-audit --no-fund
-  echo "== Миграции базы"; as_renta npx prisma migrate deploy
+  echo "== Зависимости"; as_renta npm ci --no-audit --no-fund || return 1
+  echo "== Миграции базы"; as_renta npx prisma migrate deploy || return 1
   echo "== Фото со своего сервера"; as_renta npm run -s stock:download || echo "Часть фото не скачалась, остальное работает"
-  echo "== Сборка"; as_renta npm run build
+  echo "== Сборка"; as_renta rm -rf .next-new; as_renta NEXT_DIST_DIR=.next-new npm run build || { echo "Сборка не удалась, сайт работает на прежней версии"; as_renta rm -rf .next-new; return 1; }
   if ! cmp -s "$APP/deploy/systemd/renta.service" /etc/systemd/system/renta.service; then cp "$APP"/deploy/systemd/* /etc/systemd/system/; systemctl daemon-reload; fi
-  echo "== Перезапуск"; systemctl restart renta
+  echo "== Перезапуск"
+  as_renta "rm -rf .next-old; [ -d .next ] && mv .next .next-old; mv .next-new .next" || return 1
+  systemctl restart renta
   for i in $(seq 1 45); do curl -fs http://127.0.0.1:3000/api/health >/dev/null && return 0; sleep 2; done
   echo "Сайт не ответил после перезапуска"; return 1
 }

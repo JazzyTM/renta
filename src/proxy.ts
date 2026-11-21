@@ -52,7 +52,12 @@ export async function proxy(req: NextRequest) {
     }
     // Нет такой страницы — настоящий 404 до отрисовки (иначе из-за потоковой отдачи вышел бы 200).
     // Внутренний адрес берём из nextUrl: req.url за nginx выглядит как https://localhost:3000
-    if (await missing(path)) { const u = req.nextUrl.clone(); u.pathname = "/__not-found"; u.search = ""; u.protocol = "http:"; // сам Next.js за nginx работает по http return NextResponse.rewrite(u, { status: 404 }); }
+    if (await missing(path)) {
+      const u = req.nextUrl.clone();
+      u.pathname = "/__not-found"; u.search = "";
+      u.protocol = "http:"; // сам Next.js за nginx работает по http
+      return NextResponse.rewrite(u, { status: 404 });
+    }
   }
   return NextResponse.next();
 }
