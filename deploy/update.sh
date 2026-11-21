@@ -74,6 +74,7 @@ deploy() {
 
 if deploy "$TARGET"; then
   echo "$OLD" > "$STATE/prev-version"
+  as_renta rm -rf .next-old
   [ -f "$STATE/.hardened-v1" ] || { echo "== Защита сервера"; "$APP/deploy/harden.sh" || echo "Защиту настроить не удалось"; }
   status ok
   echo "$(date '+%F %T') Готово"
