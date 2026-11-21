@@ -2191,3 +2191,18 @@ html:has(.mapview), body:has(.mapview) { overflow: hidden; overscroll-behavior: 
 .share-row .share-ic { width: 36px; height: 36px; transition: transform .15s }
 .share-row .share-ic:hover { transform: translateY(-2px) }
 @media (max-width: 768px) { .oi-acts { justify-items: stretch } }
+
+/* «Поделиться»: MAX, Telegram, ВКонтакте, WhatsApp */
+.share-pop .msg-i { flex: none }
+.share-row a { display: inline-flex; border-radius: 9px; transition: transform .15s }
+.share-row a:hover { transform: translateY(-2px) }
+.share-more { border-top: 1px solid var(--line) !important; margin-top: 4px; padding-top: 10px !important }
+.share-more + .share-copy { border-top: 0 !important; margin-top: 0; padding-top: 7px !important }
+.share-more svg, .share-copy svg { width: 32px; color: var(--muted) }
+@media (max-width: 560px) { .share-pop { min-width: 250px } .share-pop a, .share-pop button { padding: 10px } }
+@media (max-width: 560px) {
+  .share .share-pop, .share-chip .share-pop, .share-link .share-pop, .oi-acts .share-pop { position: fixed; left: 8px; right: 8px; top: auto; bottom: calc(8px + env(safe-area-inset-bottom)); z-index: 960; min-width: 0; padding: 10px; border-radius: 16px; box-shadow: 0 -4px 30px rgba(0, 0, 0, .25) }
+  .share-nets { grid-template-columns: repeat(4, 1fr); gap: 4px }
+  .share-nets a { flex-direction: column; gap: 6px; font-size: 12.5px; padding: 8px 2px; text-align: center }
+  .share-nets .msg-i { width: 44px; height: 44px }
+}
