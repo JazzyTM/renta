@@ -2206,3 +2206,11 @@ html:has(.mapview), body:has(.mapview) { overflow: hidden; overscroll-behavior: 
   .share-nets a { flex-direction: column; gap: 6px; font-size: 12.5px; padding: 8px 2px; text-align: center }
   .share-nets .msg-i { width: 44px; height: 44px }
 }
+
+/* страница 404 */
+.nf { min-height: 100vh; min-height: 100dvh; display: grid; grid-template-rows: auto 1fr; padding: 20px 16px 40px; background: var(--gray) }
+.nf-logo { justify-self: center; font-size: 22px; color: var(--ink) !important }
+.nf-box { align-self: center; justify-self: center; width: min(520px, 100%); display: grid; gap: 12px; padding: 32px 28px; border-radius: var(--r); background: #fff; text-align: center }
+.nf-code { margin: 0; font-size: 64px; font-weight: 800; line-height: 1; color: var(--accent) }
+.nf-acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 6px }
+.nf-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 14px }

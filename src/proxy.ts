@@ -24,17 +24,30 @@ async function listingRedirect(path: string) {
   return canonical === path ? null : canonical;
 }
 
+// Курорт, подборка или объявление, которых нет
+async function missing(path: string) {
+  const obj = path.match(/^\/obj\/(\d+)$/);
+  if (obj) return !(await db.listing.findUnique({ where: { number: Number(obj[1]) }, select: { id: true } }).catch(() => ({ id: "" })));
+  const m = path.match(/^\/kurort\/([^/]+)(?:\/([^/]+))?$/);
+  if (!m) return false;
+  const r = await db.resort.findUnique({ where: { slug: m[1] }, select: { isActive: true } }).catch(() => ({ isActive: true }));
+  if (!r || !r.isActive) return true;
+  if (!m[2]) return false;
+  const { collectionBySlug } = await import("@/lib/collections");
+  if (collectionBySlug(m[2])) return false;
+  const num = listingNumber(m[2]);
+  return !num || !(await db.listing.findUnique({ where: { number: num }, select: { id: true } }).catch(() => ({ id: "" })));
+}
+
 export async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname.replace(/\/$/, "") || "/";
   const r = (await redirects()).get(path);
   if (r) return NextResponse.redirect(new URL(r.to, req.url), r.permanent ? 301 : 302);
   if (path.startsWith("/obj/") || path.startsWith("/kurort/")) {
     const to = await listingRedirect(path);
-    if (to) {
-      const url = new URL(to, req.url);
-      url.search = req.nextUrl.search;
-      return NextResponse.redirect(url, 301);
-    }
+    if (to) return new NextResponse(null, { status: 301, headers: { Location: to + req.nextUrl.search } });
+    // Нет такой страницы — настоящий 404 до отрисовки (иначе из-за потоковой отдачи вышел бы 200)
+    if (await missing(path)) return NextResponse.rewrite(new URL("/__not-found", req.url), { status: 404 });
   }
   return NextResponse.next();
 }

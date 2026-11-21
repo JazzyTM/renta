@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { localRedirect } from "@/lib/redirect";
 import { cookies } from "next/headers";
 import { db } from "@/lib/db";
 import { fetchProfile } from "@/lib/oauth";
@@ -8,7 +8,7 @@ import { audit } from "@/lib/audit";
 export async function GET(req: Request, { params }: { params: Promise<{ provider: string }> }) {
   const { provider } = await params;
   const url = new URL(req.url);
-  const fail = NextResponse.redirect(new URL("/login?error=1", req.url));
+  const fail = localRedirect("/login?error=1");
   if (provider !== "vk" && provider !== "yandex") return fail;
   const jar = await cookies();
   let saved: { state: string; verifier: string; next: string };
@@ -32,7 +32,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ provider
     if (!u || u.status === "BLOCKED") return fail;
     await createSession(u.id);
     const next = saved.next?.startsWith("/") && !saved.next.startsWith("//") ? saved.next : "/";
-    return NextResponse.redirect(new URL(next, process.env.APP_URL || req.url));
+    return localRedirect(next);
   } catch (e) {
     console.error("oauth", e);
     return fail;
