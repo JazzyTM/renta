@@ -45,9 +45,14 @@ export async function proxy(req: NextRequest) {
   if (r) return NextResponse.redirect(new URL(r.to, req.url), r.permanent ? 301 : 302);
   if (path.startsWith("/obj/") || path.startsWith("/kurort/")) {
     const to = await listingRedirect(path);
-    if (to) return new NextResponse(null, { status: 301, headers: { Location: to + req.nextUrl.search } });
-    // Нет такой страницы — настоящий 404 до отрисовки (иначе из-за потоковой отдачи вышел бы 200)
-    if (await missing(path)) return NextResponse.rewrite(new URL("/__not-found", req.url), { status: 404 });
+    if (to) {
+      const url = new URL(to, req.url);
+      url.search = req.nextUrl.search;
+      return NextResponse.redirect(url, 301);
+    }
+    // Нет такой страницы — настоящий 404 до отрисовки (иначе из-за потоковой отдачи вышел бы 200).
+    // Внутренний адрес берём из nextUrl: req.url за nginx выглядит как https://localhost:3000
+    if (await missing(path)) { const u = req.nextUrl.clone(); u.pathname = "/__not-found"; u.search = ""; return NextResponse.rewrite(u, { status: 404 }); }
   }
   return NextResponse.next();
 }
