@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { requireStaff, requireAdmin, createSession, createToken, hashPassword } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 import { CRUD, parseFields, delegate } from "@/lib/crud";
-import { sendTemplate, sendMail, fill } from "@/lib/mail";
+import { sendTemplate, sendMail, fill, previewTemplate } from "@/lib/mail";
 import { SETTINGS, saveSettings, getSettings } from "@/lib/settings";
 import { enablePromotion, markOrderPaid } from "@/lib/payments";
 import { recomputeRating } from "@/lib/reviews";
@@ -298,6 +298,16 @@ export async function templateSave(key: string, _: unknown, fd: FormData): Promi
   await audit(u.id, "update", "EmailTemplate", key);
   return { ok: "Сохранено" };
 }
+// Пример письма по шаблону на почту администратора
+export async function templateTest(key: string): Promise<FormState> {
+  const u = await requireAdmin();
+  if (!u.email) return { error: "У вашего аккаунта нет почты" };
+  const p = await previewTemplate(key);
+  await sendMail(u.email, p.subject, p.body, { key, vars: p.vars });
+  const last = await db.emailLog.findFirst({ orderBy: { createdAt: "desc" } });
+  return last?.status === "failed" ? { error: "Ошибка: " + last.error } : { ok: `Отправлено на ${u.email}` };
+}
+
 export async function templateReset(key: string) {
   await requireAdmin();
   await db.emailTemplate.deleteMany({ where: { key } });
@@ -338,7 +348,7 @@ export async function bookingRemind() {
   const s2 = await getSettings();
   const since = new Date(Date.now() - Number(s2.responseHours) * 3600000);
   const list = await db.booking.findMany({ where: { status: "NEW", createdAt: { lt: since } }, include: { listing: { include: { owner: true } } } });
-  for (const b of list) if (b.listing.owner.email) await sendMail(b.listing.owner.email, `Гость ждёт ответа по заявке №${b.number}`, `${b.guestName} ждёт ответа: «${b.listing.title}», ${fmtRange(b.checkIn, b.checkOut)}.\n\n${base()}/cabinet/bookings/${b.number}`);
+  for (const b of list) if (b.listing.owner.email) await sendMail(b.listing.owner.email, `Гость ждёт ответа по заявке №${b.number}`, `${b.guestName} ждёт ответа по заявке на «${b.listing.title}».\n\nДаты: ${fmtRange(b.checkIn, b.checkOut)}\nЗаявка: №${b.number}\n\nОтветить гостю: ${base()}/cabinet/bookings/${b.number}`);
   await audit(u.id, "remind", "Booking", null, { n: list.length });
   revalidatePath("/admin/bookings");
 }
