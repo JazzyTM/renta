@@ -89,7 +89,9 @@ export async function sendMail(to: string, subject: string, text: string, tpl?: 
     const t = nodemailer.createTransport({ host, port, secure: port === 465, ...(user ? { auth: { user: String(user), pass: String(pass ?? "") } } : {}) });
     // Оформленная HTML-версия + простой текст для почтовиков без HTML
     const html = mailHtml(await mailLook(), subject, text, tpl?.key, tpl?.vars);
-    await t.sendMail({ from: s.smtpFrom || process.env.SMTP_FROM, to, subject, text, html });
+    // Ссылка отписки в заголовке: почтовики показывают кнопку «Отписаться» и меньше режут рассылки
+    const unsub = tpl?.vars.unsubscribe ? String(tpl.vars.unsubscribe) : "";
+    await t.sendMail({ from: s.smtpFrom || process.env.SMTP_FROM, to, subject, text, html, ...(unsub ? { list: { unsubscribe: unsub } } : {}) });
     await db.emailLog.create({ data: { to, subject, status: "sent" } });
   } catch (e) {
     await db.emailLog.create({ data: { to, subject, status: "failed", error: String(e).slice(0, 500) } });
