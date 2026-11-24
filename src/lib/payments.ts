@@ -3,6 +3,7 @@ import { db } from "./db";
 import { getSettings } from "./settings";
 import { audit } from "./audit";
 import type { Order } from "@/generated/prisma/client";
+import { pally } from "./pay-pally";
 
 // Платёжный провайдер подключается здесь. Чтобы добавить новый:
 // 1) реализуйте PaymentProvider, 2) добавьте его в PROVIDERS, 3) добавьте пункт в настройку paymentProvider,
@@ -13,7 +14,7 @@ export interface PaymentProvider {
   webhook?(req: Request): Promise<{ orderNumber: number; paid: boolean; raw: unknown } | null>;
 }
 
-export const PROVIDERS: Record<string, PaymentProvider> = {};
+export const PROVIDERS: Record<string, PaymentProvider> = { pally };
 
 export async function activeProvider() {
   const s = await getSettings();

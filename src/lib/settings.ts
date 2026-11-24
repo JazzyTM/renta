@@ -120,9 +120,9 @@ export const SETTINGS: Section[] = [
   ]},
   { id: "payments", title: "Оплата и монетизация", fields: [
     { key: "onlinePayments", label: "Онлайн-оплата предоплаты на сайте", type: "bool", def: false, hint: "Пока выключено: гости платят хозяину напрямую" },
-    { key: "paymentProvider", label: "Платёжный сервис", type: "select", def: "none", options: [["none", "Не подключён"]] },
+    { key: "paymentProvider", label: "Платёжный сервис", type: "select", def: "none", options: [["none", "Не подключён"], ["pally", "Pally"]], hint: "Оплата тарифов и продвижения. В магазине Pally укажите Result URL: https://naberegu.su/api/pay/pally" },
     { key: "paymentShopId", label: "ID магазина", type: "text", def: "" },
-    { key: "paymentSecret", label: "Секретный ключ", type: "password", def: "" },
+    { key: "paymentSecret", label: "API-токен", type: "password", def: "" },
     { key: "commissionPct", label: "Комиссия сервиса с брони, %", type: "number", def: 0 },
     { key: "freePlacementUntil", label: "Бесплатное размещение до (ГГГГ-ММ-ДД)", type: "text", def: "2027-09-30", hint: "До этой даты тарифы не нужны. Пусто: бесплатного периода нет" },
     { key: "freeMaxListings", label: "Объявлений на владельца в бесплатный период", type: "number", def: 20 },

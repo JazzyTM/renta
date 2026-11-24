@@ -8,8 +8,9 @@ import { buyTariff } from "../actions";
 
 const ORDER_ST: Record<string, [string, string]> = { PENDING: ["Ждёт оплаты", "warn"], PAID: ["Оплачен", "ok"], CANCELLED: ["Отменён", "plain"], FAILED: ["Ошибка", "bad"] };
 
-export default async function Tariff() {
+export default async function Tariff({ searchParams }: { searchParams: Promise<{ pay?: string; order?: string }> }) {
   const u = await requireUser("/cabinet/tariff");
+  const sp = await searchParams;
   const [plan, tariffs, orders, listings] = await Promise.all([
     ownerPlan(u.id),
     db.tariff.findMany({ where: { isActive: true }, orderBy: { sort: "asc" } }),
@@ -20,6 +21,14 @@ export default async function Tariff() {
   return (
     <>
       <h1 className="h1">Тариф и продвижение</h1>
+      {(() => {
+        // Возврат с оплаты: статус берём из заказа (его меняет уведомление сервиса), а не из адреса
+        const o = sp.order ? orders.find(x => x.number === Number(sp.order)) : null;
+        if (!sp.pay || !o) return null;
+        if (o.status === "PAID") return <div className="card-box" style={{ background: "#E9F7EE", borderColor: "#BFE5CC" }}>Заказ №{o.number} оплачен, услуга включена.</div>;
+        if (sp.pay === "ok") return <div className="card-box">Оплата заказа №{o.number} обрабатывается. Обычно это занимает минуту, обновите страницу.</div>;
+        return <div className="card-box err">Оплата заказа №{o.number} не прошла. Попробуйте ещё раз или напишите нам.</div>;
+      })()}
       <div className="card-box stack">
         <div className="row between"><b>Сейчас: {plan.name}</b>{plan.sub && <span className="muted">до {fmtDate(plan.sub.endsAt)}</span>}</div>
         {plan.free && plan.freeUntil && <p>До {fmtDate(plan.freeUntil)} размещение бесплатное: до {plan.maxListings} объявлений, тариф покупать не нужно.</p>}
