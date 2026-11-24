@@ -8,7 +8,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ provide
   const p = PROVIDERS[(await params).provider];
   if (!p?.webhook) return new Response("unknown provider", { status: 404 });
   let r;
-  try { r = await p.webhook(req); } catch (e) { console.error("[pay] webhook", e); return new Response("error", { status: 500 }); }
+  // Ошибка разбора или не настроен токен — 400: повторять такой запрос бессмысленно
+  try { r = await p.webhook(req); } catch (e) { console.error("[pay] webhook", e); return new Response("bad request", { status: 400 }); }
   if (!r) return new Response("bad signature", { status: 400 });
   const o = await db.order.findUnique({ where: { number: r.orderNumber } });
   if (!o) return new Response("OK");

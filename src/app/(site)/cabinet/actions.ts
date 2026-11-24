@@ -110,7 +110,13 @@ async function checkout(userId: string, data: { kind: string; tariffId?: string;
   }
   const provider = await activeProvider();
   if (!provider) return { ok: `Заказ №${order.number} создан. Онлайн-оплата пока не подключена, мы свяжемся с вами` };
-  const r = await provider.createPayment(order, `${process.env.APP_URL || ""}/cabinet/tariff?order=${order.number}`);
+  let r;
+  try { r = await provider.createPayment(order, `${process.env.APP_URL || ""}/cabinet/tariff?order=${order.number}`); }
+  catch (e) {
+    console.error("[pay]", e);
+    await notifyAdmin(`Не удалось создать оплату заказа №${order.number}`, String((e as Error).message).slice(0, 300), "/admin/orders");
+    return { error: `Заказ №${order.number} создан, но платёжный сервис сейчас не отвечает. Попробуйте позже или напишите нам` };
+  }
   await db.order.update({ where: { id: order.id }, data: { externalId: r.externalId, provider: (await getSettings()).paymentProvider } });
   redirect(r.redirectUrl);
 }

@@ -18,6 +18,8 @@ export const PROVIDERS: Record<string, PaymentProvider> = { pally };
 
 export async function activeProvider() {
   const s = await getSettings();
+  // Сервис без ID магазина или ключа считаем не подключённым: заказ создаётся, оплату принимает администратор
+  if (!s.paymentShopId || !s.paymentSecret) return null;
   return PROVIDERS[s.paymentProvider] ?? null;
 }
 
