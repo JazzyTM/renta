@@ -107,6 +107,9 @@ nginx -t && systemctl reload nginx
 
 if [ -n "$DOMAIN" ]; then "$APP/deploy/set-domain.sh" "$DOMAIN" "$EMAIL"; fi
 
+# Свой почтовый сервер для писем сайта (только отправка) и DNS-записи для него
+if [ -n "$DOMAIN" ]; then say "Почта сайта"; "$APP/deploy/mail.sh" "$DOMAIN" || echo "Почту настроить не удалось, запустите позже: sudo $APP/deploy/mail.sh $DOMAIN"; fi
+
 say "Защита сервера"
 "$APP/deploy/harden.sh" || echo "Защиту настроить не удалось, запустите позже: sudo $APP/deploy/harden.sh"
 
